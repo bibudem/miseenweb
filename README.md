@@ -30,11 +30,23 @@ Le site est publié sur GitHub Pages à chaque envoi (`git push`) sur la branche
 s'active une seule fois, dans les réglages du dépôt : **Settings**, **Pages**, puis **Source** :
 **GitHub Actions**.
 
-## Licence
+## Licences
 
-© Les bibliothèques de l'Université de Montréal. Code sous licence MIT, documentation et logo de
-MiseEnWeb sous CC BY 4.0. Les logos et la favoricône des Bibliothèques ne sont couverts par aucune de ces
-licences. Le détail, y compris les composants tiers, figure dans [`LICENCES.md`](LICENCES.md).
+© 2026 Les bibliothèques de l'Université de Montréal
 
-L'utilisation de l'intelligence artificielle générative est décrite dans
-[`DECLARATION-IA.md`](DECLARATION-IA.md).
+- **MIT** (fichier [`LICENSE`](LICENSE)) : le code, les profils, les gabarits et les exemples fictifs
+  de `public/exemples/`.
+- **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.fr)** : la documentation (`README.md`,
+  `DECLARATION-IA.md`), le logo et les icônes de MiseEnWeb (`public/logo.svg`, `public/icone-*.png`),
+  l'image de partage (`public/partage.jpg`) et les captures d'écran (`public/captures/`). Ces fichiers
+  font exception au fichier `LICENSE` : la mention « associated documentation files » de la licence
+  MIT ne s'y applique pas.
+- **Exclus** : le logo et la favoricône des Bibliothèques (`public/logo-bib.svg`,
+  `public/logo-bib-blanc.svg`, `public/favicon.svg`, `public/favicon.ico`) sont des marques de
+  l'Université de Montréal. Aucune de ces licences ne les couvre, y compris là où ils apparaissent
+  dans l'image de partage et les captures d'écran. Une personne qui réutilise ce code doit les
+  retirer ou les remplacer.
+
+Les composants tiers conservent leur propre licence, indiquée dans
+[`DECLARATION-IA.md`](DECLARATION-IA.md). Ce document décrit aussi l'utilisation de l'intelligence
+artificielle générative.
