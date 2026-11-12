@@ -1,0 +1,57 @@
+# Profil « rapport-recherche » : documents dont la structure n'est PAS portée
+# par des styles (titres faits à la main : gras + grosse police sur du texte
+# « Normal »). La normalisation réassigne des styles de titre avant conversion.
+
+nom: rapport-recherche
+description: Rapport dont les titres sont faits à la main (gras, grosse police); normalisation requise.
+
+detection:
+  motif_nom_fichier: "rapport"
+  priorite: 5
+
+mammoth:
+  carte_styles: |
+    p[style-name='Title'] => h1.titre-document:fresh
+  inclure_carte_defaut: true
+  images: incorporees
+
+normalisation:
+  active: true
+  regles:
+    # Les règles sont évaluées dans l'ordre; la première qui s'applique gagne.
+    - nom: titre-niveau-1
+      styles_source: ["Normal"]
+      gras: true
+      taille_min: 16
+      longueur_max: 100
+      style_cible: "Heading 1"
+    - nom: titre-niveau-2
+      styles_source: ["Normal"]
+      gras: true
+      taille_min: 14
+      taille_max: 15.9
+      longueur_max: 100
+      style_cible: "Heading 2"
+    - nom: titre-niveau-3
+      styles_source: ["Normal"]
+      gras: true
+      taille_min: 12
+      taille_max: 13.9
+      longueur_max: 100
+      style_cible: "Heading 3"
+    - nom: titre-numerote
+      styles_source: ["Normal"]
+      motif: "^\\d+\\.\\s+[A-ZÀ-Ü]"
+      longueur_max: 100
+      style_cible: "Heading 2"
+
+post_traitement:
+  supprimer_vides: true
+  identifiants_titres: true
+  decaler_niveaux: auto     # s'il y a un titre de style Title : Title = h1, Heading 1 = h2, etc.
+  verifier_hierarchie: true
+  avertir_h1_multiples: true
+  table_des_matieres: true
+  niveau_max_tdm: 2
+  gabarit: ../gabarits/page.html
+  langue: fr

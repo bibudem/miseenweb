@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="{{ langue }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ titre }}</title>
+  <style>
+    :root {
+      --texte: #1f2328;
+      --fond: #ffffff;
+      --accent: #0b5394;
+      --gris: #6a737d;
+      --bordure: #d9dde3;
+    }
+    body {
+      margin: 0;
+      padding: 2rem 1rem;
+      background: var(--fond);
+      color: var(--texte);
+      font: 1.05rem/1.6 Georgia, "Times New Roman", serif;
+    }
+    main { max-width: 46rem; margin: 0 auto; overflow-wrap: break-word; }
+    h1, h2, h3, h4 { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.25; }
+    h1 { font-size: 2rem; margin-top: 0; }
+    h2 { font-size: 1.5rem; border-bottom: 1px solid var(--bordure); padding-bottom: .25rem; margin-top: 2.5rem; }
+    h3 { font-size: 1.2rem; margin-top: 2rem; }
+    h1.titre-document { color: var(--accent); }
+    p.sous-titre { color: var(--gris); font-size: 1.15rem; margin-top: -.5rem; }
+    blockquote { margin: 1.5rem 0 1.5rem 2.5rem; text-align: justify; hyphens: auto; }
+    figcaption { font-size: .9rem; color: var(--gris); font-style: italic; }
+    img { max-width: 100%; height: auto; }
+    table { border-collapse: collapse; margin: 1.5rem 0; width: 100%; }
+    td, th { border: 1px solid var(--bordure); padding: .4rem .6rem; vertical-align: top; }
+    div.resume { background: #f4f6f8; padding: 1rem 1.25rem; border-radius: 4px; }
+    nav.table-des-matieres { background: #f4f6f8; padding: 1rem 1.5rem; border-radius: 4px; margin-bottom: 2rem;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: .95rem; }
+    nav.table-des-matieres .tdm-titre { font-weight: bold; margin: 0 0 .5rem; }
+    nav.table-des-matieres ol { padding-left: 1.25rem; margin: 0; }
+    nav.table-des-matieres a { color: var(--accent); text-decoration: none; }
+    nav.table-des-matieres a:hover { text-decoration: underline; }
+
+    /* Mise en page des articles de revue */
+    h1, h2 { text-align: center; }
+    main > p { text-align: justify; hyphens: auto; }
+    p.bandeau { background: #1f3864; color: #fff; padding: .3rem .6rem; text-align: left;
+      font-family: Arial, Helvetica, sans-serif; }
+    footer.pied-page { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--bordure);
+      color: var(--gris); font: .85rem/1.4 Arial, Helvetica, sans-serif; }
+    footer.pied-page p { display: flex; align-items: center; gap: .5rem; margin: .25rem 0; }
+    footer.pied-page span:last-child:not(:first-child) { margin-left: auto; white-space: nowrap; }
+    footer.pied-page img { height: 1.6rem; vertical-align: middle; }
+    table { table-layout: fixed; }
+    td, th { font-size: .9rem; padding: .3rem .4rem; hyphens: auto; overflow-wrap: break-word; }
+    th { font-weight: bold; text-align: center; vertical-align: middle; }
+    tr:first-child th { background: #8496b0; }
+    td p, th p { margin: 0; }
+    td p + p, th p + p { margin-top: .35rem; }
+  </style>
+</head>
+<body>
+<main>
+{{ tdm }}
+{{ contenu }}
+{{ pied }}
+</main>
+</body>
+</html>

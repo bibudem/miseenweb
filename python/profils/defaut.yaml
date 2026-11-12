@@ -1,0 +1,42 @@
+# Profil par défaut : appliqué quand aucun autre profil ne correspond.
+# Il sert aussi d'exemple commenté d'un profil simple. Le README décrit tous les réglages.
+
+nom: defaut
+description: Document Word générique utilisant les styles de titre intégrés de Word.
+
+detection:
+  defaut: true            # un seul profil doit porter cette marque
+  # Les autres profils utilisent plutôt les règles suivantes. Si le motif et les styles sont
+  # tous deux donnés, les deux conditions doivent être remplies.
+  # styles_presents: ["Titre de chapitre"]   # styles de paragraphe attendus
+  # mode_styles: un                           # « un » (au moins un, par défaut) ou « tous »
+  # motif_nom_fichier: "^these[-_]"           # expression régulière sur le nom du fichier
+  # priorite: 10                              # le nombre le plus élevé l'emporte (0 par défaut)
+
+mammoth:
+  # Carte de styles Mammoth. Syntaxe : https://github.com/mwilliamson/python-mammoth#writing-style-maps
+  # Les correspondances par défaut (Heading 1 -> h1, listes, gras, etc.) restent actives.
+  carte_styles: |
+    p[style-name='Title'] => h1.titre-document:fresh
+    p[style-name='Subtitle'] => p.sous-titre:fresh
+    p[style-name='Quote'] => blockquote:fresh
+    p[style-name='Intense Quote'] => blockquote.mise-en-relief:fresh
+    p[style-name='Caption'] => figcaption:fresh
+    r[style-name='Strong'] => strong
+    u => em
+  inclure_carte_defaut: true
+  images: incorporees      # « incorporees » (base64 dans le HTML) ou « extraites » (dossier à côté)
+  ignorer_images_vides: false
+
+normalisation:
+  active: false
+
+post_traitement:
+  supprimer_vides: true
+  identifiants_titres: true
+  decaler_niveaux: auto     # s'il y a un titre de style Title : Title = h1, Heading 1 = h2, etc.
+  verifier_hierarchie: true
+  avertir_h1_multiples: true
+  table_des_matieres: false
+  gabarit: ../gabarits/page.html   # sans gabarit : extrait de HTML à insérer dans un site
+  langue: fr

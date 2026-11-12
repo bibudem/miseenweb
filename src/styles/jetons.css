@@ -1,0 +1,158 @@
+/*
+ * Jetons de design, repris du site des Bibliothèques (dépôt bibweb, src/styles/tokens.css).
+ * Seuls les jetons dont la page a besoin sont repris, avec les mêmes noms et les mêmes valeurs.
+ * Le thème sombre suit la préférence du système, avec les valeurs du prototype de bibweb.
+ */
+
+:root {
+  /* ---- Couleurs de marque ---- */
+  --bleu-principal: #0057ac;
+  --bleu-principal-fonce: #003c78;
+  --bleu-fonce: #0b113a;
+  --bleu-100: #e5f0f8;
+  --bleu-200: #cce2f3;
+  --jaune: #ffca40;
+  --jaune-pale: #ffe8ac;
+  --rose-300: #fee1de;
+  --vert-fonce: #024244;
+  --blanc-casse: #f8fafb;
+  --blanc: #fff;
+
+  /* ---- Typographie ---- */
+  --police-sans: 'Figtree Variable', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --police-serif: 'Lora Variable', Georgia, serif;
+  --graisse-normale: 400;
+  --graisse-moyenne: 500;
+  --graisse-forte: 600;
+  --graisse-grasse: 700;
+
+  --texte-minuscule: 0.75rem;
+  --texte-tres-petit: 0.8125rem;
+  --texte-petit: 0.875rem;
+  --texte-reduit: 0.9375rem;
+  --texte-courant: 1rem;
+  --texte-moyen: 1.125rem;
+  --texte-grand: 1.25rem;
+  --texte-tres-grand: 1.5rem;
+
+  /* ---- Formes ---- */
+  --rayon-plein: 9999px;
+  --rayon-grand: 24px;
+  --rayon-moyen: 16px;
+  --rayon-petit: 12px;
+  --rayon-tres-petit: 8px;
+  --rayon-carte: var(--rayon-petit);
+
+  /* ---- Espacement ---- */
+  --espace-1: 0.5rem;
+  --espace-2: 1rem;
+  --espace-3: 1.5rem;
+  --espace-4: 2rem;
+  --espace-5: 2.5rem;
+  --espace-6: 3rem;
+  --espace-8: 4rem;
+  --espace-carte: 1.6667rem;
+  --espace-bande: 48px;
+  --gouttiere: 20px;
+  --largeur-max: 1200px;
+  --mesure-texte: 52ch;
+  --taille-cible: 44px;
+
+  /* ---- Mouvement (Material 3, comme bibweb) ---- */
+  --duree-courte-1: 50ms;
+  --duree-courte-3: 150ms;
+  --duree-courte-4: 200ms;
+  --duree-moyenne-1: 250ms;
+  --duree-moyenne-2: 300ms;
+  --duree-moyenne-4: 400ms;
+  --duree-longue-2: 500ms;
+  --courbe-standard: cubic-bezier(0.2, 0, 0, 1);
+  --courbe-standard-deceleree: cubic-bezier(0, 0, 0, 1);
+  --courbe-emphase: var(--courbe-standard);
+  --courbe-emphase-deceleree: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --duree-pulsation: 1.5s;
+}
+
+@media (width >= 900px) {
+  :root {
+    --gouttiere: 64px;
+    --espace-bande: 64px;
+  }
+}
+
+@media (width >= 1200px) {
+  :root {
+    --espace-bande: 96px;
+  }
+}
+
+/* ---- Rôles des couleurs, thème clair ---- */
+:root {
+  --couleur-texte: var(--bleu-fonce);
+  --couleur-texte-secondaire: #4a5160;
+  --couleur-fond: var(--blanc-casse);
+  --couleur-surface: var(--blanc);
+  --couleur-bordure: #c3ccd5;
+  --couleur-contour: #7d8696;
+  --couleur-lien: var(--bleu-principal);
+  --couleur-lien-survol: var(--bleu-principal-fonce);
+  --couleur-focus: var(--bleu-principal);
+  --couleur-sur-fonce: var(--blanc);
+  --couleur-fond-fort: var(--bleu-fonce);
+  --couleur-fond-fort-survol: var(--bleu-principal);
+  --couleur-accent: var(--bleu-principal);
+  --couleur-teinte: var(--bleu-100);
+  --couleur-teinte-forte: var(--bleu-200);
+  --couleur-teinte-jaune: var(--jaune-pale);
+
+  --ombre-1: 0 2px 1px -1px rgb(11 17 58 / 20%), 0 1px 1px 0 rgb(11 17 58 / 14%), 0 1px 3px 0 rgb(11 17 58 / 12%);
+  --ombre-2: 0 3px 5px -1px rgb(11 17 58 / 20%), 0 6px 10px 0 rgb(11 17 58 / 14%), 0 1px 18px 0 rgb(11 17 58 / 12%);
+
+  --alerte-fond: #eef4f7;
+  --alerte-succes-fond: #d6f0e2;
+  --alerte-succes-icone: var(--vert-fonce);
+  --alerte-info-fond: var(--bleu-200);
+  --alerte-info-icone: var(--bleu-principal);
+  --alerte-avertissement-fond: #ffe0c2;
+  --alerte-avertissement-icone: #b33410;
+  --alerte-erreur-fond: var(--rose-300);
+  --alerte-erreur-icone: #b10000;
+
+  color-scheme: light;
+}
+
+/* ---- Thème sombre ----
+   Posé par data-theme='sombre' sur <html>. Le thème clair est celui par défaut, même si le système
+   est en sombre : le bouton de l'en-tête permet de basculer (choix mémorisé). */
+:root[data-theme='sombre'] {
+  --couleur-texte: #e8ebf3;
+  --couleur-texte-secondaire: #b3bbcc;
+  --couleur-fond: #0e1322;
+  --couleur-surface: #182035;
+  --couleur-bordure: #3e4864;
+  --couleur-contour: #8a94ad;
+  --couleur-lien: #93c3f5;
+  --couleur-lien-survol: #c0dcf9;
+  --couleur-focus: #93c3f5;
+  --couleur-accent: #93c3f5;
+  --couleur-fond-fort: var(--bleu-principal);
+  --couleur-fond-fort-survol: var(--bleu-principal-fonce);
+  --couleur-teinte: #1d2b48;
+  --couleur-teinte-forte: #26375c;
+  --couleur-teinte-jaune: #3a3218;
+
+  --ombre-1: 0 2px 1px -1px rgb(0 0 0 / 40%), 0 1px 1px 0 rgb(0 0 0 / 28%), 0 1px 3px 0 rgb(0 0 0 / 24%);
+  --ombre-2: 0 3px 5px -1px rgb(0 0 0 / 40%), 0 6px 10px 0 rgb(0 0 0 / 28%), 0 1px 18px 0 rgb(0 0 0 / 24%);
+
+  --alerte-fond: #1a2338;
+  --alerte-succes-fond: #163a2b;
+  --alerte-succes-icone: #74d6a4;
+  --alerte-info-fond: #1d2f4b;
+  --alerte-info-icone: #93c3f5;
+  --alerte-avertissement-fond: #3a3016;
+  --alerte-avertissement-icone: #f2c654;
+  --alerte-erreur-fond: #46201e;
+  --alerte-erreur-icone: #ff9389;
+
+  color-scheme: dark;
+}

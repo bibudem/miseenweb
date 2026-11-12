@@ -1,0 +1,28 @@
+{
+  "name": "miseenweb-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MiseEnWeb dans le navigateur : convertit des documents Word en pages web accessibles, sans rien installer",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "synchroniser": "node scripts/synchroniser-python.mjs",
+    "preparer": "node scripts/preparer-pyodide.mjs",
+    "dev": "npm run preparer && vite",
+    "build": "npm run preparer && tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/figtree": "5.3.0",
+    "@fontsource-variable/lora": "5.3.0",
+    "@phosphor-icons/core": "2.1.1",
+    "pyodide": "314.0.7"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
+  }
+}

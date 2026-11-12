@@ -1,0 +1,43 @@
+# Profil « these » : documents rédigés avec un gabarit maison dont les titres
+# portent des styles personnalisés plutôt que les styles intégrés de Word.
+
+nom: these
+description: Thèse ou mémoire avec styles maison (Titre de chapitre, Titre de section...).
+
+detection:
+  styles_presents: ["Titre de chapitre", "Titre de section"]
+  mode_styles: un
+  motif_nom_fichier: null
+  priorite: 10
+
+mammoth:
+  # Un style maison inconnu de Mammoth produirait un avertissement
+  # « Unrecognised paragraph style » et un simple <p>; on le déclare ici.
+  carte_styles: |
+    p[style-name='Titre de thèse'] => h1.titre-document:fresh
+    p[style-name='Titre de chapitre'] => h1:fresh
+    p[style-name='Titre de section'] => h2:fresh
+    p[style-name='Titre de sous-section'] => h3:fresh
+    p[style-name='Résumé'] => div.resume > p:fresh
+    p[style-name='Citation longue'] => blockquote:fresh
+    p[style-name='Légende'] => figcaption:fresh
+    p[style-name='Note de bas de page'] => p.note:fresh
+    r[style-name='Terme défini'] => dfn
+  inclure_carte_defaut: true
+  images: extraites
+
+normalisation:
+  active: false
+
+post_traitement:
+  supprimer_vides: true
+  identifiants_titres: true
+  decaler_niveaux: auto     # Title/Titre de thèse = h1 de la page, Heading 1 = h2, etc.
+  verifier_hierarchie: true
+  avertir_h1_multiples: true
+  table_des_matieres: true
+  niveau_max_tdm: 3
+  titre_tdm: Table des matières
+  tdm_dans_fragment: true
+  gabarit: ../gabarits/page.html
+  langue: fr

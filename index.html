@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="fr-CA">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Convertir un document Word en page web accessible · MiseEnWeb</title>
+    <meta name="description" content="Convertissez vos documents Word en pages web accessibles, directement dans le navigateur et sans installation. Un outil gratuit des Bibliothèques de l'UdeM." />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Les bibliothèques de l'Université de Montréal" />
+    <link rel="canonical" href="%URL_SITE%" />
+
+    <!-- Partage sur les réseaux sociaux (Open Graph, X / Twitter) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_CA" />
+    <meta property="og:site_name" content="Les bibliothèques de l'Université de Montréal" />
+    <meta property="og:title" content="MiseEnWeb : du document Word à la page web accessible" />
+    <meta property="og:description" content="Convertissez vos documents Word en pages web accessibles, directement dans le navigateur et sans installation." />
+    <meta property="og:url" content="%URL_SITE%" />
+    <meta property="og:image" content="%URL_SITE%partage.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="MiseEnWeb, du document Word à la page web accessible. Les bibliothèques de l'Université de Montréal." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@bibUdeM" />
+    <meta name="twitter:title" content="MiseEnWeb : du document Word à la page web accessible" />
+    <meta name="twitter:description" content="Convertissez vos documents Word en pages web accessibles, directement dans le navigateur et sans installation." />
+    <meta name="twitter:image" content="%URL_SITE%partage.jpg" />
+    <meta name="twitter:image:alt" content="MiseEnWeb, du document Word à la page web accessible. Les bibliothèques de l'Université de Montréal." />
+
+    <!-- Données structurées : une application web gratuite, publiée par les Bibliothèques -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MiseEnWeb",
+        "alternateName": "Mise en Web",
+        "url": "%URL_SITE%",
+        "image": "%URL_SITE%partage.jpg",
+        "description": "Convertit des documents Word (.docx) en pages web accessibles, directement dans le navigateur. Les fichiers restent sur l'ordinateur de la personne.",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Tout navigateur récent",
+        "browserRequirements": "JavaScript et WebAssembly",
+        "inLanguage": "fr-CA",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CAD" },
+        "license": "https://opensource.org/licenses/MIT",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Les bibliothèques de l'Université de Montréal",
+          "url": "https://bib.umontreal.ca"
+        }
+      }
+    </script>
+    <meta name="color-scheme" content="light" />
+    <!-- Thème appliqué avant l'affichage, pour éviter un éclair de la mauvaise couleur :
+         clair par défaut, même si le système est en sombre ; sombre seulement si on l'a choisi -->
+    <script>
+      ;(function () {
+        var choix = null
+        try {
+          choix = localStorage.getItem('miseenweb-theme')
+        } catch (e) {}
+        document.documentElement.dataset.theme = choix === 'sombre' ? 'sombre' : 'clair'
+      })()
+    </script>
+    <meta name="theme-color" content="#0b113a" />
+    <!-- Favicon des Bibliothèques, comme sur bib.umontreal.ca -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/icone-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="lien-evitement" href="#outil">Aller à l'outil de conversion</a>
+
+    <header class="entete">
+      <div class="rangee">
+        <div class="marques">
+          <a class="marque" href="https://bib.umontreal.ca">
+            <img class="logo-clair" src="/logo-bib.svg" alt="Les bibliothèques, Université de Montréal" width="1080" height="350" />
+            <img class="logo-sombre" src="/logo-bib-blanc.svg" alt="Les bibliothèques, Université de Montréal" width="1080" height="350" />
+          </a>
+          <span class="separateur" aria-hidden="true"></span>
+          <a class="nom-outil" href="./">Mise<span class="en">En</span>Web<span class="visuellement-masque"> – Accueil</span></a>
+        </div>
+        <nav class="navigation" aria-label="Navigation de la page">
+          <ul>
+            <li><a href="#fonctionnement">Fonctionnement</a></li>
+            <li><a href="#questions">Questions</a></li>
+            <li class="lien-code-source">
+              <a href="https://github.com/bibudem/miseenweb" rel="noopener">
+                Code source<span class="icone" data-icone="arrow-square-out" aria-hidden="true"></span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <button type="button" class="bascule-theme" data-bascule-theme aria-label="Passer au thème sombre">
+          <span class="bascule-piste" aria-hidden="true">
+            <span class="icone icone-soleil" data-icone="sun"></span>
+            <span class="icone icone-lune" data-icone="moon"></span>
+            <span class="bascule-pastille"></span>
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="banniere" aria-labelledby="titre-page">
+        <div class="conteneur">
+          <div class="titre-groupe">
+            <div>
+              <h1 id="titre-page">Du document Word à la page web accessible</h1>
+              <p class="chapeau">
+                Déposez vos articles, thèses ou rapports. MiseEnWeb en fait des pages HTML structurées, prêtes à
+                publier, sans rien installer.
+              </p>
+            </div>
+            <img class="logo-outil" src="/logo.svg" alt="" width="220" height="220" />
+          </div>
+        </div>
+      </section>
+
+      <section id="outil" class="outil conteneur" aria-labelledby="titre-outil">
+        <div class="carte carte-outil">
+          <div class="entete-outil">
+            <h2 id="titre-outil">Convertir des documents</h2>
+            <p class="etat-moteur" role="status" data-etat="chargement">
+              <span class="indicateur" aria-hidden="true"></span>
+              <span data-texte-etat>Préparation du convertisseur…</span>
+            </p>
+          </div>
+
+          <ol class="etapes">
+            <li data-etape="ajouter" aria-current="step"><span class="numero">1</span>Ajouter</li>
+            <li data-etape="verifier"><span class="numero">2</span>Vérifier</li>
+            <li data-etape="convertir"><span class="numero">3</span>Convertir</li>
+          </ol>
+
+          <div class="depot" data-depot>
+            <span class="depot-icone" data-icone="file-doc" aria-hidden="true"></span>
+            <p class="depot-titre">
+              <span class="si-pointeur">Glissez vos documents Word ici</span>
+              <span class="si-tactile">Choisissez vos documents Word</span>
+            </p>
+            <p class="depot-aide">Fichiers .docx, un ou plusieurs à la fois.</p>
+            <div class="depot-actions">
+              <button type="button" class="bouton bouton-plein" data-choisir-fichiers>
+                <span class="icone" data-icone="upload-simple" aria-hidden="true"></span>Choisir des fichiers
+              </button>
+              <button type="button" class="bouton bouton-contour si-pointeur" data-choisir-dossier>
+                <span class="icone" data-icone="folder-simple" aria-hidden="true"></span>Choisir un dossier
+              </button>
+            </div>
+            <button type="button" class="bouton bouton-texte" data-exemples>
+              <span class="icone" data-icone="sparkle" aria-hidden="true"></span>Pas de document sous la main ? Essayer avec des exemples
+            </button>
+            <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden data-entree-fichiers aria-label="Choisir des fichiers" />
+            <input type="file" webkitdirectory hidden data-entree-dossier aria-label="Choisir un dossier" />
+          </div>
+
+          <div class="liste" data-bloc-liste hidden>
+            <div class="liste-entete">
+              <h3>Documents <span class="compte" data-compte></span></h3>
+              <button type="button" class="bouton bouton-texte" data-vider>
+                <span class="icone" data-icone="trash" aria-hidden="true"></span>Vider la liste
+              </button>
+            </div>
+            <p class="aide">Le type de chaque document est reconnu automatiquement. Changez-le s'il ne convient pas.</p>
+            <ul class="fichiers" data-fichiers></ul>
+          </div>
+
+          <div class="reglage">
+            <label for="revue">Revue</label>
+            <div class="champ-liste">
+              <select id="revue" aria-describedby="aide-revue" disabled></select>
+              <span class="icone" data-icone="caret-down" aria-hidden="true"></span>
+            </div>
+            <p id="aide-revue" class="aide">
+              En détection automatique, la revue est reconnue par l'ISSN du pied de page et par le nom du
+              fichier.
+            </p>
+          </div>
+
+          <div class="barre-actions">
+            <p class="annonce" aria-live="polite" data-annonce></p>
+            <button type="button" class="bouton bouton-plein bouton-grand" data-convertir disabled>
+              <span data-libelle-convertir>Convertir</span>
+              <span class="icone icone-fin" data-icone="arrow-right" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div class="progression" data-progression hidden>
+            <p data-texte-progression role="status"></p>
+            <progress max="1" value="0" aria-label="Progression de la conversion"></progress>
+          </div>
+        </div>
+
+        <div class="carte carte-resultats" data-resultats hidden>
+          <div class="resultats-entete">
+            <div>
+              <h2 id="titre-resultats" tabindex="-1">Résultat</h2>
+              <ul class="bilan" data-bilan></ul>
+            </div>
+            <div class="resultats-actions">
+              <a class="bouton bouton-plein" data-telecharger-principal>
+                <span class="icone" data-icone="download-simple" aria-hidden="true"></span><span data-libelle-telecharger>Télécharger tout (.zip)</span>
+              </a>
+              <a class="bouton bouton-contour" data-telecharger-zip download="miseenweb.zip" hidden>
+                <span class="icone" data-icone="file-zip" aria-hidden="true"></span>Tout télécharger (.zip)
+              </a>
+              <a class="bouton bouton-contour" data-rapport target="_blank" rel="noopener">
+                <span class="icone" data-icone="list-checks" aria-hidden="true"></span>Voir le rapport<span class="visuellement-masque"> (nouvel onglet)</span>
+              </a>
+            </div>
+          </div>
+          <p class="aide" data-aide-resultats></p>
+          <ul class="resultats" data-liste-resultats></ul>
+          <div class="recommencer">
+            <button type="button" class="bouton bouton-texte" data-recommencer>
+              <span class="icone" data-icone="arrow-counter-clockwise" aria-hidden="true"></span>Convertir un autre document
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="fonctionnement" class="bande" aria-labelledby="titre-fonctionnement">
+        <div class="conteneur" data-revelation="zone">
+          <h2 id="titre-fonctionnement">Comment ça fonctionne</h2>
+          <p class="intro">
+            MiseEnWeb lit la structure de votre document plutôt que son apparence. Il reconnaît la sorte de
+            document, corrige ce que Word cache, puis vous dit ce qu'il faut vérifier.
+          </p>
+          <ol class="grille-cartes" data-revelation="groupe">
+            <li class="carte carte-etape">
+              <span class="pastille" data-icone="sliders-horizontal" aria-hidden="true"></span>
+              <h3>Un réglage par sorte de document</h3>
+              <p>
+                Thèse, rapport, article de revue : chaque sorte de document a ses propres réglages. MiseEnWeb
+                choisit les bons d'après le nom du fichier, ses styles et l'ISSN de la revue.
+              </p>
+            </li>
+            <li class="carte carte-etape">
+              <span class="pastille" data-icone="tree-structure" aria-hidden="true"></span>
+              <h3>Une structure réparée</h3>
+              <p>
+                Les titres faits à la main deviennent de vrais titres, les entêtes de tableaux sont marqués, les
+                adresses deviennent cliquables. Votre document d'origine n'est jamais modifié.
+              </p>
+            </li>
+            <li class="carte carte-etape">
+              <span class="pastille" data-icone="list-checks" aria-hidden="true"></span>
+              <h3>Des points à vérifier</h3>
+              <p>
+                Images sans description, titres qui sautent un niveau, liens vagues : chaque problème est
+                expliqué, avec la correction à faire dans Word.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="bande bande-teinte" aria-labelledby="titre-confidentialite">
+        <div class="conteneur confidentialite" data-revelation="zone">
+          <span class="pastille pastille-grande" data-icone="lock-simple" aria-hidden="true"></span>
+          <div>
+            <h2 id="titre-confidentialite">Vos documents restent chez vous</h2>
+            <p>
+              La conversion se fait entièrement dans votre navigateur. Aucun fichier n'est envoyé à un serveur,
+              ni aux Bibliothèques, ni à un service externe. Fermer la page efface tout.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="questions" class="bande" aria-labelledby="titre-questions">
+        <div class="conteneur conteneur-etroit" data-revelation="zone">
+          <h2 id="titre-questions">Questions fréquentes</h2>
+          <div class="questions" data-revelation="groupe">
+            <details class="volet-anime">
+              <summary>Le résultat est-il prêt à publier ?</summary>
+              <p>
+                Presque toujours, mais il faut le vérifier. Ouvrez « Aperçu et vérification » : le plan du
+                document et la liste des points à vérifier vous mènent directement aux endroits concernés.
+              </p>
+            </details>
+            <details class="volet-anime">
+              <summary>Comment publier la page dans StudiUM ou un autre site ?</summary>
+              <p>
+                Utilisez « Copier le code », puis collez-le dans l'éditeur du site. Dans un éditeur visuel, le
+                texte arrive mis en forme ; dans un champ de code HTML, c'est le code qui est collé.
+              </p>
+            </details>
+            <details class="volet-anime" id="installer">
+              <summary>Puis-je installer MiseEnWeb comme une application ?</summary>
+              <div class="reponse">
+                <p>
+                  Oui. Installée, MiseEnWeb s'ouvre dans sa propre fenêtre et fonctionne sans connexion. Avec
+                  Chrome ou Edge, vous pouvez aussi ouvrir un document Word directement avec elle : clic droit
+                  sur le fichier, puis « Ouvrir avec », puis « MiseEnWeb ».
+                </p>
+                <p class="installer-action" data-installer-zone hidden>
+                  <button type="button" class="bouton bouton-plein bouton-compact" data-installer>
+                    <span class="icone" data-icone="download-simple" aria-hidden="true"></span>Installer l'application
+                  </button>
+                </p>
+                <p class="installer-action" data-deja-installee hidden>
+                  <span class="puce statut-ok">MiseEnWeb est installée sur cet appareil.</span>
+                </p>
+                <ul class="installer-etapes">
+                  <li>
+                    <strong>Chrome ou Edge</strong>, sous Windows, macOS, Linux ou ChromeOS : icône « Installer » au
+                    bout de la barre d'adresse, ou menu <span class="touche" role="img" aria-label="trois points verticaux" data-icone-gras="dots-three-vertical"></span>, puis « Installer MiseEnWeb ».
+                  </li>
+                  <li><strong>Safari sur Mac</strong> : menu « Fichier », puis « Ajouter au Dock ».</li>
+                  <li><strong>iPhone et iPad</strong> : bouton « Partager », puis « Sur l'écran d'accueil ».</li>
+                  <li><strong>Android</strong> : menu <span class="touche" role="img" aria-label="trois points verticaux" data-icone-gras="dots-three-vertical"></span>, puis « Installer l'application ».</li>
+                  <li><strong>Firefox</strong> n'installe pas d'application sur ordinateur : utilisez la page dans un onglet.</li>
+                </ul>
+              </div>
+            </details>
+            <details class="volet-anime">
+              <summary>Pourquoi le premier chargement prend-il quelques secondes ?</summary>
+              <p>
+                La page télécharge le convertisseur, environ 15 Mo, pour qu'il fonctionne dans votre navigateur.
+                Il est ensuite gardé sur votre appareil : les visites suivantes sont presque instantanées, et la
+                page fonctionne même sans connexion.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Pas de révélation au défilement : tout en bas de la page, le pied de page n'atteindrait
+         jamais le seuil d'apparition à certaines hauteurs de fenêtre (comme dans bibweb, il reste fixe) -->
+    <footer class="pied">
+      <div class="conteneur rangee-pied">
+        <p class="pied-marque">
+          <img src="/logo.svg" alt="" width="32" height="32" />
+          <span><strong>Mise<span class="en">En</span>Web</strong> · Un outil <a href="https://github.com/bibudem/miseenweb/blob/main/LICENSE" rel="noopener">libre</a> des Bibliothèques de l'Université de Montréal</span>
+        </p>
+        <ul class="pied-liens">
+          <li><a href="https://github.com/bibudem/miseenweb" rel="noopener">Code source</a></li>
+          <li><a href="https://github.com/bibudem/miseenweb/blob/main/LICENSE" rel="noopener">Licence MIT</a></li>
+          <li><a href="https://github.com/bibudem/miseenweb/blob/main/DECLARATION-IA.md" rel="noopener">Utilisation de l'IA</a></li>
+        </ul>
+      </div>
+    </footer>
+
+    <dialog class="apercu" data-apercu aria-labelledby="titre-apercu">
+      <div class="apercu-entete">
+        <h2 id="titre-apercu" data-titre-apercu>Aperçu</h2>
+        <div class="apercu-actions">
+          <button type="button" class="bouton bouton-contour" data-copier-apercu>
+            <span class="icone" data-icone="copy" aria-hidden="true"></span>Copier le code
+          </button>
+          <a class="bouton bouton-contour" data-telecharger-page>
+            <span class="icone" data-icone="download-simple" aria-hidden="true"></span>Télécharger la page
+          </a>
+          <button type="button" class="bouton-icone" data-fermer aria-label="Fermer l'aperçu">
+            <span class="icone" data-icone="x" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+      <div class="apercu-corps">
+        <aside class="apercu-panneau" aria-label="Vérification">
+          <section data-section-verifier>
+            <h3>À vérifier <span class="compte" data-compte-verifier></span></h3>
+            <ul class="points" data-points></ul>
+          </section>
+          <section>
+            <h3>Plan du document</h3>
+            <p class="aide">Si le plan est juste, la structure de la page l'est aussi.</p>
+            <ol class="plan" data-plan></ol>
+          </section>
+        </aside>
+        <!-- Sans « allow-scripts », la page produite ne peut rien exécuter ; « allow-same-origin »
+             permet seulement à cette page-ci d'y mener aux endroits à vérifier. -->
+        <iframe sandbox="allow-same-origin" title="Page produite" data-cadre></iframe>
+      </div>
+    </dialog>
+
+    <p class="toast" role="status" data-toast hidden></p>
+
+    <noscript>
+      <p class="sans-script">MiseEnWeb a besoin de JavaScript pour convertir vos documents dans le navigateur.</p>
+    </noscript>
+  </body>
+</html>

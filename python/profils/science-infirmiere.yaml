@@ -1,0 +1,96 @@
+# Profil de la revue : un seul fichier, avec une variante par sorte de document.
+# Les réglages de « commun » valent pour toutes les variantes.
+# Les documents Word ne sont jamais modifiés.
+
+nom: science-infirmiere
+revue: Science infirmière et pratiques en santé
+issn: "2561-7516"
+
+commun:
+  mammoth:
+    carte_styles: |
+      p[style-name='Title'] => h1.titre-document:fresh
+      p[style-name='Subtitle'] => p.sous-titre:fresh
+      p[style-name='Quote'] => blockquote:fresh
+      p[style-name='Intense Quote'] => blockquote.mise-en-relief:fresh
+      p[style-name='Caption'] => figcaption:fresh
+      r[style-name='Strong'] => strong
+      u => em
+    inclure_carte_defaut: true
+    images: incorporees
+    ignorer_images_vides: false
+  post_traitement:
+    corriger_faux_titres: true
+    entetes_tableaux: true
+    liens_automatiques: true
+    supprimer_vides: true
+    identifiants_titres: true
+    decaler_niveaux: auto
+    verifier_hierarchie: true
+    avertir_h1_multiples: true
+    table_des_matieres: false
+    gabarit: ../gabarits/science-infirmiere.html
+    langue: fr
+
+variantes:
+  mise-en-page:
+    description: Article mis en page, dont le titre est en style Normal, gras, 16 points ou plus.
+    detection:
+      motif_nom_fichier: "mise_en_page"
+      priorite: 20
+    normalisation:
+      active: true
+      regles:
+        - nom: titre-article
+          styles_source: ["Normal"]
+          gras: true
+          taille_min: 16
+          style_cible: "Title"
+        - nom: citation-longue
+          styles_source: ["Normal"]
+          retrait_min: 20           # points
+          style_cible: "Quote"
+    post_traitement:
+      bandeau_avant_titre: true
+      pied_page: true
+
+  manuscrit:
+    description: Manuscrit, dont les titres sont en gras et reconnus par leur nom ou leur numéro.
+    detection:
+      motif_nom_fichier: "manuscrit"
+      priorite: 20
+    normalisation:
+      active: true
+      regles:                       # évaluées dans l'ordre; la première qui s'applique gagne
+        - nom: grandes-sections
+          styles_source: ["Normal", "Normal (Web)"]
+          gras: true
+          motif: "(?i)^(résumé|abstract|introduction|méthodes?|résultats|discussion|conclusion|références|annexe \\d+)\\s*$"
+          style_cible: "Heading 1"
+        - nom: sections-numerotees-niveau-2
+          styles_source: ["Normal", "Normal (Web)"]
+          gras: true
+          longueur_max: 120
+          motif: "^\\d+\\.\\d+\\s"
+          style_cible: "Heading 3"
+        - nom: sections-numerotees-niveau-1
+          styles_source: ["Normal", "Normal (Web)"]
+          gras: true
+          longueur_max: 120
+          motif: "^\\d+\\.\\s"
+          style_cible: "Heading 2"
+        - nom: sous-sections
+          styles_source: ["Normal", "Normal (Web)"]
+          gras: true
+          motif: "(?i)^(devis de l.étude.*|sites? d.étude|personnes participantes|collecte des données|analyse des données|limites)\\s*$"
+          style_cible: "Heading 2"
+        - nom: titre-article
+          styles_source: ["Normal"]
+          gras: true
+          taille_min: 14
+          premier_seulement: true
+          style_cible: "Title"
+        - nom: citation-longue
+          styles_source: ["Normal", "Normal (Web)", "paragraph"]
+          retrait_min: 20           # points
+          style_cible: "Quote"

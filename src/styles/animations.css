@@ -1,0 +1,74 @@
+/* Repris tel quel du site des Bibliothèques (dépôt bibweb, src/styles/animations.css). */
+/*
+ * Mouvement partagé : apparitions au défilement des vitrines.
+ * Règles et raisons : docs/CONVENTIONS.md, section « Mouvement ».
+ *
+ * L'état par défaut est l'état final : seule la classe `a-reveler`, posée
+ * par src/lib/animations.ts sur ce qui est sous la ligne de flottaison,
+ * masque un élément. Sans JS, rien n'est masqué.
+ *
+ * `translate` et `scale` (propriétés individuelles) plutôt que `transform` :
+ * elles se composent avec le transform propre d'une carte (cartes à
+ * révélation, survol) au lieu de l'écraser.
+ */
+
+:root {
+  /* Légère translation : assez pour donner une direction, pas un trajet */
+  --revelation-decalage: 0.75rem;
+  --revelation-duree: var(--duree-moyenne-4);
+  /* Décélération forte : l'élément arrive vite et se pose */
+  --revelation-courbe: var(--courbe-emphase-deceleree);
+}
+
+.a-reveler {
+  opacity: 0;
+  translate: 0 var(--revelation-decalage);
+}
+
+/* Diapositives d'un carrousel : la piste défile en x, donc une translation
+   verticale y créerait un débordement (barre de défilement fugace). Une
+   échelle légère reste dans la boîte de la diapositive. */
+[data-revelation-mouvement='echelle'] > .a-reveler {
+  translate: none;
+  scale: 0.97;
+}
+
+/* :root pour l'emporter sur la transition propre (scopée) d'une carte ;
+   elle revient dès que le script retire les classes. */
+:root .a-reveler.revele {
+  opacity: 1;
+  translate: none;
+  scale: none;
+  transition:
+    opacity var(--revelation-duree) var(--revelation-courbe),
+    translate var(--revelation-duree) var(--revelation-courbe),
+    scale var(--revelation-duree) var(--revelation-courbe);
+  transition-delay: calc(var(--rang, 0) * var(--duree-courte-1));
+}
+
+/* Ceinture et bretelles : la classe n'est pas posée dans ces cas, mais rien
+   ne doit rester masqué si elle l'était. */
+@media (prefers-reduced-motion: reduce) {
+  .a-reveler {
+    opacity: 1 !important;
+    translate: none !important;
+    scale: none !important;
+  }
+}
+
+@media print {
+  .a-reveler {
+    opacity: 1 !important;
+    translate: none !important;
+    scale: none !important;
+    transition: none !important;
+  }
+}
+
+/* Une cible d'ancre ou un élément focalisé se voit tout de suite, même si
+   le script n'a pas encore réagi */
+.a-reveler:is(:target, :has(:target), :focus-within) {
+  opacity: 1;
+  translate: none;
+  scale: none;
+}

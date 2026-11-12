@@ -1,0 +1,70 @@
+{
+  "id": "./",
+  "name": "MiseEnWeb · Les bibliothèques de l'UdeM",
+  "short_name": "MiseEnWeb",
+  "description": "Convertit des documents Word en pages web accessibles, dans le navigateur. Vos fichiers restent sur votre ordinateur.",
+  "lang": "fr-CA",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafb",
+  "theme_color": "#0b113a",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icone-masquable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"]
+      },
+      "icons": [{ "src": "icone-192.png", "sizes": "192x192", "type": "image/png" }],
+      "launch_type": "single-client"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "screenshots": [
+    {
+      "src": "captures/bureau-documents.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Déposez vos documents Word : leur type est reconnu automatiquement"
+    },
+    {
+      "src": "captures/bureau-resultats.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Résultat : chaque point à vérifier est expliqué, avec la correction à faire dans Word"
+    },
+    {
+      "src": "captures/bureau-verification.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Aperçu et vérification : le plan du document et les points à vérifier, cliquables"
+    },
+    {
+      "src": "captures/mobile-accueil.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "MiseEnWeb sur téléphone"
+    },
+    {
+      "src": "captures/mobile-resultats.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Les résultats et leurs remarques, sur téléphone"
+    }
+  ]
+}
