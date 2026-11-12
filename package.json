@@ -2,7 +2,7 @@
   "name": "miseenweb-web",
   "private": true,
   "version": "0.1.0",
-  "description": "MiseEnWeb dans le navigateur : convertit des documents Word en pages web accessibles, sans rien installer",
+  "description": "MiseEnWeb convertit des documents DOCX en pages web HTML accessibles, à partir du navigateur.",
   "type": "module",
   "license": "MIT",
   "engines": {
