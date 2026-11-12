@@ -1,7 +1,5 @@
 """Pont entre la page web et le convertisseur docx2html.
 
-Ce module est propre à la version web : il n'est pas copié du dépôt miseenweb.
-
 - Choix du profil : détection automatique par défaut (règles des profils, et ISSN du pied
   de page qui limite le choix à la revue reconnue), revue imposée dans le menu « Revue »,
   ou type de document choisi à la main pour un fichier.

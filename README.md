@@ -1,14 +1,13 @@
 # MiseEnWeb, version web
 
 Convertit des documents Word (`.docx`) en pages web accessibles, directement dans le navigateur.
-Rien à installer, et les documents ne quittent jamais l'ordinateur.
+Aucune installation n'est requise, et les documents ne quittent jamais l'ordinateur.
 
-Le convertisseur est celui du dépôt [`miseenweb`](https://github.com/bibudem/miseenweb). Il tourne
-dans la page grâce à [Pyodide](https://pyodide.org) (Python en WebAssembly).
+Le convertisseur est écrit en Python. [Pyodide](https://pyodide.org) l'exécute dans le navigateur.
 
 ## Démarrer
 
-Node 22.12 ou plus récent.
+Requiert Node 22.12 ou une version plus récente.
 
 ```sh
 npm install
@@ -21,28 +20,21 @@ Au premier lancement, Pyodide et les bibliothèques Python (16 Mo) sont téléch
 
 ## Organisation
 
-- `index.html` et `src/` : la page, son style et le worker qui fait tourner Python.
+- `index.html` et `src/` : la page, son style et le *worker* qui exécute Python.
 - `python/pont.py` : le lien entre la page et le convertisseur.
-- `python/docx2html/`, `profils/`, `gabarits/` : copies du dépôt `miseenweb`, à ne pas modifier.
-
-## Mettre à jour le convertisseur
-
-Après un changement dans le dépôt `miseenweb` :
-
-```sh
-npm run synchroniser
-```
+- `python/docx2html/`, `profils/`, `gabarits/` : le convertisseur, ses profils et ses gabarits.
 
 ## Publier
 
-Chaque poussée sur `main` publie le site sur GitHub Pages. Pour l'activer une fois : **Settings**,
-**Pages**, puis **Source** : **GitHub Actions**.
+Le site est publié sur GitHub Pages à chaque envoi (`git push`) sur la branche `main`. La publication
+s'active une seule fois, dans les réglages du dépôt : **Settings**, **Pages**, puis **Source** :
+**GitHub Actions**.
 
 ## Licence
 
 © Les bibliothèques de l'Université de Montréal. Code sous licence MIT, documentation et logo de
-MiseEnWeb sous CC BY 4.0. Les logos et le favicon des Bibliothèques ne sont couverts par aucune de ces
-licences. Le détail, avec les composants tiers, est dans [`LICENCES.md`](LICENCES.md).
+MiseEnWeb sous CC BY 4.0. Les logos et la favoricône des Bibliothèques ne sont couverts par aucune de ces
+licences. Le détail, y compris les composants tiers, figure dans [`LICENCES.md`](LICENCES.md).
 
 L'utilisation de l'intelligence artificielle générative est décrite dans
 [`DECLARATION-IA.md`](DECLARATION-IA.md).

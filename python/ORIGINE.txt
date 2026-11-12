@@ -1,2 +1,0 @@
-Copié du dépôt miseenweb, commit ca39bae.
-Ne pas modifier : lancer « npm run synchroniser ».
