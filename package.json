@@ -1,5 +1,5 @@
 {
-  "name": "miseenweb-web",
+  "name": "miseenweb",
   "private": true,
   "version": "0.1.0",
   "description": "MiseEnWeb convertit des documents DOCX en pages web HTML accessibles, à partir du navigateur.",
