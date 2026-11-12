@@ -1,9 +1,13 @@
+<p align="center"><img src="public/logo.svg" alt="Logo de MiseEnWeb" width="96"></p>
+
 # MiseEnWeb, version web
 
 Convertit des documents Word (`.docx`) en pages web accessibles, directement dans le navigateur.
 Aucune installation n'est requise, et les documents ne quittent jamais l'ordinateur.
 
 Le convertisseur est écrit en Python. [Pyodide](https://pyodide.org) l'exécute dans le navigateur.
+
+![Capture d'écran de MiseEnWeb : la zone où déposer les documents Word](public/captures/bureau-documents.png)
 
 ## Démarrer
 
