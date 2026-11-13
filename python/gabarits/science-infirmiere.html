@@ -27,10 +27,10 @@
     h1.titre-document { color: var(--accent); }
     p.sous-titre { color: var(--gris); font-size: 1.15rem; margin-top: -.5rem; }
     blockquote { margin: 1.5rem 0 1.5rem 2.5rem; text-align: justify; hyphens: auto; }
-    figcaption { font-size: .9rem; color: var(--gris); font-style: italic; }
+    figcaption { margin: 1rem 0; }
     img { max-width: 100%; height: auto; }
     table { border-collapse: collapse; margin: 1.5rem 0; width: 100%; }
-    td, th { border: 1px solid var(--bordure); padding: .4rem .6rem; vertical-align: top; }
+    td, th { padding: .4rem .6rem; vertical-align: top; }
     div.resume { background: #f4f6f8; padding: 1rem 1.25rem; border-radius: 4px; }
     nav.table-des-matieres { background: #f4f6f8; padding: 1rem 1.5rem; border-radius: 4px; margin-bottom: 2rem;
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: .95rem; }
@@ -49,10 +49,11 @@
     footer.pied-page p { display: flex; align-items: center; gap: .5rem; margin: .25rem 0; }
     footer.pied-page span:last-child:not(:first-child) { margin-left: auto; white-space: nowrap; }
     footer.pied-page img { height: 1.6rem; vertical-align: middle; }
-    table { table-layout: fixed; }
-    td, th { font-size: .9rem; padding: .3rem .4rem; hyphens: auto; overflow-wrap: break-word; }
-    th { font-weight: bold; text-align: center; vertical-align: middle; }
-    tr:first-child th { background: #8496b0; }
+    /* Tableaux au format APA, 7e édition : filets horizontaux en haut, sous l'entête et en bas,
+       aucune bordure verticale, entêtes centrés en maigre. La largeur des colonnes suit le contenu. */
+    table { border-top: 1.5px solid var(--texte); border-bottom: 1.5px solid var(--texte); }
+    td, th { font-size: .9rem; padding: .3rem .4rem; overflow-wrap: break-word; }
+    th { font-weight: normal; text-align: center; vertical-align: bottom; border-bottom: 1px solid var(--texte); }
     td p, th p { margin: 0; }
     td p + p, th p + p { margin-top: .35rem; }
   </style>

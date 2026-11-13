@@ -3,3 +3,4 @@ dist/
 # Produit par « npm run preparer » : Pyodide et les bibliothèques Python
 public/pyodide/
 .DS_Store
+__pycache__/
