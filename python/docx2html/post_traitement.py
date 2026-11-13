@@ -12,6 +12,7 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   classe_titre_document : classe du h1 qui représente le titre du document
   corriger_faux_titres: change en <p> les titres vides et ceux placés dans un tableau
   entetes_tableaux    : change en <th> les cellules des lignes d'entête
+  notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
   bandeau_avant_titre : donne la classe « bandeau » au paragraphe qui précède le titre
   liens_automatiques  : rend cliquables les adresses web et les courriels
   supprimer_vides     : retire les <p> vides
@@ -184,6 +185,39 @@ def _marquer_entetes(soupe: BeautifulSoup) -> int:
     return n
 
 
+def _sortir_notes_tableaux(soupe: BeautifulSoup) -> int:
+    """Sort du tableau la note écrite dans sa dernière ligne.
+
+    Une dernière ligne faite d'une seule cellule, fusionnée sur toute la largeur, n'est pas
+    une donnée : c'est une note. Son contenu devient des paragraphes « note-tableau »,
+    placés après le tableau.
+    """
+    n = 0
+    for tableau in soupe.find_all("table"):
+        lignes = tableau.find_all("tr")
+        if len(lignes) < 3:
+            continue
+        largeur = max(sum(int(c.get("colspan", 1)) for c in ligne.find_all(["td", "th"])) for ligne in lignes)
+        cellules = lignes[-1].find_all(["td", "th"])
+        if largeur < 2 or len(cellules) != 1 or int(cellules[0].get("colspan", 1)) != largeur:
+            continue
+        cellule = cellules[0]
+        if not cellule.find("p"):       # texte placé directement dans la cellule
+            cellule.name = "p"
+            del cellule["colspan"]
+            paragraphes = [cellule.extract()]
+        else:
+            paragraphes = [p.extract() for p in cellule.find_all("p", recursive=False)]
+        lignes[-1].decompose()
+        repere = tableau
+        for p in paragraphes:
+            p["class"] = p.get("class", []) + ["note-tableau"]
+            repere.insert_after(p)
+            repere = p
+        n += 1
+    return n
+
+
 def _marquer_bandeau(soupe: BeautifulSoup, classe_titre_document: str) -> bool:
     """Donne la classe « bandeau » au paragraphe de texte qui précède le titre du document."""
     titre = soupe.find("h1", class_=classe_titre_document)
@@ -253,6 +287,9 @@ def appliquer(
 
     if config.get("corriger_faux_titres", False):   # avant la suppression des <p> vides
         _corriger_faux_titres(soupe)
+
+    if config.get("notes_tableaux", False):          # avant le marquage des entêtes
+        _sortir_notes_tableaux(soupe)
 
     if config.get("entetes_tableaux", False):
         _marquer_entetes(soupe)

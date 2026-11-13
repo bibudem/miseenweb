@@ -22,6 +22,7 @@ commun:
   post_traitement:
     corriger_faux_titres: true
     entetes_tableaux: true
+    notes_tableaux: true
     liens_automatiques: true
     supprimer_vides: true
     identifiants_titres: true
