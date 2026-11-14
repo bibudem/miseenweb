@@ -273,8 +273,53 @@ LIENS_VAGUES = {"ici", "cliquez ici", "cliquer ici", "lien", "ce lien", "en savo
                 "click here", "here", "link", "read more", "more"}
 
 
+# Un paragraphe en gras qui commence ainsi étiquette un tableau ou une figure : ce n'est pas un titre
+MOTIF_ETIQUETTE = re.compile(r"(tableau|table|figure|fig\.|annexe|appendix|encadré|box)\b", re.IGNORECASE)
+MOTIF_ECRITURE_ARABE = re.compile(r"[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]")
+MOTS_MAX_SOUS_TITRE = 15
+
+
+def _tout_en_gras(paragraphe) -> bool:
+    texte = paragraphe.get_text("", strip=True)
+    gras = "".join(g.get_text("", strip=True) for g in paragraphe.find_all(["strong", "b"])
+                   if not g.find_parent(["strong", "b"]))
+    return bool(texte) and len(gras) >= 0.98 * len(texte)
+
+
+def _sous_titres_a_la_main(soupe: BeautifulSoup) -> list[int]:
+    """Rang (parmi les <p> de la page) des paragraphes en gras qui servent de sous-titres.
+
+    Ce sont, après le premier titre, des paragraphes courts, entièrement en gras, qui ne sont ni
+    une étiquette de tableau ou de figure, ni une phrase terminée par une ponctuation. Le texte
+    en écriture arabe est laissé de côté : on ne peut pas juger de son rôle.
+    """
+    rang_de = {id(p): rang for rang, p in enumerate(soupe.find_all("p"))}
+    premier_titre = soupe.find(["h2", "h3", "h4", "h5", "h6"]) or soupe.find("h1")
+    if premier_titre is None:
+        return []
+    rangs = []
+    for paragraphe in premier_titre.find_next_siblings("p"):
+        texte = paragraphe.get_text(" ", strip=True)
+        if not 1 <= len(texte.split()) <= MOTS_MAX_SOUS_TITRE or texte[-1] in ".:;,":
+            continue
+        if MOTIF_ETIQUETTE.match(texte) or MOTIF_ECRITURE_ARABE.search(texte):
+            continue
+        if paragraphe.get("class") or not _tout_en_gras(paragraphe):
+            continue
+        rangs.append(rang_de[id(paragraphe)])
+    return rangs
+
+
 def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     remarques = []
+    for rang in _sous_titres_a_la_main(soupe):
+        remarques.append(Remarque(
+            "avertissement", "Sous-titre fait à la main.",
+            "Ce paragraphe en gras ressemble à un sous-titre, mais un lecteur d'écran ne l'annonce pas "
+            "comme un titre. Dans Word, appliquez-lui un style de titre, par exemple Titre 2, plutôt "
+            "que le gras.",
+            {"balise": "p", "rang": rang},
+            "{n} sous-titres faits à la main"))
     sans_alt = [i for i, img in enumerate(soupe.find_all("img"))
                 if not img.find_parent("footer") and not (img.get("alt") or "").strip()
                 and img.get("role") != "presentation"]      # image décorative, selon le profil
