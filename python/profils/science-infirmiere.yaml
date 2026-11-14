@@ -23,6 +23,10 @@ commun:
     images_connues:                 # images de la revue, reconnues par leur empreinte
       - empreinte: 29d0940790dba98b982ef40db81a7397bc944d1c
         alt: ""                     # icône ORCID, placée à côté du lien ORCID : décorative
+      - empreinte: 981a5d8bc7304536763ee419bc1b44714026e2c1
+        alt: "Science infirmière et pratiques en santé, Science of Nursing and Health Practices"   # logo de la revue
+      - empreinte: 15bd536a8fb4df6bffcdef9cb2fbeb5c203393b2
+        alt: ""                     # couverture de la revue : répète le nom que porte le logo
   post_traitement:
     corriger_faux_titres: true
     entetes_tableaux: true
