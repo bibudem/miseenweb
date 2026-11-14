@@ -20,6 +20,9 @@ commun:
     images: incorporees
     ignorer_images_vides: false
     bordures_images: true
+    images_connues:                 # images de la revue, reconnues par leur empreinte
+      - empreinte: 29d0940790dba98b982ef40db81a7397bc944d1c
+        alt: ""                     # icône ORCID, placée à côté du lien ORCID : décorative
   post_traitement:
     corriger_faux_titres: true
     entetes_tableaux: true

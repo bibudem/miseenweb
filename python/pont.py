@@ -275,7 +275,8 @@ LIENS_VAGUES = {"ici", "cliquez ici", "cliquer ici", "lien", "ce lien", "en savo
 def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     remarques = []
     sans_alt = [i for i, img in enumerate(soupe.find_all("img"))
-                if not img.find_parent("footer") and not (img.get("alt") or "").strip()]
+                if not img.find_parent("footer") and not (img.get("alt") or "").strip()
+                and img.get("role") != "presentation"]      # image décorative, selon le profil
     for rang in sans_alt:
         remarques.append(Remarque(
             "avertissement", "Image sans texte de remplacement.",
