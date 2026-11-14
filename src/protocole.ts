@@ -31,6 +31,8 @@ export interface Remarque {
   titre: string
   conseil: string
   cible: { id?: string; balise?: string; rang?: number }
+  /** Titre d'un groupe de remarques identiques, par exemple « {n} images sans texte de remplacement » */
+  pluriel: string
 }
 
 export interface Resultat {

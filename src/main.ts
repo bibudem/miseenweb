@@ -465,13 +465,17 @@ function regrouper(remarques: Remarque[]): [Remarque, number][] {
   return [...groupes.values()]
 }
 
-const fois = (n: number) => (n > 1 ? ` (${n} fois)` : '')
+// Titre de remarques identiques réunies : « 20 images sans… », sinon « … (20 fois) »
+function titreDuGroupe(r: Remarque, nombre: number): string {
+  if (nombre < 2) return r.titre
+  return r.pluriel ? `${r.pluriel.replace('{n}', String(nombre))}.` : `${r.titre} (${nombre} fois)`
+}
 
 function listeRemarques(groupes: [Remarque, number][]): HTMLUListElement {
   const liste = element('ul', 'remarques')
   for (const [r, nombre] of groupes) {
     const li = element('li', `remarque remarque-${r.gravite}`)
-    li.append(element('strong', '', r.titre + fois(nombre)))
+    li.append(element('strong', '', titreDuGroupe(r, nombre)))
     if (r.conseil) li.append(element('span', 'conseil', r.conseil))
     liste.append(li)
   }
@@ -486,7 +490,7 @@ function resumeRemarques(remarques: Remarque[], gravite: Remarque['gravite']): H
   if (gravite === 'info') {
     texte = pluriel(groupes.length, 'information sur la conversion', 'informations sur la conversion')
   } else if (groupes.length === 1) {
-    texte = `À vérifier : ${groupes[0][0].titre.replace(/\.$/, '')}${fois(groupes[0][1])}`
+    texte = `À vérifier : ${titreDuGroupe(...groupes[0]).replace(/\.$/, '')}`
   } else {
     texte = `À vérifier : ${pluriel(remarques.length, 'point', 'points')}`
   }

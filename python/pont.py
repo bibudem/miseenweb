@@ -167,6 +167,7 @@ class Remarque:
     titre: str
     conseil: str = ""
     cible: dict = field(default_factory=dict)   # {"id": …} ou {"balise": …, "rang": …}
+    pluriel: str = ""             # titre d'un groupe de remarques identiques : « {n} images sans… »
 
 
 def _cible_titre(soupe: BeautifulSoup, extrait: str) -> dict:
@@ -284,7 +285,8 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
             "Dans Word, faites un clic droit sur l'image, puis "
             "« Afficher le texte de remplacement », et décrivez-la. Si elle est purement décorative, cochez "
             "« Marquer comme décoratif ».",
-            {"balise": "img", "rang": rang}))
+            {"balise": "img", "rang": rang},
+            "{n} images sans texte de remplacement"))
     for rang, lien in enumerate(soupe.find_all("a")):
         texte = re.sub(r"[\s.:!»«]+", " ", lien.get_text(" ", strip=True)).strip().casefold()
         if texte in LIENS_VAGUES:
@@ -299,7 +301,8 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
                 "avertissement", "Tableau sans ligne d'entête.",
                 "Dans Word, sélectionnez la première ligne du tableau, puis ouvrez « Propriétés du tableau », "
                 "onglet « Ligne », et cochez « Répéter en haut de chaque page en tant que ligne d'en-tête ».",
-                {"balise": "table", "rang": rang}))
+                {"balise": "table", "rang": rang},
+                "{n} tableaux sans ligne d'entête"))
     return remarques
 
 
@@ -421,6 +424,15 @@ def _regrouper(remarques: list[dict]) -> list[tuple[dict, int]]:
     return [(remarque, nombre) for remarque, nombre in comptes.values()]
 
 
+def _titre_du_groupe(remarque: dict, nombre: int) -> str:
+    """Titre de remarques identiques réunies : « 20 images sans… », sinon « … (20 fois) »."""
+    if nombre < 2:
+        return remarque["titre"]
+    if remarque.get("pluriel"):
+        return remarque["pluriel"].format(n=nombre) + "."
+    return f"{remarque['titre']} ({nombre} fois)"
+
+
 def rapport_html() -> str:
     """Le rapport de conversion en HTML : lisible par tous, et prêt à imprimer."""
     e = html.escape
@@ -440,7 +452,7 @@ def rapport_html() -> str:
             if liste:
                 lignes.append(f"<h3>{titre}</h3><ul>")
                 # Dans la page, chaque remarque mène à son endroit; sur papier, la répéter n'apprend rien
-                lignes += [f'<li><strong>{e(x["titre"])}</strong>{f" ({nombre} fois)" if nombre > 1 else ""}'
+                lignes += [f'<li><strong>{e(_titre_du_groupe(x, nombre))}</strong>'
                            f'{"<br>" + e(x["conseil"]) if x["conseil"] else ""}</li>'
                            for x, nombre in _regrouper(liste)]
                 lignes.append("</ul>")
