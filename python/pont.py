@@ -215,6 +215,20 @@ def _traduire_structure(message: str, soupe: BeautifulSoup, decalage: int = 0) -
 ELEMENTS_SANS_CONSEQUENCE = ("}lock", ":anchorlock", "v:path", "w:tblPrEx")
 
 
+MOTIF_STYLE_INCONNU = re.compile(r"Unrecognised (paragraph|run) style: '?(.*?)'? \(Style ID")
+
+
+def _styles_inconnus(messages: list[dict]) -> Remarque | None:
+    """Une seule remarque pour tous les styles non reconnus, s'il y en a plusieurs."""
+    noms = list(dict.fromkeys(t[2] for m in messages if (t := MOTIF_STYLE_INCONNU.match(m["message"]))))
+    if len(noms) < 2:
+        return None
+    return Remarque("info", f"{len(noms)} styles Word ne sont pas reconnus : "
+                            + ", ".join(f"« {nom} »" for nom in noms) + ".",
+                    "Le texte qui les porte devient du texte ordinaire. C'est sans conséquence s'ils ne "
+                    "servent pas à des titres.")
+
+
 def _traduire_mammoth(message: dict) -> Remarque | None:
     """Traduit un message de Mammoth; None s'il n'apprend rien d'utile à la personne."""
     texte = message["message"]
@@ -224,7 +238,7 @@ def _traduire_mammoth(message: dict) -> Remarque | None:
         return Remarque("info", f"Un élément du document Word a été ignoré : {trouve[1]}.",
                         "Le convertisseur ne connaît pas cet élément. Vérifiez que rien ne manque dans la "
                         "page produite.")
-    if trouve := re.match(r"Unrecognised (paragraph|run) style: '?(.*?)'? \(Style ID", texte):
+    if trouve := MOTIF_STYLE_INCONNU.match(texte):
         sorte = "paragraphes" if trouve[1] == "paragraph" else "mots mis en forme"
         return Remarque("info", f"Le style Word « {trouve[2]} » n'est pas reconnu.",
                         f"Ses {sorte} deviennent du texte ordinaire. C'est sans conséquence s'il ne sert pas à "
@@ -293,7 +307,11 @@ def _remarques(entree, page: str, profil: Profil | None) -> list[Remarque]:
     decalage = _decalage(soupe, profil)
     remarques = [_traduire_structure(a, soupe, decalage) for a in entree.avertissements_structure]
     remarques += _verifier_accessibilite(soupe)
-    remarques += [r for r in map(_traduire_mammoth, entree.messages_mammoth) if r is not None]
+    messages = entree.messages_mammoth
+    if groupe := _styles_inconnus(messages):
+        remarques.append(groupe)
+        messages = [m for m in messages if not MOTIF_STYLE_INCONNU.match(m["message"])]
+    remarques += [r for r in map(_traduire_mammoth, messages) if r is not None]
     # Quand les titres sont décalés d'un niveau, seul le premier paragraphe reconnu comme titre
     # est le titre du document : les suivants deviennent des titres de section.
     titres_reconnus = 0
@@ -394,6 +412,14 @@ def _resume_titres(titres: dict) -> str:
     return ", ".join(parties) or "aucun titre"
 
 
+def _regrouper(remarques: list[dict]) -> list[tuple[dict, int]]:
+    """Réunit les remarques identiques : (remarque, nombre de fois), dans l'ordre de la première."""
+    comptes: dict[tuple[str, str], list] = {}
+    for remarque in remarques:
+        comptes.setdefault((remarque["titre"], remarque["conseil"]), [remarque, 0])[1] += 1
+    return [(remarque, nombre) for remarque, nombre in comptes.values()]
+
+
 def rapport_html() -> str:
     """Le rapport de conversion en HTML : lisible par tous, et prêt à imprimer."""
     e = html.escape
@@ -412,8 +438,10 @@ def rapport_html() -> str:
         for titre, liste in (("À corriger ou à vérifier", avertissements), ("Pour information", infos)):
             if liste:
                 lignes.append(f"<h3>{titre}</h3><ul>")
-                lignes += [f'<li><strong>{e(x["titre"])}</strong>{"<br>" + e(x["conseil"]) if x["conseil"] else ""}</li>'
-                           for x in liste]
+                # Dans la page, chaque remarque mène à son endroit; sur papier, la répéter n'apprend rien
+                lignes += [f'<li><strong>{e(x["titre"])}</strong>{f" ({nombre} fois)" if nombre > 1 else ""}'
+                           f'{"<br>" + e(x["conseil"]) if x["conseil"] else ""}</li>'
+                           for x, nombre in _regrouper(liste)]
                 lignes.append("</ul>")
         if not r["remarques"] and not r["erreur"]:
             lignes.append("<p>Aucune remarque. Relisez tout de même la page avant de la publier.</p>")
