@@ -453,15 +453,46 @@ function resumeStructure(titres: Record<string, number>, images: number): string
   return parties.join(', ') || 'Aucun titre'
 }
 
-function listeRemarques(remarques: Remarque[]): HTMLUListElement {
-  const liste = element('ul', 'remarques')
+// Réunit les remarques identiques : [remarque, nombre de fois], dans l'ordre de la première
+function regrouper(remarques: Remarque[]): [Remarque, number][] {
+  const groupes = new Map<string, [Remarque, number]>()
   for (const r of remarques) {
+    const cle = `${r.titre}\n${r.conseil}`
+    const groupe = groupes.get(cle)
+    if (groupe) groupe[1] += 1
+    else groupes.set(cle, [r, 1])
+  }
+  return [...groupes.values()]
+}
+
+const fois = (n: number) => (n > 1 ? ` (${n} fois)` : '')
+
+function listeRemarques(groupes: [Remarque, number][]): HTMLUListElement {
+  const liste = element('ul', 'remarques')
+  for (const [r, nombre] of groupes) {
     const li = element('li', `remarque remarque-${r.gravite}`)
-    li.append(element('strong', '', r.titre))
+    li.append(element('strong', '', r.titre + fois(nombre)))
     if (r.conseil) li.append(element('span', 'conseil', r.conseil))
     liste.append(li)
   }
   return liste
+}
+
+// Une ligne repliée par sorte de remarque : la liste des résultats reste courte, et le détail
+// est à un clic. L'endroit à corriger se trouve dans « Aperçu et vérification ».
+function resumeRemarques(remarques: Remarque[], gravite: Remarque['gravite']): HTMLDetailsElement {
+  const groupes = regrouper(remarques)
+  let texte: string
+  if (gravite === 'info') {
+    texte = pluriel(groupes.length, 'information sur la conversion', 'informations sur la conversion')
+  } else if (groupes.length === 1) {
+    texte = `À vérifier : ${groupes[0][0].titre.replace(/\.$/, '')}${fois(groupes[0][1])}`
+  } else {
+    texte = `À vérifier : ${pluriel(remarques.length, 'point', 'points')}`
+  }
+  const volet = element('details', 'plus')
+  volet.append(element('summary', '', texte), listeRemarques(groupes))
+  return volet
 }
 
 function afficherResultats(): void {
@@ -495,17 +526,8 @@ function afficherResultats(): void {
 
       const avertissements = r.remarques.filter((x) => x.gravite === 'avertissement')
       const informations = r.remarques.filter((x) => x.gravite === 'info')
-      if (avertissements.length) {
-        infos.append(listeRemarques(avertissements.slice(0, 3)))
-        if (avertissements.length > 3) {
-          const plus = element('details', 'plus')
-          plus.append(element('summary', '', `${pluriel(avertissements.length - 3, 'autre point', 'autres points')} à vérifier`))
-          plus.append(listeRemarques(avertissements.slice(3)))
-          infos.append(plus)
-        }
-      }
-      // Les informations sont affichées directement, sans accordéon
-      if (informations.length) infos.append(listeRemarques(informations))
+      if (avertissements.length) infos.append(resumeRemarques(avertissements, 'avertissement'))
+      if (informations.length) infos.append(resumeRemarques(informations, 'info'))
       ligne.append(infos)
 
       if (r.sortie) {
