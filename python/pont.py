@@ -210,9 +210,21 @@ def _traduire_structure(message: str, soupe: BeautifulSoup, decalage: int = 0) -
     return Remarque("avertissement", message)
 
 
-def _traduire_mammoth(message: dict) -> Remarque:
+# Éléments de Word que Mammoth ignore sans effet sur la page : verrous et tracés des formes
+# et des zones de texte, exceptions de mise en forme d'un tableau.
+ELEMENTS_SANS_CONSEQUENCE = ("}lock", ":anchorlock", "v:path", "w:tblPrEx")
+
+
+def _traduire_mammoth(message: dict) -> Remarque | None:
+    """Traduit un message de Mammoth; None s'il n'apprend rien d'utile à la personne."""
     texte = message["message"]
-    if trouve := re.match(r"Unrecognised (paragraph|run) style: '(.*?)'", texte):
+    if trouve := re.match(r"An unrecognised element was ignored: (.+)", texte):
+        if trouve[1].endswith(ELEMENTS_SANS_CONSEQUENCE):
+            return None
+        return Remarque("info", f"Un élément du document Word a été ignoré : {trouve[1]}.",
+                        "Le convertisseur ne connaît pas cet élément. Vérifiez que rien ne manque dans la "
+                        "page produite.")
+    if trouve := re.match(r"Unrecognised (paragraph|run) style: '?(.*?)'? \(Style ID", texte):
         sorte = "paragraphes" if trouve[1] == "paragraph" else "mots mis en forme"
         return Remarque("info", f"Le style Word « {trouve[2]} » n'est pas reconnu.",
                         f"Ses {sorte} deviennent du texte ordinaire. C'est sans conséquence s'il ne sert pas à "
@@ -225,6 +237,10 @@ def _traduire_mammoth(message: dict) -> Remarque:
 
 
 def _traduire_normalisation(m: dict) -> Remarque:
+    if m["regle"] == "numero-sous-titre":       # le style n'a pas changé : seul le numéro est écrit
+        return Remarque("info", f"Numéro de sous-titre écrit dans le texte : « {m['texte']} »",
+                        "Word numérotait ce sous-titre automatiquement. Son numéro fait maintenant partie "
+                        "du texte, pour que la page affiche le même que le document.")
     style = m["style_apres"]
     if style == "Title":
         quoi = "Titre du document reconnu"
@@ -277,7 +293,7 @@ def _remarques(entree, page: str, profil: Profil | None) -> list[Remarque]:
     decalage = _decalage(soupe, profil)
     remarques = [_traduire_structure(a, soupe, decalage) for a in entree.avertissements_structure]
     remarques += _verifier_accessibilite(soupe)
-    remarques += [_traduire_mammoth(m) for m in entree.messages_mammoth]
+    remarques += [r for r in map(_traduire_mammoth, entree.messages_mammoth) if r is not None]
     remarques += [_traduire_normalisation(m) for m in entree.normalisations]
     # Mammoth répète le même message pour chaque paragraphe : on n'en garde qu'un
     vues, uniques = set(), []

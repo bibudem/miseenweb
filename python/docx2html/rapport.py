@@ -68,9 +68,13 @@ def ecrire_rapport(entrees: list[EntreeRapport], dossier: Path, nom: str = "rapp
         if e.erreur:
             lignes.append(f"- **Erreur** : {e.erreur}")
         if e.normalisations:
-            lignes.append(f"- Normalisation : {len(e.normalisations)} paragraphe(s) restylé(s)")
+            lignes.append(f"- Normalisation : {len(e.normalisations)} paragraphe(s) modifié(s)")
             for m in e.normalisations[:10]:
-                lignes.append(f"  - [{m['regle']}] {m['style_avant']} → {m['style_apres']} : « {m['texte']} »")
+                if m["style_avant"] == m["style_apres"]:      # seul le texte a changé
+                    changement = "numéro écrit en texte"
+                else:
+                    changement = f"{m['style_avant']} → {m['style_apres']}"
+                lignes.append(f"  - [{m['regle']}] {changement} : « {m['texte']} »")
             if len(e.normalisations) > 10:
                 lignes.append(f"  - … et {len(e.normalisations) - 10} autres")
         if e.messages_mammoth:
