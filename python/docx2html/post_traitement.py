@@ -13,6 +13,8 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   corriger_faux_titres: change en <p> les titres vides et ceux placés dans un tableau
   entetes_tableaux    : change en <th> les cellules des lignes d'entête
   notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
+  tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
+                        zone à défilement horizontal (0 = jamais, défaut)
   bandeau_avant_titre : donne la classe « bandeau » au paragraphe qui précède le titre
   liens_automatiques  : rend cliquables les adresses web et les courriels
   supprimer_vides     : retire les <p> vides
@@ -218,6 +220,38 @@ def _sortir_notes_tableaux(soupe: BeautifulSoup) -> int:
     return n
 
 
+def _largeur_tableau(tableau: Tag) -> int:
+    """Nombre de colonnes d'un tableau, cellules fusionnées comprises."""
+    return max(
+        (sum(int(c.get("colspan", 1)) for c in ligne.find_all(["td", "th"])) for ligne in tableau.find_all("tr")),
+        default=0,
+    )
+
+
+def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
+    """Place chaque tableau d'au moins `seuil` colonnes dans une zone à défilement horizontal.
+
+    La zone reçoit un nom et peut prendre le focus : on la fait ainsi défiler au clavier,
+    et un lecteur d'écran l'annonce.
+    """
+    n = 0
+    for tableau in soupe.find_all("table"):
+        if tableau.find_parent("table") or _largeur_tableau(tableau) < seuil:
+            continue
+        n += 1
+        zone = soupe.new_tag(
+            "div",
+            attrs={
+                "class": "tableau-large",
+                "role": "region",
+                "tabindex": "0",
+                "aria-label": f"Tableau large {n}, à faire défiler horizontalement",
+            },
+        )
+        tableau.wrap(zone)
+    return n
+
+
 def _marquer_bandeau(soupe: BeautifulSoup, classe_titre_document: str) -> bool:
     """Donne la classe « bandeau » au paragraphe de texte qui précède le titre du document."""
     titre = soupe.find("h1", class_=classe_titre_document)
@@ -293,6 +327,9 @@ def appliquer(
 
     if config.get("entetes_tableaux", False):
         _marquer_entetes(soupe)
+
+    if int(config.get("tableaux_larges", 0) or 0) > 0:   # après la sortie des notes
+        _encadrer_tableaux_larges(soupe, int(config["tableaux_larges"]))
 
     if config.get("supprimer_vides", True):
         _supprimer_vides(soupe)

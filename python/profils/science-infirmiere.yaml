@@ -23,6 +23,7 @@ commun:
     corriger_faux_titres: true
     entetes_tableaux: true
     notes_tableaux: true
+    tableaux_larges: 9              # colonnes
     liens_automatiques: true
     supprimer_vides: true
     identifiants_titres: true
