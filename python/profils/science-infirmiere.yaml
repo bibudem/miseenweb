@@ -25,6 +25,7 @@ commun:
     notes_tableaux: true
     tableaux_larges: 9              # colonnes
     liens_automatiques: true
+    sens_ecriture: true
     supprimer_vides: true
     identifiants_titres: true
     decaler_niveaux: auto

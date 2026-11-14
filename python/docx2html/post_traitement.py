@@ -18,6 +18,7 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   bandeau_avant_titre : donne la classe « bandeau » au paragraphe qui précède le titre
   resume_avant_mots_cles : replace le résumé avant ses mots-clés quand ils sont inversés
   liens_automatiques  : rend cliquables les adresses web et les courriels
+  sens_ecriture       : marque les passages en arabe (dir="rtl", lang="ar")
   supprimer_vides     : retire les <p> vides
   gabarit             : enveloppe le fragment dans une page HTML complète
   langue              : langue de la page (défaut : fr)
@@ -41,6 +42,10 @@ ETIQUETTES_RESUME = [
     (re.compile(r"résumé"), re.compile(r"mots[\s-]*clés")),
     (re.compile(r"abstract"), re.compile(r"key[\s-]*words?")),
 ]
+
+# Lettres de l'écriture arabe, et éléments dont on règle le sens d'écriture
+MOTIF_ARABE = re.compile(r"[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]")
+ELEMENTS_SENS = ["table", "ul", "ol", "blockquote", "p", "li", "td", "th", "figcaption", *NIVEAUX]
 
 # Une adresse web, ou un courriel
 MOTIF_ADRESSE = re.compile(r"https?://[^\s<>\"]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
@@ -300,6 +305,37 @@ def _resume_avant_mots_cles(soupe: BeautifulSoup) -> int:
     return n
 
 
+def _sens_du_texte(texte: str) -> str:
+    """« rtl » si les lettres sont en majorité arabes, « ltr » sinon; '' s'il n'y a aucune lettre."""
+    lettres = [c for c in texte if c.isalpha()]
+    if not lettres:
+        return ""
+    arabes = sum(1 for c in lettres if MOTIF_ARABE.match(c))
+    return "rtl" if arabes > len(lettres) / 2 else "ltr"
+
+
+def _marquer_sens_ecriture(soupe: BeautifulSoup, langue_page: str) -> int:
+    """Indique le sens d'écriture et la langue des passages en arabe.
+
+    Un élément n'est marqué que si son sens diffère de celui dont il hérite : un tableau
+    tout en arabe est marqué une fois, et un passage en français qui s'y trouve est remis
+    de gauche à droite. Sans ces attributs, la ponctuation et les colonnes sont mal placées,
+    et un lecteur d'écran prononce le texte dans la mauvaise langue.
+    """
+    n = 0
+    for element in soupe.find_all(ELEMENTS_SENS):       # dans l'ordre du document : parents d'abord
+        sens = _sens_du_texte(element.get_text())
+        if not sens:
+            continue
+        parent = element.find_parent(attrs={"dir": True})
+        herite = parent["dir"] if parent is not None else "ltr"
+        if sens != herite:
+            element["dir"] = sens
+            element["lang"] = "ar" if sens == "rtl" else langue_page
+            n += 1
+    return n
+
+
 def _marquer_bandeau(soupe: BeautifulSoup, classe_titre_document: str) -> bool:
     """Donne la classe « bandeau » au paragraphe de texte qui précède le titre du document."""
     titre = soupe.find("h1", class_=classe_titre_document)
@@ -387,6 +423,9 @@ def appliquer(
 
     if config.get("liens_automatiques", False):
         _lier_adresses(soupe)
+
+    if config.get("sens_ecriture", False):
+        _marquer_sens_ecriture(soupe, str(config.get("langue", "fr")))
 
     if config.get("bandeau_avant_titre", False):    # après la suppression des <p> vides
         _marquer_bandeau(soupe, str(config.get("classe_titre_document", "titre-document")))
