@@ -56,6 +56,7 @@ variantes:
           style_cible: "Quote"
     post_traitement:
       bandeau_avant_titre: true
+      couleur_bandeau: true
       resume_avant_mots_cles: true
       pied_page: true
 

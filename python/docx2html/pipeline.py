@@ -8,7 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Callable
 
-from . import conversion, diagnostic, normalisation, pied_page, post_traitement
+from . import apparence, conversion, diagnostic, normalisation, pied_page, post_traitement
 from .profils import ErreurProfil, Profil, choisir_profil
 from .rapport import EntreeRapport
 
@@ -64,8 +64,11 @@ def convertir_fichier(
         pied_html = ""
         if profil.post_traitement.get("pied_page"):
             pied_html = pied_page.pied_page_html(chemin_docx)
+        couleurs_fond = {}
+        if profil.post_traitement.get("couleur_bandeau"):
+            couleurs_fond = apparence.couleurs_de_fond(chemin_docx)
         res_post = post_traitement.appliquer(
-            res_conv.html, profil.post_traitement, profil.chemin, chemin_docx.name, pied_html
+            res_conv.html, profil.post_traitement, profil.chemin, chemin_docx.name, pied_html, couleurs_fond
         )
         entree.avertissements_structure = res_post.avertissements
         entree.nb_titres = res_post.nb_titres

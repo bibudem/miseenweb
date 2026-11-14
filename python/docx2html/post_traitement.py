@@ -16,6 +16,8 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
                         zone à défilement horizontal (0 = jamais, défaut)
   bandeau_avant_titre : donne la classe « bandeau » au paragraphe qui précède le titre
+  couleur_bandeau     : donne au bandeau la couleur de fond qu'il a dans le Word
+                        (lue par pipeline.py), avec un texte noir ou blanc selon le contraste
   resume_avant_mots_cles : replace le résumé avant ses mots-clés quand ils sont inversés
   liens_automatiques  : rend cliquables les adresses web et les courriels
   sens_ecriture       : marque les passages en arabe (dir="rtl", lang="ar")
@@ -34,6 +36,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from bs4 import BeautifulSoup, Tag
+
+from .apparence import texte_normalise
 
 NIVEAUX = ["h1", "h2", "h3", "h4", "h5", "h6"]
 
@@ -336,8 +340,26 @@ def _marquer_sens_ecriture(soupe: BeautifulSoup, langue_page: str) -> int:
     return n
 
 
-def _marquer_bandeau(soupe: BeautifulSoup, classe_titre_document: str) -> bool:
-    """Donne la classe « bandeau » au paragraphe de texte qui précède le titre du document."""
+def _luminance(couleur: str) -> float:
+    """Luminance relative d'une couleur « #RRGGBB », de 0 (noir) à 1 (blanc), selon les WCAG."""
+    composantes = [int(couleur[i : i + 2], 16) / 255 for i in (1, 3, 5)]
+    lineaires = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in composantes]
+    return 0.2126 * lineaires[0] + 0.7152 * lineaires[1] + 0.0722 * lineaires[2]
+
+
+def _couleur_du_texte(fond: str) -> str:
+    """Noir ou blanc : la couleur de texte la plus contrastée sur ce fond."""
+    luminance = _luminance(fond)
+    contraste_blanc = 1.05 / (luminance + 0.05)
+    contraste_noir = (luminance + 0.05) / 0.05
+    return "#ffffff" if contraste_blanc >= contraste_noir else "#000000"
+
+
+def _marquer_bandeau(soupe: BeautifulSoup, classe_titre_document: str, couleurs_fond: dict[str, str]) -> bool:
+    """Donne la classe « bandeau » au paragraphe de texte qui précède le titre du document.
+
+    Si ce paragraphe a une couleur de fond dans le Word (retrouvée par son texte), il la garde.
+    """
     titre = soupe.find("h1", class_=classe_titre_document)
     if titre is None:
         return False
@@ -345,6 +367,9 @@ def _marquer_bandeau(soupe: BeautifulSoup, classe_titre_document: str) -> bool:
     if precedent is None or precedent.name != "p" or not precedent.get_text(strip=True):
         return False
     precedent["class"] = precedent.get("class", []) + ["bandeau"]
+    fond = couleurs_fond.get(texte_normalise(precedent.get_text()))
+    if fond:
+        precedent["style"] = f"background: {fond}; color: {_couleur_du_texte(fond)};"
     return True
 
 
@@ -397,7 +422,12 @@ def _supprimer_vides(soupe: BeautifulSoup) -> int:
 
 
 def appliquer(
-    fragment_html: str, config: dict, chemin_profil: Path, nom_fichier: str, pied_html: str = ""
+    fragment_html: str,
+    config: dict,
+    chemin_profil: Path,
+    nom_fichier: str,
+    pied_html: str = "",
+    couleurs_fond: dict[str, str] | None = None,
 ) -> ResultatPostTraitement:
     config = config or {}
     soupe = BeautifulSoup(fragment_html, "html.parser")
@@ -428,7 +458,9 @@ def appliquer(
         _marquer_sens_ecriture(soupe, str(config.get("langue", "fr")))
 
     if config.get("bandeau_avant_titre", False):    # après la suppression des <p> vides
-        _marquer_bandeau(soupe, str(config.get("classe_titre_document", "titre-document")))
+        _marquer_bandeau(
+            soupe, str(config.get("classe_titre_document", "titre-document")), couleurs_fond or {}
+        )
 
     _decaler_niveaux(
         soupe,
