@@ -210,9 +210,9 @@
               <a class="bouton bouton-contour" data-telecharger-zip download="miseenweb.zip" hidden>
                 <span class="icone" data-icone="file-zip" aria-hidden="true"></span>Tout télécharger (.zip)
               </a>
-              <a class="bouton bouton-contour" data-rapport target="_blank" rel="noopener">
-                <span class="icone" data-icone="list-checks" aria-hidden="true"></span>Voir le rapport<span class="visuellement-masque"> (nouvel onglet)</span>
-              </a>
+              <button type="button" class="bouton bouton-contour" data-rapport>
+                <span class="icone" data-icone="list-checks" aria-hidden="true"></span>Voir le rapport
+              </button>
             </div>
           </div>
           <p class="aide" data-aide-resultats></p>
@@ -380,6 +380,23 @@
              permet seulement à cette page-ci d'y mener aux endroits à vérifier. -->
         <iframe sandbox="allow-same-origin" title="Page produite" data-cadre></iframe>
       </div>
+    </dialog>
+
+    <!-- Le rapport s'ouvre dans la page, et non dans un nouvel onglet : Safari perdait le contenu
+         de cet onglet à l'impression. -->
+    <dialog class="apercu apercu-rapport" data-dialogue-rapport aria-labelledby="titre-rapport">
+      <div class="apercu-entete">
+        <h2 id="titre-rapport">Rapport de conversion</h2>
+        <div class="apercu-actions">
+          <button type="button" class="bouton bouton-contour" data-imprimer-rapport>
+            <span class="icone" data-icone="printer" aria-hidden="true"></span>Imprimer ou enregistrer en PDF
+          </button>
+          <button type="button" class="bouton-icone" data-fermer-rapport aria-label="Fermer le rapport">
+            <span class="icone" data-icone="x" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+      <iframe sandbox="allow-same-origin" title="Rapport de conversion" data-cadre-rapport></iframe>
     </dialog>
 
     <p class="toast" role="status" data-toast hidden></p>

@@ -1276,6 +1276,11 @@
     box-shadow: var(--ombre-2);
   }
 
+  /* Le rapport est un texte étroit : sa fenêtre l'est aussi */
+  .apercu-rapport {
+    width: min(54rem, 100vw - 2 * var(--espace-2));
+  }
+
   .apercu[open] {
     display: flex;
     flex-direction: column;
@@ -1331,6 +1336,21 @@
 }
 
 @layer utilitaires {
+  /* Copie du rapport de conversion, réservée à l'impression : elle remplace alors toute la page */
+  .zone-impression {
+    display: none;
+  }
+
+  @media print {
+    body:has(> .zone-impression) > :not(.zone-impression) {
+      display: none !important;
+    }
+
+    .zone-impression {
+      display: block;
+    }
+  }
+
   .visuellement-masque {
     position: absolute !important;
     width: 1px !important;

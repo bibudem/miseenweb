@@ -14,7 +14,7 @@ import type { Analyse, Catalogue, DemandeSansId, Evenement, Remarque, Resultat }
 
 // ---- Icônes Phosphor, intégrées au script ----
 const icones = import.meta.glob(
-  '/node_modules/@phosphor-icons/core/assets/regular/{arrow-counter-clockwise,arrow-right,arrow-square-out,caret-down,check-circle,copy,download-simple,eye,file-doc,file-zip,folder-simple,info,lightning,list-checks,lock-simple,moon,shield-check,sliders-horizontal,sparkle,sun,trash,tree-structure,upload-simple,warning,x,x-circle}.svg',
+  '/node_modules/@phosphor-icons/core/assets/regular/{arrow-counter-clockwise,arrow-right,arrow-square-out,caret-down,check-circle,copy,download-simple,eye,file-doc,file-zip,folder-simple,info,lightning,list-checks,lock-simple,moon,printer,shield-check,sliders-horizontal,sparkle,sun,trash,tree-structure,upload-simple,warning,x,x-circle}.svg',
   { query: '?raw', import: 'default', eager: true },
 ) as Record<string, string>
 
@@ -64,7 +64,9 @@ const listeResultats = $<HTMLUListElement>('[data-liste-resultats]')
 const lienPrincipal = $<HTMLAnchorElement>('[data-telecharger-principal]')
 const libellePrincipal = $<HTMLElement>('[data-libelle-telecharger]')
 const lienZip = $<HTMLAnchorElement>('[data-telecharger-zip]')
-const lienRapport = $<HTMLAnchorElement>('[data-rapport]')
+const boutonRapport = $<HTMLButtonElement>('[data-rapport]')
+const dialogueRapport = $<HTMLDialogElement>('[data-dialogue-rapport]')
+const cadreRapport = $<HTMLIFrameElement>('[data-cadre-rapport]')
 const dialogue = $<HTMLDialogElement>('[data-apercu]')
 const titreApercu = $<HTMLElement>('[data-titre-apercu]')
 const cadre = $<HTMLIFrameElement>('[data-cadre]')
@@ -91,6 +93,7 @@ let catalogue: Catalogue = { revues: [], profils: [] }
 let pret = false
 let enCours = false
 let resultats: Resultat[] = []
+let rapportHtml = ''     // rapport de la dernière conversion
 let recupere = true       // faux tant que les résultats n'ont été ni téléchargés ni copiés
 const urls: string[] = []
 let pageOuverte: { resultat: Resultat; html: string } | null = null
@@ -397,7 +400,7 @@ async function convertir(): Promise<void> {
     liberer()
     const [zip, rapport] = await Promise.all([demander<ArrayBuffer>({ action: 'archive' }), demander<string>({ action: 'rapport' })])
     lienZip.href = urlObjet(zip, 'application/zip')
-    lienRapport.href = urlObjet(rapport, 'text/html')
+    rapportHtml = rapport
 
     // Un seul document : la page elle-même, images comprises, plutôt qu'un zip
     const pages = resultats.filter((r) => r.sortie)
@@ -754,6 +757,44 @@ dialogue.addEventListener('click', (e) => {
 dialogue.addEventListener('close', () => {
   cadre.srcdoc = ''
   pageOuverte = null
+})
+
+// ---- Rapport de conversion : affiché dans la page, imprimé avec elle ----
+// Le rapport porte son propre bouton d'impression, utile dans le fichier du zip, inutile ici
+function sansBouton(html: string): Document {
+  const rapport = new DOMParser().parseFromString(html, 'text/html')
+  rapport.querySelector('button')?.closest('p')?.remove()
+  return rapport
+}
+
+// À l'impression, la page ne montre que cette copie du rapport (voir « zone-impression » dans page.css).
+// Elle est isolée dans une racine fantôme : ses styles et ceux de la page ne se mélangent pas.
+function preparerImpression(html: string): void {
+  document.querySelector('.zone-impression')?.remove()
+  const rapport = sansBouton(html)
+  const zone = document.createElement('div')
+  zone.className = 'zone-impression'
+  const style = document.createElement('style')
+  // Les règles du rapport visent « body » : ici, elles visent la zone
+  style.textContent = (rapport.querySelector('style')?.textContent ?? '').replace(/\bbody\b/g, ':host')
+  zone.attachShadow({ mode: 'open' }).append(style, ...rapport.body.childNodes)
+  document.body.append(zone)
+}
+
+boutonRapport.addEventListener('click', () => {
+  if (!rapportHtml) return
+  cadreRapport.srcdoc = `<!DOCTYPE html>${sansBouton(rapportHtml).documentElement.outerHTML}`
+  preparerImpression(rapportHtml)
+  dialogueRapport.showModal()
+})
+$<HTMLButtonElement>('[data-imprimer-rapport]').addEventListener('click', () => window.print())
+$<HTMLButtonElement>('[data-fermer-rapport]').addEventListener('click', () => dialogueRapport.close())
+dialogueRapport.addEventListener('click', (e) => {
+  if (e.target === dialogueRapport) dialogueRapport.close()
+})
+dialogueRapport.addEventListener('close', () => {
+  cadreRapport.srcdoc = ''
+  document.querySelector('.zone-impression')?.remove()
 })
 
 // Tout se perd en fermant la page : on prévient si les résultats n'ont pas été récupérés
