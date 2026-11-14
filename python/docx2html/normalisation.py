@@ -55,6 +55,12 @@ class Modification:
     texte: str
 
 
+def _extrait(texte: str, longueur: int = 80) -> str:
+    """Début d'un texte, pour les rapports; des points de suspension signalent une coupure."""
+    texte = texte.strip()
+    return texte if len(texte) <= longueur else texte[: longueur - 1].rstrip() + "…"
+
+
 def _regle_s_applique(regle: dict, info) -> bool:
     styles_source = regle.get("styles_source") or ["Normal"]
     if info.style_nom.lower() not in {s.lower() for s in styles_source}:
@@ -217,7 +223,7 @@ def _ecrire_numeros_sous_titres(doc) -> list[Modification]:
         xml.pPr.remove(numerotation)
         modifications.append(
             Modification(index=index, regle="numero-sous-titre", style_avant=info.style_nom,
-                         style_apres=info.style_nom, texte=f"{numero} {info.texte}"[:80])
+                         style_apres=info.style_nom, texte=_extrait(f"{numero} {info.texte}"))
         )
     return modifications
 
@@ -267,7 +273,7 @@ def normaliser(source: Path, destination: Path, config: dict) -> list[Modificati
                     regle=str(regle.get("nom", "?")),
                     style_avant=avant,
                     style_apres=p.style.name,
-                    texte=info.texte[:80],
+                    texte=_extrait(info.texte),
                 )
             )
             break  # première règle qui s'applique

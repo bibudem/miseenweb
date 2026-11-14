@@ -236,14 +236,14 @@ def _traduire_mammoth(message: dict) -> Remarque | None:
     return Remarque("info", "Remarque technique du convertisseur.", texte)
 
 
-def _traduire_normalisation(m: dict) -> Remarque:
+def _traduire_normalisation(m: dict, titre_de_section: bool = False) -> Remarque:
     if m["regle"] == "numero-sous-titre":       # le style n'a pas changé : seul le numéro est écrit
         return Remarque("info", f"Numéro de sous-titre écrit dans le texte : « {m['texte']} »",
                         "Word numérotait ce sous-titre automatiquement. Son numéro fait maintenant partie "
                         "du texte, pour que la page affiche le même que le document.")
     style = m["style_apres"]
     if style == "Title":
-        quoi = "Titre du document reconnu"
+        quoi = "Titre de section reconnu" if titre_de_section else "Titre du document reconnu"
     elif trouve := re.match(r"Heading (\d)", style):
         quoi = f"Titre de niveau {trouve[1]} reconnu"
     elif style == "Quote":
@@ -294,7 +294,13 @@ def _remarques(entree, page: str, profil: Profil | None) -> list[Remarque]:
     remarques = [_traduire_structure(a, soupe, decalage) for a in entree.avertissements_structure]
     remarques += _verifier_accessibilite(soupe)
     remarques += [r for r in map(_traduire_mammoth, entree.messages_mammoth) if r is not None]
-    remarques += [_traduire_normalisation(m) for m in entree.normalisations]
+    # Quand les titres sont décalés d'un niveau, seul le premier paragraphe reconnu comme titre
+    # est le titre du document : les suivants deviennent des titres de section.
+    titres_reconnus = 0
+    for m in entree.normalisations:
+        est_titre = m["style_apres"] == "Title" and m["regle"] != "numero-sous-titre"
+        remarques.append(_traduire_normalisation(m, est_titre and decalage > 0 and titres_reconnus > 0))
+        titres_reconnus += est_titre
     # Mammoth répète le même message pour chaque paragraphe : on n'en garde qu'un
     vues, uniques = set(), []
     for r in remarques:
