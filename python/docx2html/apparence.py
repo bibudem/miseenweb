@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 from docx import Document
@@ -14,6 +15,11 @@ SURLIGNAGES = {
     "darkGreen": "008000", "darkMagenta": "800080", "darkRed": "800000",
     "darkYellow": "808000", "darkGray": "808080", "lightGray": "C0C0C0", "black": "000000",
 }
+
+
+def empreinte(octets: bytes) -> str:
+    """Empreinte d'une image, pour la reconnaître par son contenu plutôt que par sa position."""
+    return hashlib.sha1(octets).hexdigest()
 
 
 def texte_normalise(texte: str) -> str:
@@ -71,3 +77,26 @@ def couleurs_de_fond(chemin_docx: Path, limite: int = 12) -> dict[str, str]:
         if fond:
             couleurs[texte] = f"#{fond}"
     return couleurs
+
+
+def empreintes_images_encadrees(chemin_docx: Path) -> set[str]:
+    """Renvoie l'empreinte des images auxquelles Word donne une bordure.
+
+    Cette bordure fait partie de la mise en forme, pas du fichier de l'image : sans elle,
+    une figure dont le cadre est fermé par Word paraît coupée dans la page.
+    """
+    document = Document(str(chemin_docx))
+    parties = document.part.related_parts
+    empreintes: set[str] = set()
+    for image in document.element.body.iter(qn("pic:pic")):
+        forme = image.find(qn("pic:spPr"))
+        trait = forme.find(qn("a:ln")) if forme is not None else None
+        if trait is None or trait.find(qn("a:noFill")) is not None:
+            continue
+        if trait.find(qn("a:solidFill")) is None and not trait.get("w"):
+            continue
+        source = image.find(".//" + qn("a:blip"))
+        identifiant = source.get(qn("r:embed")) if source is not None else None
+        if identifiant in parties:
+            empreintes.add(empreinte(parties[identifiant].blob))
+    return empreintes

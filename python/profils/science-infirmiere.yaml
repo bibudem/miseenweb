@@ -19,6 +19,7 @@ commun:
     inclure_carte_defaut: true
     images: incorporees
     ignorer_images_vides: false
+    bordures_images: true
   post_traitement:
     corriger_faux_titres: true
     entetes_tableaux: true
@@ -43,6 +44,7 @@ variantes:
       priorite: 20
     normalisation:
       active: true
+      numeros_sous_titres: true
       regles:
         - nom: titre-article
           styles_source: ["Normal"]

@@ -20,10 +20,19 @@ Structure d'une règle dans le profil :
           premier_seulement: true         # la règle ne sert qu'une fois par document
           motif: "^(Chapitre|Partie)\\s+\\d+"   # regex optionnelle
           style_cible: "Heading 1"
+
+Réglage à part, dans la même section :
+
+    normalisation:
+      numeros_sous_titres: true   # écrit en texte le numéro des sous-titres numérotés
+
+Un sous-titre numéroté est un paragraphe de liste entièrement en gras. Mammoth en ferait une
+liste d'un seul élément, qui recommence à 1 : son numéro est donc écrit dans le texte.
 """
 
 from __future__ import annotations
 
+import copy
 import re
 import shutil
 from dataclasses import dataclass
@@ -31,6 +40,8 @@ from pathlib import Path
 
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 from .diagnostic import analyser_paragraphe
 
@@ -73,6 +84,144 @@ def _regle_s_applique(regle: dict, info) -> bool:
     return True
 
 
+def _en_lettres(n: int) -> str:
+    """1 -> a, 26 -> z, 27 -> aa."""
+    lettres = ""
+    while n > 0:
+        n, reste = divmod(n - 1, 26)
+        lettres = chr(ord("a") + reste) + lettres
+    return lettres
+
+
+def _en_romain(n: int) -> str:
+    valeurs = [(1000, "m"), (900, "cm"), (500, "d"), (400, "cd"), (100, "c"), (90, "xc"),
+               (50, "l"), (40, "xl"), (10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i")]
+    romain = ""
+    for valeur, symbole in valeurs:
+        while n >= valeur:
+            romain += symbole
+            n -= valeur
+    return romain
+
+
+def _formater_numero(n: int, format_word: str) -> str | None:
+    """Écrit un numéro dans le format de Word; None si le format n'est pas un numéro (puce…)."""
+    formats = {
+        "decimal": str,
+        "decimalZero": lambda v: f"{v:02d}",
+        "lowerLetter": _en_lettres,
+        "upperLetter": lambda v: _en_lettres(v).upper(),
+        "lowerRoman": _en_romain,
+        "upperRoman": lambda v: _en_romain(v).upper(),
+    }
+    return formats[format_word](n) if format_word in formats else None
+
+
+def _listes_du_document(doc) -> dict[str, tuple[str, dict, dict]]:
+    """Décrit chaque liste du document : (clé de son compteur, ses niveaux, ses départs forcés).
+
+    Un niveau est (format, texte du numéro, valeur de départ). Deux listes fondées sur le
+    même modèle partagent leur compteur, sauf si l'une impose un nouveau départ.
+    """
+    valeur = qn("w:val")
+    numerotation = doc.part.numbering_part.element
+    modeles: dict[str, dict] = {}
+    for modele in numerotation.findall(qn("w:abstractNum")):
+        niveaux = {}
+        for niveau in modele.findall(qn("w:lvl")):
+            format_word = niveau.find(qn("w:numFmt"))
+            texte = niveau.find(qn("w:lvlText"))
+            depart = niveau.find(qn("w:start"))
+            niveaux[int(niveau.get(qn("w:ilvl")))] = (
+                format_word.get(valeur) if format_word is not None else "decimal",
+                texte.get(valeur) if texte is not None else "",
+                int(depart.get(valeur)) if depart is not None else 1,
+            )
+        modeles[modele.get(qn("w:abstractNumId"))] = niveaux
+
+    listes = {}
+    for liste in numerotation.findall(qn("w:num")):
+        identifiant = liste.get(qn("w:numId"))
+        modele = liste.find(qn("w:abstractNumId")).get(valeur)
+        departs = {
+            int(o.get(qn("w:ilvl"))): int(o.find(qn("w:startOverride")).get(valeur))
+            for o in liste.findall(qn("w:lvlOverride"))
+            if o.find(qn("w:startOverride")) is not None
+        }
+        listes[identifiant] = (f"liste-{identifiant}" if departs else f"modele-{modele}", modeles.get(modele, {}), departs)
+    return listes
+
+
+def _texte_du_numero(niveaux: dict, valeurs: dict, niveau: int) -> str | None:
+    """Compose le numéro d'un paragraphe (« 2) », « 1.3 ») à partir du texte prévu par Word."""
+    texte = niveaux[niveau][1]
+    for n in range(niveau + 1):
+        if f"%{n + 1}" not in texte:
+            continue
+        format_word, _, depart = niveaux.get(n, ("decimal", "", 1))
+        ecrit = _formater_numero(valeurs.get(n, depart), format_word)
+        if ecrit is None:
+            return None
+        texte = texte.replace(f"%{n + 1}", ecrit)
+    return texte.strip() if "%" not in texte and texte.strip() else None
+
+
+def _ecrire_numeros_sous_titres(doc) -> list[Modification]:
+    """Écrit en texte le numéro des sous-titres numérotés, et les sort de leur liste.
+
+    Tous les paragraphes numérotés sont comptés, pour que chaque numéro soit celui que Word
+    affiche; seuls ceux qui sont entièrement en gras sont modifiés.
+    """
+    corps = doc.element.body
+    if corps.find(".//" + qn("w:numPr")) is None:
+        return []
+    listes = _listes_du_document(doc)
+    du_corps = {p._p: (i, p) for i, p in enumerate(doc.paragraphs)}
+    compteurs: dict[str, dict[int, int]] = {}
+    modifications: list[Modification] = []
+
+    for xml in corps.iter(qn("w:p")):
+        numerotation = xml.pPr.numPr if xml.pPr is not None else None
+        if numerotation is None or numerotation.numId is None:
+            continue
+        cle, niveaux, departs = listes.get(str(numerotation.numId.val), ("", {}, {}))
+        niveau = numerotation.ilvl.val if numerotation.ilvl is not None else 0
+        if niveau not in niveaux:
+            continue
+        valeurs = compteurs.setdefault(cle, {})
+        valeurs[niveau] = valeurs[niveau] + 1 if niveau in valeurs else departs.get(niveau, niveaux[niveau][2])
+        for plus_profond in [n for n in valeurs if n > niveau]:   # un niveau repart sous un nouveau parent
+            del valeurs[plus_profond]
+
+        if xml not in du_corps:
+            continue
+        index, paragraphe = du_corps[xml]
+        info = analyser_paragraphe(index, paragraphe)
+        if not info.texte or not info.tout_gras or not paragraphe.runs:
+            continue
+        numero = _texte_du_numero(niveaux, valeurs, niveau)
+        if numero is None:
+            continue
+
+        # Le numéro devient un segment de texte, avec la mise en forme du premier segment
+        premier = paragraphe.runs[0]._r
+        segment = copy.deepcopy(premier)
+        for enfant in list(segment):
+            if enfant.tag != qn("w:rPr"):
+                segment.remove(enfant)
+        texte = OxmlElement("w:t")
+        texte.text = f"{numero} "
+        texte.set(qn("xml:space"), "preserve")
+        segment.append(texte)
+        premier.addprevious(segment)
+        xml.pPr.remove(numerotation)
+        modifications.append(
+            Modification(index=index, regle="numero-sous-titre", style_avant=info.style_nom,
+                         style_apres=info.style_nom, texte=f"{numero} {info.texte}"[:80])
+        )
+    return modifications
+
+
 def normaliser(source: Path, destination: Path, config: dict) -> list[Modification]:
     """Copie `source` vers `destination` en appliquant les règles.
 
@@ -80,7 +229,8 @@ def normaliser(source: Path, destination: Path, config: dict) -> list[Modificati
     """
     source, destination = Path(source), Path(destination)
     regles = (config or {}).get("regles") or []
-    if not (config or {}).get("active") or not regles:
+    numeros = bool((config or {}).get("numeros_sous_titres"))
+    if not (config or {}).get("active") or not (regles or numeros):
         shutil.copyfile(source, destination)
         return []
 
@@ -121,6 +271,9 @@ def normaliser(source: Path, destination: Path, config: dict) -> list[Modificati
                 )
             )
             break  # première règle qui s'applique
+
+    if numeros:     # après les règles, qui tiennent compte de la numérotation
+        modifications.extend(_ecrire_numeros_sous_titres(doc))
 
     doc.save(str(destination))
     return modifications
