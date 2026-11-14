@@ -54,6 +54,7 @@ variantes:
           style_cible: "Quote"
     post_traitement:
       bandeau_avant_titre: true
+      resume_avant_mots_cles: true
       pied_page: true
 
   manuscrit:

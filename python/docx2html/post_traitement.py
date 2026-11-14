@@ -16,6 +16,7 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
                         zone à défilement horizontal (0 = jamais, défaut)
   bandeau_avant_titre : donne la classe « bandeau » au paragraphe qui précède le titre
+  resume_avant_mots_cles : replace le résumé avant ses mots-clés quand ils sont inversés
   liens_automatiques  : rend cliquables les adresses web et les courriels
   supprimer_vides     : retire les <p> vides
   gabarit             : enveloppe le fragment dans une page HTML complète
@@ -34,6 +35,12 @@ from pathlib import Path
 from bs4 import BeautifulSoup, Tag
 
 NIVEAUX = ["h1", "h2", "h3", "h4", "h5", "h6"]
+
+# Étiquettes du résumé et de ses mots-clés, par langue : (résumé, mots-clés)
+ETIQUETTES_RESUME = [
+    (re.compile(r"résumé"), re.compile(r"mots[\s-]*clés")),
+    (re.compile(r"abstract"), re.compile(r"key[\s-]*words?")),
+]
 
 # Une adresse web, ou un courriel
 MOTIF_ADRESSE = re.compile(r"https?://[^\s<>\"]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
@@ -252,6 +259,47 @@ def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
     return n
 
 
+def _etiquette(element: Tag) -> str:
+    """Texte d'un paragraphe d'étiquette (« Résumé », « Mots-clés : »), en minuscules; sinon ''."""
+    if element.name != "p":
+        return ""
+    texte = unicodedata.normalize("NFC", element.get_text(" ", strip=True)).lower()
+    texte = texte.replace("\u00a0", " ").rstrip(" :").strip()
+    connue = any(motif.fullmatch(texte) for paire in ETIQUETTES_RESUME for motif in paire)
+    return texte if connue else ""
+
+
+def _resume_avant_mots_cles(soupe: BeautifulSoup) -> int:
+    """Replace le résumé avant ses mots-clés.
+
+    Dans Word, ce sont deux zones de texte côte à côte : le fichier ne les enregistre pas
+    toujours dans l'ordre de lecture. Un bloc commence par un paragraphe d'étiquette et
+    comprend les paragraphes qui le suivent, jusqu'à l'étiquette ou au titre suivant.
+    """
+    blocs: list[tuple[str, list[Tag]]] = []
+    for element in soupe.find_all("p", recursive=False):
+        etiquette = _etiquette(element)
+        if not etiquette:
+            continue
+        contenu = [element]
+        suivant = element.find_next_sibling()
+        while suivant is not None and suivant.name == "p" and not _etiquette(suivant):
+            contenu.append(suivant)
+            suivant = suivant.find_next_sibling()
+        blocs.append((etiquette, contenu))
+
+    n = 0
+    for (etiquette_1, bloc_1), (etiquette_2, bloc_2) in zip(blocs, blocs[1:]):
+        if bloc_1[-1].find_next_sibling() is not bloc_2[0]:     # les deux blocs ne se suivent pas
+            continue
+        for resume, mots_cles in ETIQUETTES_RESUME:
+            if mots_cles.fullmatch(etiquette_1) and resume.fullmatch(etiquette_2):
+                for paragraphe in bloc_2:
+                    bloc_1[0].insert_before(paragraphe.extract())
+                n += 1
+    return n
+
+
 def _marquer_bandeau(soupe: BeautifulSoup, classe_titre_document: str) -> bool:
     """Donne la classe « bandeau » au paragraphe de texte qui précède le titre du document."""
     titre = soupe.find("h1", class_=classe_titre_document)
@@ -333,6 +381,9 @@ def appliquer(
 
     if config.get("supprimer_vides", True):
         _supprimer_vides(soupe)
+
+    if config.get("resume_avant_mots_cles", False):   # après la suppression des <p> vides
+        _resume_avant_mots_cles(soupe)
 
     if config.get("liens_automatiques", False):
         _lier_adresses(soupe)
