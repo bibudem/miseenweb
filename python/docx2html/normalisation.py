@@ -1,7 +1,7 @@
 """Normalisation d'un document Word avant conversion (avec python-docx).
 
 Applique les règles du profil : un paragraphe qui remplit toutes les conditions
-d'une règle (style, gras, taille, longueur, retrait, motif de texte) reçoit le
+d'une règle (style, gras, taille, longueur, nombre de mots, retrait, motif de texte) reçoit le
 style cible, par exemple un style de titre ou de citation. Le fichier source
 n'est jamais modifié; le travail se fait sur une copie temporaire.
 
@@ -15,6 +15,7 @@ Structure d'une règle dans le profil :
           gras: true                      # tous les segments en gras
           taille_min: 16                  # points (aussi : taille_max)
           longueur_max: 100               # caractères
+          mots_min: 10                    # nombre de mots
           retrait_min: 20                 # retrait à gauche, en points
           premier_seulement: true         # la règle ne sert qu'une fois par document
           motif: "^(Chapitre|Partie)\\s+\\d+"   # regex optionnelle
@@ -59,6 +60,9 @@ def _regle_s_applique(regle: dict, info) -> bool:
             return False
     longueur_max = regle.get("longueur_max")
     if longueur_max is not None and info.longueur > int(longueur_max):
+        return False
+    mots_min = regle.get("mots_min")
+    if mots_min is not None and len(info.texte.split()) < int(mots_min):
         return False
     retrait_min = regle.get("retrait_min")
     if retrait_min is not None and info.retrait_pt < float(retrait_min):

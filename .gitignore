@@ -4,3 +4,5 @@ dist/
 public/pyodide/
 .DS_Store
 __pycache__/
+# Documents de test : articles de la revue et pages produites, jamais publiés
+essais/

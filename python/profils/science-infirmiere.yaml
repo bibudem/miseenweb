@@ -52,6 +52,7 @@ variantes:
         - nom: citation-longue
           styles_source: ["Normal"]
           retrait_min: 20           # points
+          mots_min: 10              # un choix de réponse en retrait n'est pas une citation
           style_cible: "Quote"
     post_traitement:
       bandeau_avant_titre: true
@@ -97,4 +98,5 @@ variantes:
         - nom: citation-longue
           styles_source: ["Normal", "Normal (Web)", "paragraph"]
           retrait_min: 20           # points
+          mots_min: 10              # un choix de réponse en retrait n'est pas une citation
           style_cible: "Quote"
