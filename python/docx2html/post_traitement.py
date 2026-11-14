@@ -11,7 +11,7 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
                         ou un entier; 0 = aucun décalage (défaut)
   classe_titre_document : classe du h1 qui représente le titre du document
   corriger_faux_titres: change en <p> les titres vides et ceux placés dans un tableau
-  entetes_tableaux    : change en <th> les cellules des lignes d'entête
+  entetes_tableaux    : change en <th> les cellules des lignes d'en-tête
   notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
   tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
                         zone à défilement horizontal (0 = jamais, défaut)
@@ -186,7 +186,7 @@ def _corriger_faux_titres(soupe: BeautifulSoup) -> int:
 def _marquer_entetes(soupe: BeautifulSoup) -> int:
     """Change en <th> la première ligne de chaque tableau de deux lignes ou plus.
 
-    Si la première ligne a des cellules fusionnées, la deuxième est aussi un entête.
+    Si la première ligne a des cellules fusionnées, la deuxième est aussi un en-tête.
     """
     n = 0
     for tableau in soupe.find_all("table"):
@@ -436,7 +436,7 @@ def appliquer(
     if config.get("corriger_faux_titres", False):   # avant la suppression des <p> vides
         _corriger_faux_titres(soupe)
 
-    if config.get("notes_tableaux", False):          # avant le marquage des entêtes
+    if config.get("notes_tableaux", False):          # avant le marquage des en-têtes
         _sortir_notes_tableaux(soupe)
 
     if config.get("entetes_tableaux", False):

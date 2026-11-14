@@ -5,7 +5,7 @@
   ou type de document choisi à la main pour un fichier.
 - Remarques : les avertissements du convertisseur sont traduits en langage courant, avec la
   correction à faire dans Word, et complétés par des vérifications d'accessibilité de la page
-  produite (images sans texte de remplacement, liens vagues, tableaux sans entête).
+  produite (images sans texte de remplacement, liens vagues, tableaux sans en-tête).
 - Rapport : en Markdown (celui du convertisseur) et en HTML lisible, à imprimer.
 
 Les fichiers vivent dans le système de fichiers en mémoire du navigateur : /entree reçoit
@@ -343,11 +343,11 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     for rang, tableau in enumerate(soupe.find_all("table")):
         if len(tableau.find_all("tr")) > 1 and not tableau.find("th"):
             remarques.append(Remarque(
-                "avertissement", "Tableau sans ligne d'entête.",
+                "avertissement", "Tableau sans ligne d'en-tête.",
                 "Dans Word, sélectionnez la première ligne du tableau, puis ouvrez « Propriétés du tableau », "
                 "onglet « Ligne », et cochez « Répéter en haut de chaque page en tant que ligne d'en-tête ».",
                 {"balise": "table", "rang": rang},
-                "{n} tableaux sans ligne d'entête"))
+                "{n} tableaux sans ligne d'en-tête"))
     return remarques
 
 
