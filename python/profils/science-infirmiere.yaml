@@ -14,6 +14,9 @@ commun:
       p[style-name='Quote'] => blockquote:fresh
       p[style-name='Intense Quote'] => blockquote.mise-en-relief:fresh
       p[style-name='Caption'] => figcaption:fresh
+      p[style-name='EndNote Bibliography'] => p.reference:fresh
+      p[style-name='Bibliography'] => p.reference:fresh
+      p[style-name='References'] => p.reference:fresh
       r[style-name='Strong'] => strong
       u => em
     inclure_carte_defaut: true

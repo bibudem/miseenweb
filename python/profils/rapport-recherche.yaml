@@ -12,6 +12,9 @@ detection:
 mammoth:
   carte_styles: |
     p[style-name='Title'] => h1.titre-document:fresh
+    p[style-name='EndNote Bibliography'] => p.reference:fresh
+    p[style-name='Bibliography'] => p.reference:fresh
+    p[style-name='References'] => p.reference:fresh
   inclure_carte_defaut: true
   images: incorporees
   bordures_images: true

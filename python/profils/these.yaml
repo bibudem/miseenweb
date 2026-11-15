@@ -21,6 +21,9 @@ mammoth:
     p[style-name='Résumé'] => div.resume > p:fresh
     p[style-name='Citation longue'] => blockquote:fresh
     p[style-name='Légende'] => figcaption:fresh
+    p[style-name='EndNote Bibliography'] => p.reference:fresh
+    p[style-name='Bibliography'] => p.reference:fresh
+    p[style-name='References'] => p.reference:fresh
     p[style-name='Note de bas de page'] => p.note:fresh
     r[style-name='Terme défini'] => dfn
   inclure_carte_defaut: true
