@@ -634,12 +634,8 @@ function afficherResultats(): void {
 
 async function recommencer(): Promise<void> {
   if (!recupere) {
-    try {
-      confirmation.showModal()   // « Abandonner les pages » relance cette fonction
-      return
-    } catch {
-      if (!confirm('Les pages converties n’ont pas été téléchargées. Abandonner les pages ?')) return
-    }
+    confirmerAbandon(() => void recommencer())
+    return
   }
   const noms = [...documents.keys()]
   documents.clear()
@@ -853,6 +849,18 @@ $<HTMLAnchorElement>('.nom-outil').addEventListener('click', (e) => {
   e.preventDefault()
   void recommencer()
 })
+
+// Un hyperlien qui quitte le site dans le même onglet passe aussi par cette confirmation.
+// Les liens internes (#section), les téléchargements et les liens ouverts ailleurs ne quittent rien.
+document.addEventListener('click', (e) => {
+  if (recupere || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+  const lien = (e.target as Element).closest<HTMLAnchorElement>('a[href]')
+  if (!lien || lien.hasAttribute('download') || lien.target === '_blank') return
+  const adresse = new URL(lien.href, location.href)
+  if (adresse.origin === location.origin && adresse.pathname === location.pathname) return
+  e.preventDefault()
+  confirmerAbandon(() => location.assign(adresse.href))
+})
 for (const lien of [lienPrincipal, lienZip, lienPage]) lien.addEventListener('click', () => (recupere = true))
 
 $<HTMLButtonElement>('[data-vider]').addEventListener('click', async () => {
@@ -918,11 +926,23 @@ dialogueRapport.addEventListener('close', () => {
 })
 
 // ---- Confirmation avant d'abandonner des pages non téléchargées ----
+// Une seule fenêtre, un seul message, quelle que soit la sortie : nouvelle conversion, retour à
+// l'accueil ou hyperlien vers un autre site. « suite » est l'action reprise après l'abandon.
+let suiteApresAbandon: (() => void) | null = null
+
+function confirmerAbandon(suite: () => void): void {
+  suiteApresAbandon = suite
+  confirmation.showModal()
+}
+
 $<HTMLButtonElement>('[data-conserver]').addEventListener('click', () => confirmation.close())
 $<HTMLButtonElement>('[data-abandonner]').addEventListener('click', () => {
   confirmation.close()
   recupere = true
-  void recommencer()
+  suiteApresAbandon?.()
+})
+confirmation.addEventListener('close', () => {
+  if (!recupere) suiteApresAbandon = null
 })
 
 // Tout se perd en fermant la page : on prévient si les résultats n'ont pas été récupérés
