@@ -201,8 +201,8 @@ function demarre(donnees: Catalogue): void {
   texteEtat.textContent = 'Convertisseur prêt'
   menuRevue.replaceChildren(
     new Option('Détection automatique (recommandé)', AUTO),
-    ...catalogue.revues.map((r) => new Option(r.nom, r.nom)),
-    new Option('Aucune revue : document général', AUTRE_DOCUMENT),
+    ...catalogue.revues.map((r) => new Option(`Revue : ${r.nom}`, r.nom)),
+    new Option('Document général : thèse, rapport ou autre', AUTRE_DOCUMENT),
   )
   menuRevue.disabled = false
   void analyser()
@@ -522,7 +522,7 @@ function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarq
   const detail = element('div', 'bilan-detail')
   if (source === 'document') {
     detail.append(
-      element('p', 'aide', 'La vérification du document d’origine relève ces points. Les corriger dans Word, puis convertir le document de nouveau.'),
+      element('p', 'aide', 'Afin d’améliorer la qualité de la conversion, il est recommandé d’apporter des corrections dans le fichier Word et de relancer le traitement.'),
     )
   }
   detail.append(listeRemarques([...groupesACorriger, ...groupesInformations]))

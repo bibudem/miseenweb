@@ -1475,6 +1475,9 @@
     display: flex;
     align-items: center;
     gap: var(--espace-1);
+    /* Pleine largeur et couleur du texte : l'ancienne règle « .resultat summary » en faisait un lien */
+    width: auto;
+    color: var(--couleur-texte);
     min-height: var(--taille-cible);
     padding: 6px 12px;
     border-radius: var(--rayon-tres-petit);
@@ -1533,6 +1536,16 @@
   .bilan-detail .aide,
   .bilan-detail .remarques {
     margin: 0;
+  }
+
+  .bilan-detail .aide {
+    max-width: none;
+  }
+
+  /* Les remarques sont des encadrés, sans le retrait d'une liste à puces */
+  .bilan-detail .remarques {
+    padding: 0;
+    color: inherit;
   }
 
   @media (prefers-reduced-motion: reduce) {
