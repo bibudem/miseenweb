@@ -502,8 +502,6 @@ def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
                 "role": "region",
                 "tabindex": "0",
                 "aria-label": f"Tableau large {n}, à faire défiler horizontalement",
-                # Le gabarit calcule de ce nombre la largeur minimale du tableau
-                "style": f"--colonnes: {_largeur_tableau(tableau)}",
             },
         )
         tableau.wrap(zone)
