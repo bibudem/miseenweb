@@ -238,6 +238,7 @@ def _ecrire_numeros_sous_titres(doc) -> list[Modification]:
 
 RETRAIT_PAR_NIVEAU = 720     # twips : un demi-pouce, le pas de retrait habituel de Word
 NIVEAUX_DE_RETRAIT = 3
+ESPACES_PAR_NIVEAU = 4       # un retrait fait à la main : quatre espaces
 
 
 def _style_de_cellule(doc, nom: str):
@@ -261,7 +262,12 @@ def _marquer_cellules(doc) -> int:
                 continue
             retrait = proprietes.find(qn("w:ind"))
             gauche = retrait.get(qn("w:left")) or retrait.get(qn("w:start")) if retrait is not None else None
-            niveau = min(NIVEAUX_DE_RETRAIT, round(int(gauche) / RETRAIT_PAR_NIVEAU)) if gauche and gauche.lstrip("-").isdigit() else 0
+            niveau = round(int(gauche) / RETRAIT_PAR_NIVEAU) if gauche and gauche.lstrip("-").isdigit() else 0
+            if niveau <= 0:     # retrait fait avec des espaces : une page web ne les affiche pas
+                texte = "".join(xml.itertext())
+                espaces = len(texte) - len(texte.lstrip(" \u00a0"))
+                niveau = max(1, round(espaces / ESPACES_PAR_NIVEAU)) if espaces >= 2 else 0
+            niveau = min(NIVEAUX_DE_RETRAIT, niveau)
             alignement = proprietes.find(qn("w:jc"))
             if niveau > 0:
                 nom = f"Cellule retrait {niveau}"
