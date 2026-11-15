@@ -186,7 +186,9 @@ def _corriger_faux_titres(soupe: BeautifulSoup) -> int:
 def _marquer_entetes(soupe: BeautifulSoup) -> int:
     """Change en <th> la première ligne de chaque tableau de deux lignes ou plus.
 
-    Si la première ligne a des cellules fusionnées, la deuxième est aussi un en-tête.
+    La deuxième ligne est aussi un en-tête si elle subdivise les cellules fusionnées de la
+    première : elle a alors plus de cellules que la première, et aucune cellule fusionnée
+    vers le bas. Une cellule fusionnée vers le bas commence un groupe de lignes de données.
     """
     n = 0
     for tableau in soupe.find_all("table"):
@@ -194,7 +196,14 @@ def _marquer_entetes(soupe: BeautifulSoup) -> int:
         if len(lignes) < 2:
             continue
         entetes = [lignes[0]]
-        if len(lignes) > 2 and any(c.get("colspan") for c in lignes[0].find_all("td")):
+        premieres = lignes[0].find_all(["td", "th"], recursive=False)
+        secondes = lignes[1].find_all(["td", "th"], recursive=False)
+        if (
+            len(lignes) > 2
+            and any(c.get("colspan") for c in premieres)
+            and len(secondes) > len(premieres)
+            and not any(c.get("rowspan") for c in secondes)
+        ):
             entetes.append(lignes[1])
         for ligne in entetes:
             for cellule in ligne.find_all("td"):
