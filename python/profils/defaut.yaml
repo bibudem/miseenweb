@@ -27,12 +27,20 @@ mammoth:
   inclure_carte_defaut: true
   images: incorporees      # « incorporees » (base64 dans le HTML) ou « extraites » (dossier à côté)
   ignorer_images_vides: false
+  bordures_images: true    # reproduit la bordure que Word donne à une image
 
 normalisation:
-  active: false
+  active: true
+  numeros_sous_titres: true     # écrit en texte le numéro des sous-titres numérotés
+  mise_en_forme_cellules: true  # conserve le retrait et le centrage dans les tableaux
+  sortes_de_puces: true         # conserve les puces particulières
 
 post_traitement:
   supprimer_vides: true
+  notes_tableaux: true      # sort du tableau la note de sa dernière ligne
+  alignement_colonnes: true # centre une colonne de données si la plupart de ses cellules le sont
+  tableaux_larges: 9        # colonnes à partir desquelles un tableau défile dans sa zone
+  sens_ecriture: true       # marque les passages en arabe
   identifiants_titres: true
   decaler_niveaux: auto     # s'il y a un titre de style Title : Title = h1, Heading 1 = h2, etc.
   verifier_hierarchie: true

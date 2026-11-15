@@ -13,6 +13,8 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   corriger_faux_titres: change en <p> les titres vides et ceux placés dans un tableau
   entetes_tableaux    : change en <th> les cellules des lignes d'en-tête
   notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
+  alignement_colonnes : centre toute une colonne de données quand la plupart de ses
+                        cellules sont centrées dans le Word
   tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
                         zone à défilement horizontal (0 = jamais, défaut)
   bandeau_avant_titre : donne la classe « bandeau » au paragraphe qui précède le titre
@@ -245,6 +247,60 @@ def _sortir_notes_tableaux(soupe: BeautifulSoup) -> int:
     return n
 
 
+def _colonnes_du_tableau(tableau: Tag) -> dict[int, list[Tag]]:
+    """Range les cellules de données (<td>) d'un tableau d'après leur bord droit : {bord droit: cellules}.
+
+    Une cellule fusionnée occupe plusieurs colonnes ou plusieurs lignes : la position de
+    chaque cellule est donc calculée ligne par ligne, en tenant compte des fusions.
+
+    Le bord droit sert de repère parce qu'un tableau Word a parfois des limites de cellules
+    différentes d'une ligne à l'autre : la même colonne de chiffres peut être une cellule
+    large sur une ligne, et une cellule étroite sur la suivante. Leur bord droit est le même.
+    Les cellules de la première colonne, qui nomment les lignes, ne sont pas rangées.
+    """
+    colonnes: dict[int, list[Tag]] = {}
+    occupees: dict[int, int] = {}       # colonne -> lignes encore couvertes par une fusion verticale
+    for ligne in tableau.find_all("tr"):
+        if ligne.find_parent("table") is not tableau:
+            continue
+        colonne = 0
+        for cellule in ligne.find_all(["td", "th"], recursive=False):
+            while occupees.get(colonne, 0) > 0:
+                colonne += 1
+            largeur = int(cellule.get("colspan", 1))
+            hauteur = int(cellule.get("rowspan", 1))
+            if cellule.name == "td" and colonne > 0:
+                colonnes.setdefault(colonne + largeur, []).append(cellule)
+            if hauteur > 1:
+                for c in range(colonne, colonne + largeur):
+                    occupees[c] = hauteur
+            colonne += largeur
+        occupees = {c: n - 1 for c, n in occupees.items() if n > 1}
+    return colonnes
+
+
+def _harmoniser_alignement(soupe: BeautifulSoup) -> int:
+    """Centre toute une colonne de données quand plus de la moitié de ses cellules sont centrées.
+
+    Dans Word, une colonne étroite cache une mise en forme inégale : des cellules centrées et
+    d'autres alignées à gauche paraissent alignées. Dans une page, la colonne est plus large et
+    l'écart devient visible. La première colonne, qui nomme les lignes, n'est pas touchée.
+    """
+    n = 0
+    for tableau in soupe.find_all("table"):
+        for cellules in _colonnes_du_tableau(tableau).values():
+            remplies = [c for c in cellules if c.get_text(strip=True)]
+            centrees = [c for c in remplies if c.find("p", class_="centre")]
+            if not centrees or len(centrees) * 2 <= len(remplies):
+                continue
+            for cellule in remplies:
+                for paragraphe in cellule.find_all("p", recursive=False):
+                    if not paragraphe.get("class"):
+                        paragraphe["class"] = ["centre"]
+                        n += 1
+    return n
+
+
 def _largeur_tableau(tableau: Tag) -> int:
     """Nombre de colonnes d'un tableau, cellules fusionnées comprises."""
     return max(
@@ -450,6 +506,9 @@ def appliquer(
 
     if config.get("entetes_tableaux", False):
         _marquer_entetes(soupe)
+
+    if config.get("alignement_colonnes", False):      # après le marquage des en-têtes
+        _harmoniser_alignement(soupe)
 
     if int(config.get("tableaux_larges", 0) or 0) > 0:   # après la sortie des notes
         _encadrer_tableaux_larges(soupe, int(config["tableaux_larges"]))

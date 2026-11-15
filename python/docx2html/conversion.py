@@ -12,6 +12,7 @@ import mammoth.images
 
 from .apparence import empreinte, empreintes_images_encadrees
 from .images_emf import emf_vers_png
+from .normalisation import CARTE_DE_STYLES
 
 
 @dataclass
@@ -90,7 +91,7 @@ def convertir(chemin_docx: Path, profil, dossier_sortie: Path, nom_base: str) ->
                        remplacement (« alt »); un texte vide marque une image décorative
     """
     options = profil.mammoth
-    carte = profil.carte_styles()
+    carte = (profil.carte_styles() or "") + CARTE_DE_STYLES
     extraites: list[Path] = []
     encadrees = empreintes_images_encadrees(chemin_docx) if options.get("bordures_images") else set()
     connues = {str(i["empreinte"]): str(i.get("alt") or "") for i in options.get("images_connues") or []}

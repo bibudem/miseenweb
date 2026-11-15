@@ -14,15 +14,6 @@ commun:
       p[style-name='Quote'] => blockquote:fresh
       p[style-name='Intense Quote'] => blockquote.mise-en-relief:fresh
       p[style-name='Caption'] => figcaption:fresh
-      p[style-name='Cellule retrait 1'] => p.retrait-1:fresh
-      p[style-name='Cellule retrait 2'] => p.retrait-2:fresh
-      p[style-name='Cellule retrait 3'] => p.retrait-3:fresh
-      p[style-name='Cellule centrée'] => p.centre:fresh
-      p[style-name='Puce coche'] => ul.puces-coche > li:fresh
-      p[style-name='Puce losange'] => ul.puces-losange > li:fresh
-      p[style-name='Puce tiret'] => ul.puces-tiret > li:fresh
-      p[style-name='Puce carré'] => ul.puces-carre > li:fresh
-      p[style-name='Puce flèche'] => ul.puces-fleche > li:fresh
       r[style-name='Strong'] => strong
       u => em
     inclure_carte_defaut: true
@@ -40,6 +31,7 @@ commun:
     corriger_faux_titres: true
     entetes_tableaux: true
     notes_tableaux: true
+    alignement_colonnes: true
     tableaux_larges: 9              # colonnes
     liens_automatiques: true
     sens_ecriture: true
@@ -87,6 +79,9 @@ variantes:
       priorite: 20
     normalisation:
       active: true
+      numeros_sous_titres: true
+      mise_en_forme_cellules: true
+      sortes_de_puces: true
       regles:                       # évaluées dans l'ordre; la première qui s'applique gagne
         - nom: grandes-sections
           styles_source: ["Normal", "Normal (Web)"]

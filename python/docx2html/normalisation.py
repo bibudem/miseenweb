@@ -34,14 +34,14 @@ liste d'un seul élément, qui recommence à 1 : son numéro est donc écrit dan
 
 Dans un tableau, le retrait d'un paragraphe montre qu'une ligne dépend de la précédente.
 Mammoth ne transmet ni le retrait ni l'alignement : le paragraphe reçoit donc un style
-(« Cellule retrait 1 », « Cellule centrée ») que la carte de styles du profil change en classe.
+(« Cellule retrait 1 », « Cellule centrée ») que CARTE_DE_STYLES change en classe.
 
     normalisation:
       sortes_de_puces: true   # conserve les puces particulières : coche, losange, tiret…
 
 Dans une liste, des puces différentes distinguent des groupes d'éléments. Mammoth donne la même
 puce à tous : un élément à puce particulière reçoit donc un style (« Puce coche », « Puce tiret »)
-que la carte de styles du profil change en liste d'une classe donnée.
+que CARTE_DE_STYLES change en liste d'une classe donnée.
 """
 
 from __future__ import annotations
@@ -242,6 +242,20 @@ def _ecrire_numeros_sous_titres(doc) -> list[Modification]:
         )
     return modifications
 
+
+# Styles donnés par la normalisation aux paragraphes dont Mammoth ne transmet pas la mise en
+# forme, et classe HTML de chacun. conversion.py ajoute ces lignes à la carte de styles du profil.
+CARTE_DE_STYLES = """
+p[style-name='Cellule retrait 1'] => p.retrait-1:fresh
+p[style-name='Cellule retrait 2'] => p.retrait-2:fresh
+p[style-name='Cellule retrait 3'] => p.retrait-3:fresh
+p[style-name='Cellule centrée'] => p.centre:fresh
+p[style-name='Puce coche'] => ul.puces-coche > li:fresh
+p[style-name='Puce losange'] => ul.puces-losange > li:fresh
+p[style-name='Puce tiret'] => ul.puces-tiret > li:fresh
+p[style-name='Puce carré'] => ul.puces-carre > li:fresh
+p[style-name='Puce flèche'] => ul.puces-fleche > li:fresh
+"""
 
 RETRAIT_PAR_NIVEAU = 720     # twips : un demi-pouce, le pas de retrait habituel de Word
 NIVEAUX_DE_RETRAIT = 3

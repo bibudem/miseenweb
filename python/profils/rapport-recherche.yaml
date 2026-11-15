@@ -14,9 +14,13 @@ mammoth:
     p[style-name='Title'] => h1.titre-document:fresh
   inclure_carte_defaut: true
   images: incorporees
+  bordures_images: true
 
 normalisation:
   active: true
+  numeros_sous_titres: true     # écrit en texte le numéro des sous-titres numérotés
+  mise_en_forme_cellules: true  # conserve le retrait et le centrage dans les tableaux
+  sortes_de_puces: true         # conserve les puces particulières
   regles:
     # Les règles sont évaluées dans l'ordre; la première qui s'applique gagne.
     - nom: titre-niveau-1
@@ -47,6 +51,10 @@ normalisation:
 
 post_traitement:
   supprimer_vides: true
+  notes_tableaux: true      # sort du tableau la note de sa dernière ligne
+  alignement_colonnes: true # centre une colonne de données si la plupart de ses cellules le sont
+  tableaux_larges: 9        # colonnes à partir desquelles un tableau défile dans sa zone
+  sens_ecriture: true       # marque les passages en arabe
   identifiants_titres: true
   decaler_niveaux: auto     # s'il y a un titre de style Title : Title = h1, Heading 1 = h2, etc.
   verifier_hierarchie: true
