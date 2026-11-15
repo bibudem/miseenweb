@@ -36,7 +36,7 @@
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Déposez vos documents Word : leur type est reconnu automatiquement"
+      "label": "Déposer vos documents Word. MiseEnWeb reconnaît automatiquement leur type."
     },
     {
       "src": "captures/bureau-resultats.png",

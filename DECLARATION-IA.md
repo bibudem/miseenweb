@@ -8,15 +8,15 @@
 
 **Méthodologie :** L'IAG a vérifié la faisabilité de l'approche avant de la proposer, en convertissant les documents d'exemple dans Pyodide et en comparant le résultat à celui du programme de bureau. Elle a proposé des méthodes de vérification : tests automatisés dans le navigateur et audit d'accessibilité.
 
-**Exécution :** L'IAG a rédigé le code TypeScript, HTML et CSS de la page, le pont Python entre la page et le convertisseur, le *service worker* et les scripts de préparation. Elle a exécuté les tests et l'audit d'accessibilité, puis corrigé les défauts relevés. L'auteur a utilisé la page dans le navigateur, relevé ce qui ne convenait pas et corrigé des propositions de l'IAG.
+**Exécution :** L'IAG a rédigé le code TypeScript, HTML et CSS de la page, le pont Python entre la page et le convertisseur, le service worker et les scripts de préparation. Elle a exécuté les tests et l'audit d'accessibilité, puis corrigé les défauts relevés. L'auteur a utilisé la page dans le navigateur, relevé ce qui ne convenait pas et corrigé des propositions de l'IAG.
 
-**Visualisation :** L'IAG a adapté le style graphique du site des Bibliothèques (dépôt `bibweb`) à la page, en s'aidant de la base de connaissances UI/UX Pro Max. Elle a produit l'image de partage, les icônes de l'application et les captures d'écran, à partir du logo existant et selon les indications de l'auteur.
+**Visualisation :** L'IAG a adapté le style graphique du site des Bibliothèques (répertoire GitHub `bibweb`) à la page, en s'aidant de la base de connaissances UI/UX Pro Max. Elle a produit l'image de partage, les icônes de l'application et les captures d'écran, à partir du logo existant et selon les indications de l'auteur.
 
 **Rédaction - Révision et édition :** L'IAG a rédigé les textes de la page, les conseils de correction affichés aux étudiants, le README et une ébauche de la présente déclaration, révisés par l'auteur.
 
 **Administration du projet :** L'IAG a repéré les licences des composants inclus dans la page, sans que cela constitue un avis juridique.
 
-**Confidentialité et sécurité :** La page convertit les documents dans le navigateur, sans les envoyer à un serveur. Aucun document d'étudiant n'est inclus dans le dépôt : les tests ont utilisé les documents fictifs du dépôt et un document fictif créé pour l'occasion.
+**Confidentialité et sécurité :** La page convertit les documents dans le navigateur, sans les envoyer à un serveur. Aucun document d'étudiant n'est inclus dans le répertoire GitHub : les tests ont utilisé les documents fictifs du dépôt et un document fictif créé pour l'occasion.
 
 ## Répartition du travail
 
@@ -35,7 +35,7 @@
 **Le travail de l'IAG (Claude) :**
 
 - vérifier la faisabilité de l'approche et proposer l'architecture;
-- rédiger le code de la page, le pont Python, le *service worker* et les scripts;
+- rédiger le code de la page, le pont Python, le service worker et les scripts;
 - produire l'image de partage, les icônes et les captures d'écran;
 - exécuter les tests dans le navigateur et l'audit d'accessibilité, et corriger les défauts relevés;
 - rédiger le README et la présente ébauche de déclaration.
@@ -54,7 +54,7 @@
 | Outil | Version | Licence | Usage |
 |---|---|---|---|
 | Pyodide | 314.0.7 (Python 3.14.2) | MPL-2.0 | Python dans le navigateur |
-| Convertisseur MiseEnWeb (`docx2html`) | inclus dans le dépôt | MIT | Conversion des documents |
+| Convertisseur MiseEnWeb (`docx2html`) | inclus dans le répertoire GitHub | MIT | Conversion des documents |
 | Mammoth | 1.13.0 | BSD-2-Clause | Conversion du Word en HTML |
 | python-docx | 1.2.0 | MIT | Lecture des documents Word |
 | Beautiful Soup (beautifulsoup4) | 4.14.3 | MIT | Traitement du HTML |
@@ -78,13 +78,13 @@
 | axe-core | 4.14.0 | Audit d'accessibilité (WCAG 2.2 AA) |
 | Google Chrome | 157 | Tests et vérification du rendu |
 | Git | 2.54.0 | Suivi des versions |
-| GitHub et GitHub Pages | s. o. | Hébergement du dépôt et publication de la page |
+| GitHub et GitHub Pages | s. o. | Hébergement du répertoire GitHub et publication de la page |
 | Visual Studio Code | s. o. | Éditeur de code |
 | macOS | 27.0 | Système d'exploitation |
 
 **Sources consultées**
 
-- Site des Bibliothèques de l'Université de Montréal, dépôt `bibweb` : jetons de design, logo,
+- Site des Bibliothèques de l'Université de Montréal, répertoire GitHub `bibweb` : jetons de design, logo,
   favoricône et système d'animation, repris dans la page.
 - W3C. *Web Content Accessibility Guidelines (WCAG) 2.2*. <https://www.w3.org/TR/WCAG22/>
 - Déclaration rédigée avec le générateur DDIA des bibliothèques de l'Université de Montréal, fondé sur

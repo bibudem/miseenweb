@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Convertir un document Word en page web accessible · MiseEnWeb</title>
-    <meta name="description" content="Convertissez vos documents Word en pages web accessibles, directement dans le navigateur et sans installation. Un outil gratuit des Bibliothèques de l'UdeM." />
+    <meta name="description" content="MiseEnWeb convertit les documents Word en pages web accessibles, dans le navigateur et sans installation. Les Bibliothèques de l'UdeM offrent cet outil gratuitement." />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="Les bibliothèques de l'Université de Montréal" />
     <link rel="canonical" href="%URL_SITE%" />
@@ -14,7 +14,7 @@
     <meta property="og:locale" content="fr_CA" />
     <meta property="og:site_name" content="Les bibliothèques de l'Université de Montréal" />
     <meta property="og:title" content="MiseEnWeb : du document Word à la page web accessible" />
-    <meta property="og:description" content="Convertissez vos documents Word en pages web accessibles, directement dans le navigateur et sans installation." />
+    <meta property="og:description" content="MiseEnWeb convertit les documents Word en pages web accessibles, dans le navigateur et sans installation." />
     <meta property="og:url" content="%URL_SITE%" />
     <meta property="og:image" content="%URL_SITE%partage.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
@@ -24,7 +24,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@bibUdeM" />
     <meta name="twitter:title" content="MiseEnWeb : du document Word à la page web accessible" />
-    <meta name="twitter:description" content="Convertissez vos documents Word en pages web accessibles, directement dans le navigateur et sans installation." />
+    <meta name="twitter:description" content="MiseEnWeb convertit les documents Word en pages web accessibles, dans le navigateur et sans installation." />
     <meta name="twitter:image" content="%URL_SITE%partage.jpg" />
     <meta name="twitter:image:alt" content="MiseEnWeb, du document Word à la page web accessible. Les bibliothèques de l'Université de Montréal." />
 
@@ -37,7 +37,7 @@
         "alternateName": "Mise en Web",
         "url": "%URL_SITE%",
         "image": "%URL_SITE%partage.jpg",
-        "description": "Convertit des documents Word (.docx) en pages web accessibles, directement dans le navigateur. Les fichiers restent sur l'ordinateur de la personne.",
+        "description": "Convertit des documents Word (.docx) en pages web accessibles, directement dans le navigateur. Les fichiers restent sur l'ordinateur de l'utilisateur.",
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "Tout navigateur récent",
         "browserRequirements": "JavaScript et WebAssembly",
@@ -113,8 +113,8 @@
             <div>
               <h1 id="titre-page">Du document Word à la page web accessible</h1>
               <p class="chapeau">
-                Déposez vos articles, thèses ou rapports. MiseEnWeb en fait des pages HTML structurées, prêtes à
-                publier, sans rien installer.
+                Déposer vos articles, thèses ou rapports. MiseEnWeb produit des pages HTML structurées, prêtes à
+                publier, sans installation.
               </p>
             </div>
             <img class="logo-outil" src="/logo.svg" alt="" width="220" height="220" />
@@ -141,8 +141,8 @@
           <div class="depot" data-depot>
             <span class="depot-icone" data-icone="file-doc" aria-hidden="true"></span>
             <p class="depot-titre">
-              <span class="si-pointeur">Glissez vos documents Word ici</span>
-              <span class="si-tactile">Choisissez vos documents Word</span>
+              <span class="si-pointeur">Glisser vos documents Word ici</span>
+              <span class="si-tactile">Choisir vos documents Word</span>
             </p>
             <p class="depot-aide">Fichiers .docx, un ou plusieurs à la fois.</p>
             <div class="depot-actions">
@@ -154,7 +154,7 @@
               </button>
             </div>
             <button type="button" class="bouton bouton-texte" data-exemples>
-              <span class="icone" data-icone="sparkle" aria-hidden="true"></span>Pas de document sous la main ? Essayer avec des exemples
+              <span class="icone" data-icone="sparkle" aria-hidden="true"></span>Tester avec des documents d'exemple
             </button>
             <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden data-entree-fichiers aria-label="Choisir des fichiers" />
             <input type="file" webkitdirectory hidden data-entree-dossier aria-label="Choisir un dossier" />
@@ -167,7 +167,7 @@
                 <span class="icone" data-icone="trash" aria-hidden="true"></span>Vider la liste
               </button>
             </div>
-            <p class="aide">Le type de chaque document est reconnu automatiquement. Changez-le s'il ne convient pas.</p>
+            <p class="aide">MiseEnWeb reconnaît automatiquement le type de chaque document. Changer le type s'il ne convient pas.</p>
             <ul class="fichiers" data-fichiers></ul>
           </div>
 
@@ -227,34 +227,34 @@
 
       <section id="fonctionnement" class="bande" aria-labelledby="titre-fonctionnement">
         <div class="conteneur" data-revelation="zone">
-          <h2 id="titre-fonctionnement">Comment ça fonctionne</h2>
+          <h2 id="titre-fonctionnement">Fonctionnement</h2>
           <p class="intro">
-            MiseEnWeb lit la structure de votre document plutôt que son apparence. Il reconnaît la sorte de
-            document, corrige ce que Word cache, puis vous dit ce qu'il faut vérifier.
+            MiseEnWeb lit la structure de votre document plutôt que son apparence. MiseEnWeb reconnaît le type
+            du document, corrige la structure, puis indique les points à vérifier.
           </p>
           <ol class="grille-cartes" data-revelation="groupe">
             <li class="carte carte-etape">
               <span class="pastille" data-icone="sliders-horizontal" aria-hidden="true"></span>
-              <h3>Un réglage par sorte de document</h3>
+              <h3>Réglages par type de document</h3>
               <p>
-                Thèse, rapport, article de revue : chaque sorte de document a ses propres réglages. MiseEnWeb
-                choisit les bons d'après le nom du fichier, ses styles et l'ISSN de la revue.
+                Chaque type de document a ses réglages : thèse, rapport, article de revue. MiseEnWeb choisit
+                les réglages d'après le nom du fichier, les styles du document et l'ISSN de la revue.
               </p>
             </li>
             <li class="carte carte-etape">
               <span class="pastille" data-icone="tree-structure" aria-hidden="true"></span>
-              <h3>Une structure réparée</h3>
+              <h3>Structure corrigée</h3>
               <p>
-                Les titres faits à la main sont reconnus ou signalés, les en-têtes de tableaux sont marqués, les
-                adresses deviennent cliquables. Votre document d'origine n'est jamais modifié.
+                MiseEnWeb reconnaît ou signale les titres sans style de titre. MiseEnWeb marque les en-têtes
+                de tableaux et transforme les adresses en hyperliens. Votre document d'origine reste intact.
               </p>
             </li>
             <li class="carte carte-etape">
               <span class="pastille" data-icone="list-checks" aria-hidden="true"></span>
-              <h3>Des points à vérifier</h3>
+              <h3>Points à vérifier</h3>
               <p>
-                Images sans description, titres qui sautent un niveau, liens vagues : chaque problème est
-                expliqué, avec la correction à faire dans Word.
+                MiseEnWeb signale les images sans texte de remplacement, les niveaux de titre manquants et les
+                hyperliens au texte vague. Chaque remarque indique la correction à faire dans Word.
               </p>
             </li>
           </ol>
@@ -265,10 +265,11 @@
         <div class="conteneur confidentialite" data-revelation="zone">
           <span class="pastille pastille-grande" data-icone="lock-simple" aria-hidden="true"></span>
           <div>
-            <h2 id="titre-confidentialite">Vos documents restent chez vous</h2>
+            <h2 id="titre-confidentialite">Confidentialité des documents</h2>
             <p>
-              La conversion se fait entièrement dans votre navigateur. Aucun fichier n'est envoyé à un serveur,
-              ni aux Bibliothèques, ni à un service externe. Fermer la page efface tout.
+              Votre navigateur exécute toute la conversion. Aucun fichier n'est envoyé à un serveur, aux
+              Bibliothèques ou à un service externe. La fermeture de la page efface les documents et les pages
+              produites.
             </p>
           </div>
         </div>
@@ -279,26 +280,26 @@
           <h2 id="titre-questions">Questions fréquentes</h2>
           <div class="questions" data-revelation="groupe">
             <details class="volet-anime">
-              <summary>Le résultat est-il prêt à publier ?</summary>
+              <summary>Vérification avant la publication</summary>
               <p>
-                Presque toujours, mais il faut le vérifier. Ouvrez « Aperçu et vérification » : le plan du
-                document et la liste des points à vérifier vous mènent directement aux endroits concernés.
+                Vérifier la page produite avant de la publier. Ouvrir « Aperçu et vérification ». Le plan du
+                document et la liste des points à vérifier mènent aux endroits concernés.
               </p>
             </details>
             <details class="volet-anime">
-              <summary>Comment publier la page dans StudiUM ou un autre site ?</summary>
+              <summary>Publication dans StudiUM ou un autre site</summary>
               <p>
-                Utilisez « Copier le code », puis collez-le dans l'éditeur du site. Dans un éditeur visuel, le
-                texte arrive mis en forme ; dans un champ de code HTML, c'est le code qui est collé.
+                Utiliser « Copier le code », puis coller le code dans l'éditeur du site. Un éditeur visuel reçoit
+                le texte mis en forme. Un champ de code HTML reçoit le code.
               </p>
             </details>
             <details class="volet-anime" id="installer">
-              <summary>Puis-je installer MiseEnWeb comme une application ?</summary>
+              <summary>Installation comme application</summary>
               <div class="reponse">
                 <p>
-                  Oui. Installée, MiseEnWeb s'ouvre dans sa propre fenêtre et fonctionne sans connexion. Avec
-                  Chrome ou Edge, vous pouvez aussi ouvrir un document Word directement avec elle : clic droit
-                  sur le fichier, puis « Ouvrir avec », puis « MiseEnWeb ».
+                  Une fois installée, MiseEnWeb a sa propre fenêtre et fonctionne sans connexion. Avec Chrome
+                  ou Edge, l'application ouvre aussi un document Word : faire un clic droit sur le fichier,
+                  choisir « Ouvrir avec », puis « MiseEnWeb ».
                 </p>
                 <p class="installer-action" data-installer-zone hidden>
                   <button type="button" class="bouton bouton-plein bouton-compact" data-installer>
@@ -316,16 +317,16 @@
                   <li><strong>Safari sur Mac</strong> : menu « Fichier », puis « Ajouter au Dock ».</li>
                   <li><strong>iPhone et iPad</strong> : bouton « Partager », puis « Sur l'écran d'accueil ».</li>
                   <li><strong>Android</strong> : menu <span class="touche" role="img" aria-label="trois points verticaux" data-icone-gras="dots-three-vertical"></span>, puis « Installer l'application ».</li>
-                  <li><strong>Firefox</strong> n'installe pas d'application sur ordinateur : utilisez la page dans un onglet.</li>
+                  <li><strong>Firefox</strong> n'installe pas d'application sur ordinateur. Utiliser la page dans un onglet.</li>
                 </ul>
               </div>
             </details>
             <details class="volet-anime">
-              <summary>Pourquoi le premier chargement prend-il quelques secondes ?</summary>
+              <summary>Durée du premier chargement</summary>
               <p>
-                La page télécharge le convertisseur, environ 15 Mo, pour qu'il fonctionne dans votre navigateur.
-                Il est ensuite gardé sur votre appareil : les visites suivantes sont presque instantanées, et la
-                page fonctionne même sans connexion.
+                À la première visite, la page télécharge le convertisseur, environ 15 Mo. Le convertisseur
+                est ensuite conservé sur votre appareil. Aux visites suivantes, la page démarre sans
+                téléchargement et fonctionne sans connexion.
               </p>
             </details>
           </div>
@@ -402,7 +403,7 @@
     <p class="toast" role="status" data-toast hidden></p>
 
     <noscript>
-      <p class="sans-script">MiseEnWeb a besoin de JavaScript pour convertir vos documents dans le navigateur.</p>
+      <p class="sans-script">MiseEnWeb requiert JavaScript pour convertir vos documents dans le navigateur.</p>
     </noscript>
   </body>
 </html>

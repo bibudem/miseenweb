@@ -5,7 +5,7 @@
 Convertit des documents Word (`.docx`) en pages web accessibles, directement dans le navigateur.
 Aucune installation n'est requise, et les documents ne quittent jamais l'ordinateur.
 
-Le convertisseur est écrit en Python. [Pyodide](https://pyodide.org) l'exécute dans le navigateur.
+Le convertisseur est écrit en Python. Pyodide l'exécute dans le navigateur.
 
 ## Démarrer
 
@@ -22,14 +22,14 @@ Au premier lancement, Pyodide et les bibliothèques Python (16 Mo) sont téléch
 
 ## Organisation
 
-- `index.html` et `src/` : la page, son style et le *worker* qui exécute Python.
+- `index.html` et `src/` : la page, son style et le worker qui exécute Python.
 - `python/pont.py` : le lien entre la page et le convertisseur.
 - `python/docx2html/`, `profils/`, `gabarits/` : le convertisseur, ses profils et ses gabarits.
 
 ## Publier
 
 Le site est publié sur GitHub Pages à chaque envoi (`git push`) sur la branche `main`. La publication
-s'active une seule fois, dans les réglages du dépôt : **Settings**, **Pages**, puis **Source** :
+s'active une seule fois, dans les réglages du répertoire GitHub : **Settings**, **Pages**, puis **Source** :
 **GitHub Actions**.
 
 ## Licences
@@ -46,7 +46,7 @@ s'active une seule fois, dans les réglages du dépôt : **Settings**, **Pages**
 - **Exclus** : le logo et la favoricône des Bibliothèques (`public/logo-bib.svg`,
   `public/logo-bib-blanc.svg`, `public/favicon.svg`, `public/favicon.ico`) sont des marques de
   l'Université de Montréal. Aucune de ces licences ne les couvre, y compris là où ils apparaissent
-  dans l'image de partage et les captures d'écran. Une personne qui réutilise ce code doit les
+  dans l'image de partage et les captures d'écran. Un utilisateur qui réutilise ce code doit les
   retirer ou les remplacer.
 
 Les composants tiers conservent leur propre licence, indiquée dans
