@@ -171,7 +171,7 @@ worker.addEventListener('message', ({ data }: MessageEvent<Evenement>) => {
       break
     case 'echec':
       etat.dataset.etat = 'echec'
-      texteEtat.textContent = 'Le convertisseur n’a pas pu démarrer. Rechargez la page, ou essayez un navigateur récent.'
+      texteEtat.textContent = 'Le convertisseur n’a pas démarré. Recharger la page ou utiliser un navigateur récent.'
       console.error(data.texte)
       break
     case 'progression':
@@ -191,7 +191,7 @@ worker.addEventListener('message', ({ data }: MessageEvent<Evenement>) => {
 
 worker.addEventListener('error', () => {
   etat.dataset.etat = 'echec'
-  texteEtat.textContent = 'Votre navigateur ne peut pas faire tourner le convertisseur. Essayez une version récente de Chrome, Edge, Firefox ou Safari.'
+  texteEtat.textContent = 'Ce navigateur ne peut pas exécuter le convertisseur. Utiliser une version récente de Chrome, Edge, Firefox ou Safari.'
 })
 
 function demarre(donnees: Catalogue): void {
@@ -215,12 +215,12 @@ async function ajouter(fichiers: File[]): Promise<void> {
   for (const fichier of fichiers) {
     const nom = fichier.name
     const minuscule = nom.toLowerCase()
-    if (nom.startsWith('~$')) remarques.push(`« ${nom} » est un fichier temporaire de Word : il est ignoré.`)
+    if (nom.startsWith('~$')) remarques.push(`« ${nom} » est un fichier temporaire de Word. Le fichier est ignoré.`)
     else if (minuscule.endsWith('.doc'))
-      remarques.push(`« ${nom} » est dans l’ancien format .doc. Ouvrez-le dans Word et enregistrez-le en .docx.`)
-    else if (!minuscule.endsWith('.docx')) remarques.push(`« ${nom} » n’est pas un document Word : il est ignoré.`)
+      remarques.push(`« ${nom} » est dans le format .doc. Ouvrir le fichier dans Word, puis enregistrer le fichier dans le format .docx.`)
+    else if (!minuscule.endsWith('.docx')) remarques.push(`« ${nom} » n’est pas un document Word. Le fichier est ignoré.`)
     else if (documents.has(nom) || retenus.some((f) => f.name === nom))
-      remarques.push(`« ${nom} » est déjà dans la liste. Deux documents de même nom donneraient la même page.`)
+      remarques.push(`« ${nom} » est déjà dans la liste. Deux documents de même nom produisent la même page.`)
     else retenus.push(fichier)
   }
   if (retenus.length) remarques.unshift(`${pluriel(retenus.length, 'document ajouté', 'documents ajoutés')}.`)
@@ -410,7 +410,7 @@ async function convertir(): Promise<void> {
       lienPrincipal.download = pages[0].sortie
       libellePrincipal.textContent = 'Télécharger la page (.html)'
       lienZip.hidden = false
-      aideResultats.textContent = 'La page est un seul fichier .html, images comprises. Le zip contient aussi le rapport.'
+      aideResultats.textContent = 'La page est un seul fichier .html qui contient les images. Le fichier .zip contient aussi le rapport.'
     } else {
       lienPrincipal.href = lienZip.href
       lienPrincipal.download = 'miseenweb.zip'
@@ -422,7 +422,7 @@ async function convertir(): Promise<void> {
     recupere = false
     afficherResultats()
   } catch (erreur) {
-    annoncer('La conversion a échoué. Rechargez la page, puis réessayez.')
+    annoncer('La conversion a échoué. Recharger la page, puis relancer la conversion.')
     console.error(erreur)
   } finally {
     enCours = false
@@ -498,7 +498,7 @@ function resumeRemarques(remarques: Remarque[], gravite: Remarque['gravite']): H
   volet.append(element('summary', '', texte), listeRemarques(groupes))
   // Ici, les remarques sont regroupées : c'est l'aperçu qui mène à chaque endroit à corriger
   if (gravite === 'avertissement') {
-    volet.append(element('p', 'aide', 'Pour voir où se trouve chaque point, ouvrez « Aperçu et vérification ».'))
+    volet.append(element('p', 'aide', '« Aperçu et vérification » montre l’emplacement de chaque point.'))
   }
   return volet
 }
@@ -564,7 +564,7 @@ function afficherResultats(): void {
 }
 
 async function recommencer(): Promise<void> {
-  if (!recupere && !confirm('Les pages converties n’ont pas été téléchargées. Les abandonner ?')) return
+  if (!recupere && !confirm('Les pages converties n’ont pas été téléchargées. Abandonner ces pages ?')) return
   const noms = [...documents.keys()]
   documents.clear()
   resultats = []
@@ -596,9 +596,9 @@ async function copierCode(page: string): Promise<void> {
       await navigator.clipboard.writeText(contenu)
     }
     recupere = true
-    afficherToast('Code copié. Collez-le dans l’éditeur de votre site.')
+    afficherToast('Le code est copié. Coller le code dans l’éditeur du site.')
   } catch {
-    afficherToast('La copie a été refusée par le navigateur. Téléchargez plutôt la page.')
+    afficherToast('Le navigateur a refusé la copie. Télécharger la page.')
   }
 }
 
@@ -665,7 +665,7 @@ function remplirPanneau(resultat: Resultat): void {
   // Plan : la liste des titres, imbriquée par niveau
   const titres = [...doc.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6')]
   if (!titres.length) {
-    listePlan.replaceChildren(element('li', 'aide', 'Aucun titre : la page n’a pas de structure.'))
+    listePlan.replaceChildren(element('li', 'aide', 'La page n’a aucun titre.'))
     return
   }
   const pile: [number, HTMLOListElement][] = [[0, listePlan]]
@@ -865,7 +865,7 @@ $<HTMLButtonElement>('[data-installer]').addEventListener('click', async () => {
   const { outcome } = await invitation.userChoice
   invitation = null
   zoneInstaller.hidden = true
-  if (outcome === 'accepted') afficherToast('MiseEnWeb est installée. Vous la trouverez parmi vos applications.')
+  if (outcome === 'accepted') afficherToast('MiseEnWeb est installée. L’application apparaît parmi les applications de l’appareil.')
 })
 
 window.addEventListener('appinstalled', montrerInstallee)

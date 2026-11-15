@@ -111,11 +111,12 @@ def lire(nom: str) -> None:
 def _message_illisible(chemin: Path, exc: Exception) -> str:
     debut = chemin.read_bytes()[:8] if chemin.exists() else b""
     if debut.startswith(b"\xd0\xcf\x11\xe0"):
-        return ("Document protégé par un mot de passe, ou enregistré dans l'ancien format .doc. "
-                "Retirez le mot de passe, ou enregistrez-le en .docx dans Word.")
+        return ("Le document est protégé par un mot de passe ou enregistré dans le format .doc. "
+                "Dans Word, retirer le mot de passe ou enregistrer le document dans le format .docx.")
     if not zipfile.is_zipfile(chemin) or isinstance(exc, (zipfile.BadZipFile, KeyError, ValueError)):
-        return "Ce fichier n'est pas un document Word (.docx) valide. Ouvrez-le dans Word et enregistrez-le de nouveau."
-    return f"Fichier illisible ({type(exc).__name__})."
+        return ("Le fichier n'est pas un document Word (.docx) valide. Ouvrir le fichier dans Word, puis "
+                "enregistrer le fichier de nouveau.")
+    return f"Le fichier est illisible ({type(exc).__name__})."
 
 
 def _choisir(nom: str, revue: str, profil_force: str = "") -> tuple[Profil | None, str, dict]:
@@ -189,25 +190,25 @@ def _decalage(soupe: BeautifulSoup, profil: Profil | None) -> int:
 
 def _traduire_structure(message: str, soupe: BeautifulSoup, decalage: int = 0) -> Remarque:
     if message.startswith("Aucun titre"):
-        return Remarque("avertissement", "Aucun titre n'a été trouvé.",
-                        "Dans Word, appliquez les styles Titre 1, Titre 2… à vos titres, au lieu de les mettre "
-                        "en gras ou en gros caractères.")
+        return Remarque("avertissement", "Aucun titre.",
+                        "Un lecteur d'écran parcourt une page par ses titres. Dans Word, appliquer les styles "
+                        "Titre 1 et Titre 2 aux titres.")
     if trouve := re.match(r"Le document ne commence pas par un h1", message):
-        return Remarque("avertissement", "Le document ne commence pas par son titre principal.",
-                        "Dans Word, appliquez le style Titre au titre du document.")
+        return Remarque("avertissement", "Titre principal absent au début du document.",
+                        "Dans Word, appliquer le style Titre au titre du document.")
     if trouve := re.match(r"Saut de niveau : h(\d) suivi de h(\d) \(« (.*) »\)", message):
         # Niveaux exprimés en styles Word, et non en balises HTML
         avant, apres, extrait = int(trouve[1]) - decalage, int(trouve[2]) - decalage, trouve[3]
         nom_style = lambda n: "Titre" if n <= 0 else f"Titre {n}"  # noqa: E731
-        return Remarque("avertissement", f"Un niveau de titre manque avant « {extrait} ».",
-                        f"Ce titre porte le style {nom_style(apres)}, mais le titre précédent est en "
-                        f"{nom_style(avant)}. Dans Word, appliquez-lui plutôt le style {nom_style(avant + 1)}, "
-                        "ou ajoutez le titre intermédiaire qui manque.",
+        return Remarque("avertissement", f"Niveau de titre manquant avant « {extrait} ».",
+                        f"Ce titre a le style {nom_style(apres)}. Le titre précédent a le style "
+                        f"{nom_style(avant)}. Dans Word, appliquer le style {nom_style(avant + 1)} à ce titre "
+                        "ou ajouter le titre intermédiaire.",
                         _cible_titre(soupe, extrait))
     if trouve := re.match(r"(\d+) titres de niveau h1", message):
-        return Remarque("avertissement", f"Le document a {trouve[1]} titres principaux.",
-                        "Une page ne devrait avoir qu'un titre principal. Dans Word, gardez le style Titre pour "
-                        "le titre du document, et Titre 1 pour les grandes parties.")
+        return Remarque("avertissement", f"{trouve[1]} titres principaux.",
+                        "Une page a un seul titre principal. Dans Word, réserver le style Titre au titre du "
+                        "document. Appliquer le style Titre 1 aux sections.")
     return Remarque("avertissement", message)
 
 
@@ -224,10 +225,10 @@ def _styles_inconnus(messages: list[dict]) -> Remarque | None:
     noms = list(dict.fromkeys(t[2] for m in messages if (t := MOTIF_STYLE_INCONNU.match(m["message"]))))
     if len(noms) < 2:
         return None
-    return Remarque("info", f"{len(noms)} styles Word ne sont pas reconnus : "
+    return Remarque("info", f"{len(noms)} styles Word non reconnus : "
                             + ", ".join(f"« {nom} »" for nom in noms) + ".",
-                    "Le texte qui les porte devient du texte ordinaire. C'est sans conséquence s'ils ne "
-                    "servent pas à des titres.")
+                    "Le texte de ces styles devient du texte courant. La structure de la page reste complète "
+                    "si ces styles ne servent pas à des titres.")
 
 
 def _traduire_mammoth(message: dict) -> Remarque | None:
@@ -236,26 +237,25 @@ def _traduire_mammoth(message: dict) -> Remarque | None:
     if trouve := re.match(r"An unrecognised element was ignored: (.+)", texte):
         if trouve[1].endswith(ELEMENTS_SANS_CONSEQUENCE):
             return None
-        return Remarque("info", f"Un élément du document Word a été ignoré : {trouve[1]}.",
-                        "Le convertisseur ne connaît pas cet élément. Vérifiez que rien ne manque dans la "
-                        "page produite.")
+        return Remarque("info", f"Élément Word ignoré : {trouve[1]}.",
+                        "Le convertisseur ne connaît pas cet élément. Vérifier que la page produite est "
+                        "complète.")
     if trouve := MOTIF_STYLE_INCONNU.match(texte):
-        sorte = "paragraphes" if trouve[1] == "paragraph" else "mots mis en forme"
-        return Remarque("info", f"Le style Word « {trouve[2]} » n'est pas reconnu.",
-                        f"Ses {sorte} deviennent du texte ordinaire. C'est sans conséquence s'il ne sert pas à "
-                        "des titres.")
+        return Remarque("info", f"Style Word non reconnu : « {trouve[2]} ».",
+                        "Le texte de ce style devient du texte courant. La structure de la page reste complète "
+                        "si ce style ne sert pas à des titres.")
     if "image/x-emf" in texte:
-        return Remarque("avertissement", "Une image au format EMF n'a pas pu être convertie.",
-                        "Les navigateurs n'affichent pas ce format. Dans Word, enregistrez l'image en PNG et "
-                        "remplacez-la.")
+        return Remarque("avertissement", "Image EMF non convertie.",
+                        "Les navigateurs n'affichent pas le format EMF. Dans Word, remplacer l'image par une "
+                        "version PNG.")
     return Remarque("info", "Remarque technique du convertisseur.", texte)
 
 
 def _traduire_normalisation(m: dict, titre_de_section: bool = False) -> Remarque:
     if m["regle"] == "numero-sous-titre":       # le style n'a pas changé : seul le numéro est écrit
         return Remarque("info", f"Numéro de sous-titre écrit dans le texte : « {m['texte']} »",
-                        "Word numérotait ce sous-titre automatiquement. Son numéro fait maintenant partie "
-                        "du texte, pour que la page affiche le même que le document.")
+                        "Le convertisseur remplace la numérotation automatique de Word par un numéro écrit "
+                        "dans le texte.")
     style = m["style_apres"]
     if style == "Title":
         quoi = "Titre de section reconnu" if titre_de_section else "Titre du document reconnu"
@@ -266,7 +266,8 @@ def _traduire_normalisation(m: dict, titre_de_section: bool = False) -> Remarque
     else:
         quoi = f"Style « {style} » appliqué"
     return Remarque("info", f"{quoi} : « {m['texte']} »",
-                    "Ce paragraphe était mis en forme à la main. Vérifiez qu'il s'agit bien de cela.")
+                    "Le convertisseur reconnaît ce paragraphe d'après sa mise en forme. Vérifier cette "
+                    "interprétation.")
 
 
 LIENS_VAGUES = {"ici", "cliquez ici", "cliquer ici", "lien", "ce lien", "en savoir plus", "plus", "voir",
@@ -314,37 +315,38 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     remarques = []
     for rang in _sous_titres_a_la_main(soupe):
         remarques.append(Remarque(
-            "avertissement", "Sous-titre fait à la main.",
-            "Un paragraphe mis en gras pour servir de sous-titre n'est pas annoncé comme un titre par un "
-            "lecteur d'écran. Dans Word, donnez à chaque sous-titre un style de titre, par exemple "
-            "Titre 2, plutôt que le gras.",
+            "avertissement", "Sous-titre en gras sans style de titre.",
+            "Un lecteur d'écran ne reconnaît pas un paragraphe en gras comme un titre. Dans Word, "
+            "appliquer un style de titre au sous-titre, par exemple Titre 2.",
             {"balise": "p", "rang": rang},
-            "{n} sous-titres faits à la main"))
+            "{n} sous-titres en gras sans style de titre"))
     sans_alt = [i for i, img in enumerate(soupe.find_all("img"))
                 if not img.find_parent("footer") and not (img.get("alt") or "").strip()
                 and img.get("role") != "presentation"]      # image décorative, selon le profil
     for rang in sans_alt:
         remarques.append(Remarque(
             "avertissement", "Image sans texte de remplacement.",
-            "Sans description, une image reste inconnue des personnes ayant une déficience visuelle. "
-            "Dans Word, faites un clic droit sur chaque image, puis « Afficher le texte de remplacement », "
-            "et décrivez-la. Si elle est purement décorative, cochez « Marquer comme décoratif ».",
+            "Un lecteur d'écran ne peut pas décrire une image sans texte de remplacement. Dans Word, "
+            "faire un clic droit sur l'image, puis choisir « Afficher le texte de remplacement ». Pour une "
+            "image décorative, cocher « Marquer comme décoratif ».",
             {"balise": "img", "rang": rang},
             "{n} images sans texte de remplacement"))
     for rang, lien in enumerate(soupe.find_all("a")):
         texte = re.sub(r"[\s.:!»«]+", " ", lien.get_text(" ", strip=True)).strip().casefold()
         if texte in LIENS_VAGUES:
             remarques.append(Remarque(
-                "avertissement", f"Lien au texte vague : « {lien.get_text(strip=True)} ».",
-                "Hors de sa phrase, ce lien ne dit pas où il mène. Dans Word, mettez le lien sur des mots qui "
-                "décrivent la destination.",
+                "avertissement", f"Hyperlien au texte vague : « {lien.get_text(strip=True)} ».",
+                "Un lecteur d'écran peut lire les hyperliens hors de leur phrase. Ce texte n'indique pas la "
+                "destination de l'hyperlien. Dans Word, placer l'hyperlien sur des mots qui décrivent la "
+                "destination.",
                 {"balise": "a", "rang": rang}))
     for rang, tableau in enumerate(soupe.find_all("table")):
         if len(tableau.find_all("tr")) > 1 and not tableau.find("th"):
             remarques.append(Remarque(
                 "avertissement", "Tableau sans ligne d'en-tête.",
-                "Dans Word, sélectionnez la première ligne du tableau, puis ouvrez « Propriétés du tableau », "
-                "onglet « Ligne », et cochez « Répéter en haut de chaque page en tant que ligne d'en-tête ».",
+                "Un lecteur d'écran associe chaque cellule à l'en-tête de sa colonne. Dans Word, sélectionner "
+                "la première ligne du tableau. Ouvrir « Propriétés du tableau », onglet « Ligne ». Cocher "
+                "« Répéter en haut de chaque page en tant que ligne d'en-tête ».",
                 {"balise": "table", "rang": rang},
                 "{n} tableaux sans ligne d'en-tête"))
     return remarques
@@ -501,7 +503,7 @@ def rapport_html() -> str:
                            for x, nombre in _regrouper(liste)]
                 lignes.append("</ul>")
         if not r["remarques"] and not r["erreur"]:
-            lignes.append("<p>Aucune remarque. Relisez tout de même la page avant de la publier.</p>")
+            lignes.append("<p>Le convertisseur n'a aucune remarque. Relire la page avant la publication.</p>")
         lignes.append("</section>")
         blocs.append("\n".join(lignes))
 
