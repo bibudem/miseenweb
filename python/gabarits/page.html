@@ -59,7 +59,7 @@
     /* Le tableau prend la largeur de son contenu, sans s'étirer : les colonnes restent régulières.
        Quand la fenêtre est plus étroite, la zone défile. Une ombre au bord signale les colonnes hors de vue. */
     div.tableau-large table { width: auto; margin: 0 auto; }
-    div.tableau-large .insecable { white-space: nowrap; }
+    td.insecable, th.insecable { white-space: nowrap; }
     div.tableau-large {
       background:
         linear-gradient(to right, var(--fond) 40%, transparent) left center / 2.5rem 100% no-repeat local,

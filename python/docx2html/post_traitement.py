@@ -553,6 +553,27 @@ def _largeur_tableau(tableau: Tag) -> int:
 LONGUEUR_INSECABLE = 24     # caractères : au-delà, le texte d'une cellule peut se couper
 
 
+def _garder_cellules_courtes(soupe: BeautifulSoup) -> int:
+    """Garde sur une ligne les cellules courtes de tous les tableaux, sauf dans la première colonne.
+
+    Sans cela, un en-tête comme « I-CVI » ou un intervalle comme « 0.93 – 1.46 » se coupe au
+    trait d'union quand sa colonne est étroite. La première colonne, qui nomme les lignes,
+    peut se couper : c'est elle qui cède la place.
+    """
+    n = 0
+    for tableau in soupe.find_all("table"):
+        for rang in _grille(tableau):
+            for cellule, colonne, _ in rang:
+                texte = cellule.get_text(" ", strip=True)
+                en_entete = cellule.name == "th" and cellule.get("scope") != "row"
+                if not texte or len(texte) > LONGUEUR_INSECABLE or cellule.find("br") is not None:
+                    continue
+                if (colonne > 0 or en_entete) and "insecable" not in cellule.get("class", []):
+                    cellule["class"] = cellule.get("class", []) + ["insecable"]
+                    n += 1
+    return n
+
+
 def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
     """Place chaque tableau d'au moins `seuil` colonnes dans une zone à défilement horizontal.
 
@@ -578,7 +599,7 @@ def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
         # Le tableau s'élargit au besoin, et la zone défile.
         for cellule in tableau.find_all(["td", "th"]):
             texte = cellule.get_text(" ", strip=True)
-            if 0 < len(texte) <= LONGUEUR_INSECABLE and cellule.find("br") is None:
+            if 0 < len(texte) <= LONGUEUR_INSECABLE and cellule.find("br") is None and "insecable" not in cellule.get("class", []):
                 cellule["class"] = cellule.get("class", []) + ["insecable"]
     return n
 
@@ -774,6 +795,8 @@ def appliquer(
 
     if config.get("accessibilite_tableaux", False):   # après la suppression des <p> vides
         _rendre_tableaux_accessibles(soupe)
+
+    _garder_cellules_courtes(soupe)      # toujours : après le marquage des en-têtes de ligne
 
     if config.get("resume_avant_mots_cles", False):   # après la suppression des <p> vides
         _resume_avant_mots_cles(soupe)

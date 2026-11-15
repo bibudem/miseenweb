@@ -29,6 +29,8 @@
     blockquote { margin: 1.5rem 0; margin-inline-start: 2.5rem; text-align: justify; hyphens: auto; }
     /* Titre d'un tableau ou d'une figure : en italique, sauf son numéro, qui est en gras */
     figcaption, p.legende { margin: 1rem 0; font-style: italic; }
+    /* Numéro et titre d'un tableau : à gauche, sans justification qui étirerait les mots */
+    main > p[id^="titre-tableau"], main > p.legende { text-align: start; hyphens: manual; }
     figcaption strong, p.legende strong { font-style: normal; }
     img { max-width: 100%; height: auto; }
     /* Puces particulières reprises du Word : elles distinguent des groupes dans une liste */
@@ -84,7 +86,7 @@
     /* Le tableau prend la largeur de son contenu, sans s'étirer : les colonnes restent régulières.
        Quand la fenêtre est plus étroite, la zone défile. Une ombre au bord signale les colonnes hors de vue. */
     div.tableau-large table { width: auto; margin: 0 auto; }
-    div.tableau-large .insecable { white-space: nowrap; }
+    td.insecable, th.insecable { white-space: nowrap; }
     div.tableau-large {
       background:
         linear-gradient(to right, var(--fond) 40%, transparent) left center / 2.5rem 100% no-repeat local,
