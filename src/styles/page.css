@@ -1684,7 +1684,7 @@
   .plan-titre {
     display: block;
     width: 100%;
-    min-height: 32px;
+    min-height: var(--taille-cible);
     padding: 4px 8px;
     border: 0;
     border-radius: var(--rayon-tres-petit);

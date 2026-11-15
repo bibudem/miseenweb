@@ -99,7 +99,7 @@ let pret = false
 let enCours = false
 let resultats: Resultat[] = []
 let rapportHtml = ''     // rapport de la dernière conversion
-let recupere = true       // faux tant que les résultats n'ont été ni téléchargés ni copiés
+let recupere = true       // faux tant que les résultats n'ont pas été téléchargés
 const urls: string[] = []
 let pageOuverte: { resultat: Resultat; html: string } | null = null
 
@@ -634,8 +634,12 @@ function afficherResultats(): void {
 
 async function recommencer(): Promise<void> {
   if (!recupere) {
-    confirmation.showModal()     // « Abandonner les pages » relance cette fonction
-    return
+    try {
+      confirmation.showModal()   // « Abandonner les pages » relance cette fonction
+      return
+    } catch {
+      if (!confirm('Les pages converties n’ont pas été téléchargées. Abandonner les pages ?')) return
+    }
   }
   const noms = [...documents.keys()]
   documents.clear()
@@ -667,7 +671,6 @@ async function copierCode(page: string, bouton: HTMLElement, zone: HTMLElement):
     } else {
       await navigator.clipboard.writeText(contenu)
     }
-    recupere = true
     signalerErreur(zone, '')
     confirmerDansBouton(bouton, 'check-circle', 'Code copié')
   } catch {
@@ -842,6 +845,14 @@ document.addEventListener('drop', async (e) => {
 menuRevue.addEventListener('change', () => void analyser())
 boutonConvertir.addEventListener('click', () => void convertir())
 $<HTMLButtonElement>('[data-recommencer]').addEventListener('click', () => void recommencer())
+
+// Le nom de l'outil, dans l'en-tête, ramène à l'accueil. Devant des résultats, il passe par la
+// même confirmation que le bouton : la question du navigateur n'est pas garantie dans Safari.
+$<HTMLAnchorElement>('.nom-outil').addEventListener('click', (e) => {
+  if (blocResultats.hidden) return
+  e.preventDefault()
+  void recommencer()
+})
 for (const lien of [lienPrincipal, lienZip, lienPage]) lien.addEventListener('click', () => (recupere = true))
 
 $<HTMLButtonElement>('[data-vider]').addEventListener('click', async () => {
@@ -916,7 +927,9 @@ $<HTMLButtonElement>('[data-abandonner]').addEventListener('click', () => {
 
 // Tout se perd en fermant la page : on prévient si les résultats n'ont pas été récupérés
 window.addEventListener('beforeunload', (e) => {
-  if (!recupere) e.preventDefault()
+  if (recupere) return
+  e.preventDefault()
+  e.returnValue = ''     // ancienne façon de demander la confirmation, encore exigée par certains navigateurs
 })
 
 // ---- Installer l'application (question fréquente « Puis-je installer MiseEnWeb ») ----
