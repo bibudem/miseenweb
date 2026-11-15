@@ -481,6 +481,9 @@ def _largeur_tableau(tableau: Tag) -> int:
     )
 
 
+LONGUEUR_INSECABLE = 24     # caractères : au-delà, le texte d'une cellule peut se couper
+
+
 def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
     """Place chaque tableau d'au moins `seuil` colonnes dans une zone à défilement horizontal.
 
@@ -504,6 +507,12 @@ def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
             },
         )
         tableau.wrap(zone)
+        # Une cellule courte reste sur une ligne : un intervalle comme « 0.93 – 1.46 » ne se coupe pas.
+        # Le tableau s'élargit au besoin, et la zone défile.
+        for cellule in tableau.find_all(["td", "th"]):
+            texte = cellule.get_text(" ", strip=True)
+            if 0 < len(texte) <= LONGUEUR_INSECABLE and cellule.find("br") is None:
+                cellule["class"] = cellule.get("class", []) + ["insecable"]
     return n
 
 
