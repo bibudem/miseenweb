@@ -315,9 +315,9 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     for rang in _sous_titres_a_la_main(soupe):
         remarques.append(Remarque(
             "avertissement", "Sous-titre fait à la main.",
-            "Ce paragraphe en gras ressemble à un sous-titre, mais un lecteur d'écran ne l'annonce pas "
-            "comme un titre. Dans Word, appliquez-lui un style de titre, par exemple Titre 2, plutôt "
-            "que le gras.",
+            "Un paragraphe mis en gras pour servir de sous-titre n'est pas annoncé comme un titre par un "
+            "lecteur d'écran. Dans Word, donnez à chaque sous-titre un style de titre, par exemple "
+            "Titre 2, plutôt que le gras.",
             {"balise": "p", "rang": rang},
             "{n} sous-titres faits à la main"))
     sans_alt = [i for i, img in enumerate(soupe.find_all("img"))
@@ -326,10 +326,9 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     for rang in sans_alt:
         remarques.append(Remarque(
             "avertissement", "Image sans texte de remplacement.",
-            "Les personnes ayant une déficience visuelle ne pourront pas savoir ce qu'elle montre. "
-            "Dans Word, faites un clic droit sur l'image, puis "
-            "« Afficher le texte de remplacement », et décrivez-la. Si elle est purement décorative, cochez "
-            "« Marquer comme décoratif ».",
+            "Sans description, une image reste inconnue des personnes ayant une déficience visuelle. "
+            "Dans Word, faites un clic droit sur chaque image, puis « Afficher le texte de remplacement », "
+            "et décrivez-la. Si elle est purement décorative, cochez « Marquer comme décoratif ».",
             {"balise": "img", "rang": rang},
             "{n} images sans texte de remplacement"))
     for rang, lien in enumerate(soupe.find_all("a")):
