@@ -43,14 +43,14 @@
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Résultat : chaque point à vérifier est expliqué, avec la correction à faire dans Word"
+      "label": "Résultats : les points à corriger dans le document Word et les informations sur la conversion"
     },
     {
       "src": "captures/bureau-verification.png",
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Aperçu et vérification : le plan du document et les points à vérifier, cliquables"
+      "label": "Vérifier la page : le plan du document et les points à vérifier"
     },
     {
       "src": "captures/mobile-accueil.png",

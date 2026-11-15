@@ -2,13 +2,13 @@
 
 ## Déclaration DDIA
 
-**Outil d'intelligence artificielle :** Claude Opus 5.5 (claude-opus-5-5) par Claude Code d'Anthropic, utilisé le 11 novembre 2026. L'outil peut produire du code ou des analyses erronés, et ses résultats ont été testés et validés par une personne.
+**Outils d'intelligence artificielle :** Claude Opus 5.5 (claude-opus-5-5), utilisé le 11 novembre 2026, et Claude Fable 5.2 (claude-fable-5-2), utilisé du 13 au 15 novembre 2026, par Claude Code d'Anthropic. Ces outils peuvent produire du code ou des analyses erronés, et leurs résultats ont été testés et validés par une personne.
 
 **Conceptualisation :** L'IAG a proposé d'exécuter le convertisseur de MiseEnWeb dans le navigateur, avec Pyodide, et de publier la page sur GitHub Pages. Le besoin, offrir l'outil aux utilisateurs sans installation, ainsi que les choix finaux ont été déterminés par l'auteur du projet.
 
-**Méthodologie :** L'IAG a vérifié la faisabilité de l'approche avant de la proposer, en convertissant les documents d'exemple dans Pyodide et en comparant le résultat à celui du programme de bureau. Elle a proposé des méthodes de vérification : tests automatisés dans le navigateur et audit d'accessibilité.
+**Méthodologie :** L'IAG a vérifié la faisabilité de l'approche avant de la proposer, en convertissant les documents d'exemple dans Pyodide et en comparant le résultat à celui du programme de bureau. Elle a proposé des méthodes de vérification : tests automatisés dans le navigateur, audit d'accessibilité et contrôle d'intégrité, qui compare le texte du document Word à celui de la page produite. Pour les articles de la revue Science infirmière et pratiques en santé, l'IAG a analysé la structure des documents (styles, tableaux, images, couleurs) sans en lire le texte.
 
-**Exécution :** L'IAG a rédigé le code TypeScript, HTML et CSS de la page, le pont Python entre la page et le convertisseur, le service worker et les scripts de préparation. Elle a exécuté les tests et l'audit d'accessibilité, puis corrigé les défauts relevés. L'auteur a utilisé la page dans le navigateur, relevé ce qui ne convenait pas et corrigé des propositions de l'IAG.
+**Exécution :** L'IAG a rédigé le code TypeScript, HTML et CSS de la page, le pont Python entre la page et le convertisseur, le service worker et les scripts de préparation. Elle a exécuté les tests et l'audit d'accessibilité, puis corrigé les défauts relevés. À la suite des tests de la revue, elle a modifié le convertisseur : tableaux selon l'APA, tableaux larges, couleur des bandeaux, ordre du résumé et des mots-clés, sens d'écriture, puces, retraits et contrôle d'intégrité. L'auteur a utilisé la page dans le navigateur, relevé ce qui ne convenait pas et corrigé des propositions de l'IAG.
 
 **Visualisation :** L'IAG a adapté le style graphique du site des Bibliothèques (répertoire GitHub `bibweb`) à la page, en s'aidant de la base de connaissances UI/UX Pro Max. Elle a produit l'image de partage, les icônes de l'application et les captures d'écran, à partir du logo existant et selon les indications de l'auteur.
 
@@ -16,7 +16,7 @@
 
 **Administration du projet :** L'IAG a repéré les licences des composants inclus dans la page, sans que cela constitue un avis juridique.
 
-**Confidentialité et sécurité :** La page convertit les documents dans le navigateur, sans les envoyer à un serveur. Aucun document d'utilisateur n'est inclus dans le répertoire GitHub : les tests ont utilisé les documents fictifs du répertoire GitHub et un document fictif créé pour l'occasion.
+**Confidentialité et sécurité :** La page convertit les documents dans le navigateur, sans les envoyer à un serveur. Aucun document d'utilisateur n'est inclus dans le répertoire GitHub. Les tests ont utilisé les documents fictifs du répertoire GitHub, un document fictif créé pour l'occasion et trois articles de la revue. Ces articles sont restés sur l'ordinateur de l'auteur, dans un dossier exclu du répertoire GitHub. L'IAG en a analysé la structure, sans en lire ni en afficher le texte.
 
 ## Répartition du travail
 
@@ -30,12 +30,15 @@
   avancées » pour une seule option, de la barre de chargement séparée et de l'animation des cartes
   au survol; reformulation de l'explication sur le texte de remplacement des images; thème clair
   par défaut; couleur et position du logo et du nom de l'outil;
+- tester la conversion des articles de la revue, en trois tours, et relever les défauts;
+- décider des règles : application stricte de l'APA aux tableaux, alignement des en-têtes selon leur colonne, vocabulaire et ton des messages;
 - valider chaque étape par l'examen du résultat.
 
 **Le travail de l'IAG (Claude) :**
 
 - vérifier la faisabilité de l'approche et proposer l'architecture;
 - rédiger le code de la page, le pont Python, le service worker et les scripts;
+- modifier le convertisseur à la suite des tests de la revue;
 - produire l'image de partage, les icônes et les captures d'écran;
 - exécuter les tests dans le navigateur et l'audit d'accessibilité, et corriger les défauts relevés;
 - rédiger le README et la présente ébauche de déclaration.
@@ -47,6 +50,7 @@
 | Outil | Usage |
 |---|---|
 | Claude Opus 5.5, par Claude Code (Anthropic) | Accompagnement, rédaction du code, production des images, tests, explications |
+| Claude Fable 5.2, par Claude Code (Anthropic) | Accompagnement, modification du convertisseur et de l'interface, explications |
 | UI/UX Pro Max (2.13.0), extension de Claude Code | Recommandations de design et d'expérience utilisateur |
 
 **Langage et bibliothèques intégrés à la page**
@@ -87,5 +91,8 @@
 - Site des Bibliothèques de l'Université de Montréal, répertoire GitHub `bibweb` : jetons de design, logo
   et système d'animation, repris dans la page.
 - W3C. *Web Content Accessibility Guidelines (WCAG) 2.2*. <https://www.w3.org/TR/WCAG22/>
+- American Psychological Association. « Table setup » (APA, 7e édition) : présentation des tableaux.
+- GitHub. Primer : principes d'interface (action principale unique, fenêtre de confirmation, libellés).
+- Office québécois de la langue française. Grand dictionnaire terminologique, et Gouvernement du Canada, glossaire de l'accessibilité : vocabulaire.
 - Déclaration rédigée avec le générateur DDIA des bibliothèques de l'Université de Montréal, fondé sur
   le modèle de Kari D. Weaver (Université de Waterloo). <https://bibudem.github.io/ddia/>
