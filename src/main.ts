@@ -529,7 +529,7 @@ function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarq
   // Ici, les remarques sont regroupées : c'est l'aperçu qui mène à chaque endroit à corriger
   if (source === 'document') {
     const aide = element('p', 'aide')
-    aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' afin de repérer l’emplacement des points à corriger.')
+    aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' afin de repérer l’emplacement des corrections suggérées.')
     detail.append(aide)
   }
   volet.append(sommaire, detail)
