@@ -35,6 +35,13 @@ liste d'un seul élément, qui recommence à 1 : son numéro est donc écrit dan
 Dans un tableau, le retrait d'un paragraphe montre qu'une ligne dépend de la précédente.
 Mammoth ne transmet ni le retrait ni l'alignement : le paragraphe reçoit donc un style
 (« Cellule retrait 1 », « Cellule centrée ») que la carte de styles du profil change en classe.
+
+    normalisation:
+      sortes_de_puces: true   # conserve les puces particulières : coche, losange, tiret…
+
+Dans une liste, des puces différentes distinguent des groupes d'éléments. Mammoth donne la même
+puce à tous : un élément à puce particulière reçoit donc un style (« Puce coche », « Puce tiret »)
+que la carte de styles du profil change en liste d'une classe donnée.
 """
 
 from __future__ import annotations
@@ -280,6 +287,64 @@ def _marquer_cellules(doc) -> int:
     return n
 
 
+# Puces particulières, par police et caractère. Les polices de symboles de Word placent leurs
+# caractères dans une zone privée d'Unicode (U+F000 à U+F0FF). La puce ronde ordinaire n'y est pas :
+# elle reste la puce par défaut.
+PUCES_PARTICULIERES = {
+    ("wingdings", 0xF0FC): "coche",
+    ("wingdings", 0xF076): "losange",
+    ("wingdings", 0xF0A7): "carré",
+    ("wingdings", 0xF0D8): "flèche",
+    ("symbol", 0xF02D): "tiret",
+}
+TIRETS = {"-", "–", "—"}
+
+
+def _sortes_de_puces(doc) -> dict[tuple[str, int], str]:
+    """Associe à chaque liste à puce particulière sa sorte : {(numéro de liste, niveau): « coche »}."""
+    valeur = qn("w:val")
+    numerotation = doc.part.numbering_part.element
+    modeles: dict[str, dict[int, str]] = {}
+    for modele in numerotation.findall(qn("w:abstractNum")):
+        niveaux = {}
+        for niveau in modele.findall(qn("w:lvl")):
+            format_word = niveau.find(qn("w:numFmt"))
+            texte = niveau.find(qn("w:lvlText"))
+            police = niveau.find(qn("w:rPr") + "/" + qn("w:rFonts"))
+            caractere = (texte.get(valeur) or "") if texte is not None else ""
+            if format_word is None or format_word.get(valeur) != "bullet" or len(caractere) != 1:
+                continue
+            nom_police = (police.get(qn("w:ascii")) or "").lower() if police is not None else ""
+            sorte = "tiret" if caractere in TIRETS else PUCES_PARTICULIERES.get((nom_police, ord(caractere)))
+            if sorte:
+                niveaux[int(niveau.get(qn("w:ilvl")))] = sorte
+        modeles[modele.get(qn("w:abstractNumId"))] = niveaux
+    sortes = {}
+    for liste in numerotation.findall(qn("w:num")):
+        for niveau, sorte in modeles.get(liste.find(qn("w:abstractNumId")).get(valeur), {}).items():
+            sortes[(liste.get(qn("w:numId")), niveau)] = sorte
+    return sortes
+
+
+def _marquer_puces(doc) -> int:
+    """Donne un style aux éléments de liste à puce particulière. Renvoie leur nombre."""
+    corps = doc.element.body
+    if corps.find(".//" + qn("w:numPr")) is None:
+        return 0
+    sortes = _sortes_de_puces(doc)
+    n = 0
+    for xml in corps.iter(qn("w:p")):
+        numerotation = xml.pPr.numPr if xml.pPr is not None else None
+        if numerotation is None or numerotation.numId is None:
+            continue
+        niveau = numerotation.ilvl.val if numerotation.ilvl is not None else 0
+        sorte = sortes.get((str(numerotation.numId.val), niveau))
+        if sorte:
+            Paragraph(xml, doc).style = _style_de_cellule(doc, f"Puce {sorte}")
+            n += 1
+    return n
+
+
 def normaliser(source: Path, destination: Path, config: dict) -> list[Modification]:
     """Copie `source` vers `destination` en appliquant les règles.
 
@@ -289,7 +354,8 @@ def normaliser(source: Path, destination: Path, config: dict) -> list[Modificati
     regles = (config or {}).get("regles") or []
     numeros = bool((config or {}).get("numeros_sous_titres"))
     cellules = bool((config or {}).get("mise_en_forme_cellules"))
-    if not (config or {}).get("active") or not (regles or numeros or cellules):
+    puces = bool((config or {}).get("sortes_de_puces"))
+    if not (config or {}).get("active") or not (regles or numeros or cellules or puces):
         shutil.copyfile(source, destination)
         return []
 
@@ -335,6 +401,8 @@ def normaliser(source: Path, destination: Path, config: dict) -> list[Modificati
         modifications.extend(_ecrire_numeros_sous_titres(doc))
     if cellules:
         _marquer_cellules(doc)
+    if puces:       # après l'écriture des numéros, qui retire des paragraphes de leur liste
+        _marquer_puces(doc)
 
     doc.save(str(destination))
     return modifications

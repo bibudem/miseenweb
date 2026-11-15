@@ -18,6 +18,11 @@ commun:
       p[style-name='Cellule retrait 2'] => p.retrait-2:fresh
       p[style-name='Cellule retrait 3'] => p.retrait-3:fresh
       p[style-name='Cellule centrée'] => p.centre:fresh
+      p[style-name='Puce coche'] => ul.puces-coche > li:fresh
+      p[style-name='Puce losange'] => ul.puces-losange > li:fresh
+      p[style-name='Puce tiret'] => ul.puces-tiret > li:fresh
+      p[style-name='Puce carré'] => ul.puces-carre > li:fresh
+      p[style-name='Puce flèche'] => ul.puces-fleche > li:fresh
       r[style-name='Strong'] => strong
       u => em
     inclure_carte_defaut: true
@@ -57,6 +62,7 @@ variantes:
       active: true
       numeros_sous_titres: true
       mise_en_forme_cellules: true
+      sortes_de_puces: true
       regles:
         - nom: titre-article
           styles_source: ["Normal"]

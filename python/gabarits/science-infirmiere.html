@@ -31,6 +31,13 @@
     figcaption { margin: 1rem 0; font-style: italic; }
     figcaption strong { font-style: normal; }
     img { max-width: 100%; height: auto; }
+    /* Puces particulières reprises du Word : elles distinguent des groupes dans une liste */
+    ul.puces-coche { list-style-type: "✓  "; }
+    ul.puces-losange { list-style-type: "❖  "; }
+    ul.puces-tiret { list-style-type: "–  "; }
+    ul.puces-carre { list-style-type: square; }
+    ul.puces-fleche { list-style-type: "➢  "; }
+    ul[class^="puces-"] + ul[class^="puces-"], ul + ul[class^="puces-"], ul[class^="puces-"] + ul { margin-top: -1rem; }
     img.encadree { border: 2px solid var(--texte); box-sizing: border-box; }
     table { border-collapse: collapse; margin: 1.5rem 0; width: 100%; }
     td, th { padding: .4rem .6rem; vertical-align: top; }
