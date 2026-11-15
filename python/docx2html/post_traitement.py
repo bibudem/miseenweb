@@ -866,8 +866,12 @@ def appliquer(
         if not chemin_gabarit.exists():
             raise FileNotFoundError(f"Gabarit introuvable : {chemin_gabarit}")
         page = chemin_gabarit.read_text(encoding="utf-8")
+        # Règles CSS partagées par tous les gabarits : tableaux larges, retraits, puces
+        chemin_commun = chemin_gabarit.parent / "commun.css"
+        styles_communs = chemin_commun.read_text(encoding="utf-8").rstrip() if chemin_commun.exists() else ""
         page = (
-            page.replace("{{ titre }}", resultat.titre)
+            page.replace("{{ styles_communs }}", styles_communs)
+            .replace("{{ titre }}", resultat.titre)
             .replace("{{ tdm }}", tdm_html)
             .replace("{{ pied }}", pied_html)
             .replace("{{ contenu }}", fragment)

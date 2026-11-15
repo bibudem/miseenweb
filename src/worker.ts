@@ -8,7 +8,7 @@ import type { Demande, Evenement } from './protocole'
 declare const self: DedicatedWorkerGlobalScope
 
 // Le code Python, les profils et les gabarits sont intégrés au script lors de la construction
-const sources = import.meta.glob('../python/**/*.{py,yaml,yml,html}', {
+const sources = import.meta.glob('../python/**/*.{py,yaml,yml,html,css}', {
   query: '?raw',
   import: 'default',
   eager: true,

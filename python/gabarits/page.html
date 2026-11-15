@@ -31,42 +31,12 @@
     /* Référence bibliographique : retrait négatif, sans justification (APA, 7e édition) */
     p.reference { padding-inline-start: 2.5em; text-indent: -2.5em; text-align: start; hyphens: manual; }
     img { max-width: 100%; height: auto; }
-    img.encadree { border: 2px solid var(--texte); box-sizing: border-box; }
-    /* Puces particulières reprises du Word */
-    ul.puces-coche { list-style-type: "✓  "; }
-    ul.puces-losange { list-style-type: "❖  "; }
-    ul.puces-tiret { list-style-type: "–  "; }
-    ul.puces-carre { list-style-type: square; }
-    ul.puces-fleche { list-style-type: "➢  "; }
     table { border-collapse: collapse; margin: 1.5rem 0; width: 100%; }
     td, th { border: 1px solid var(--bordure); padding: .4rem .6rem; vertical-align: top; }
     /* En-tête de ligne : il nomme sa ligne, mais garde l'apparence d'une cellule */
     th[scope="row"] { font-weight: normal; text-align: start; }
-    /* Retrait et centrage des cellules, repris du Word */
-    td p.retrait-1, th p.retrait-1 { padding-inline-start: 1.5rem; }
-    td p.retrait-2, th p.retrait-2 { padding-inline-start: 3rem; }
-    td p.retrait-3, th p.retrait-3 { padding-inline-start: 4.5rem; }
-    td p.centre, th p.centre { text-align: center; }
     p.note-tableau { font-size: .9rem; margin: .25rem 0; }
-    table + p.note-tableau, div.tableau-large + p.note-tableau { margin-top: -1.1rem; }
-    /* Tableau large : la zone prend la largeur de la fenêtre et garde sa barre de défilement visible */
-    div.tableau-large { overflow-x: auto; margin-block: 1.5rem; width: min(100vw - 2rem, 72rem);
-      margin-inline-start: calc((100% - min(100vw - 2rem, 72rem)) / 2); }
-    div.tableau-large:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    div.tableau-large::-webkit-scrollbar { height: .7rem; }
-    div.tableau-large::-webkit-scrollbar-track { background: var(--bordure); border-radius: .35rem; }
-    div.tableau-large::-webkit-scrollbar-thumb { background: var(--gris); border-radius: .35rem; }
-    /* Le tableau prend la largeur de son contenu, sans s'étirer : les colonnes restent régulières.
-       Quand la fenêtre est plus étroite, la zone défile. Une ombre au bord signale les colonnes hors de vue. */
-    div.tableau-large table { width: auto; margin: 0 auto; }
-    td.insecable, th.insecable { white-space: nowrap; }
-    div.tableau-large {
-      background:
-        linear-gradient(to right, var(--fond) 40%, transparent) left center / 2.5rem 100% no-repeat local,
-        linear-gradient(to left, var(--fond) 40%, transparent) right center / 2.5rem 100% no-repeat local,
-        linear-gradient(to right, rgb(0 0 0 / .25), transparent) left center / .9rem 100% no-repeat scroll,
-        linear-gradient(to left, rgb(0 0 0 / .25), transparent) right center / .9rem 100% no-repeat scroll;
-    }
+{{ styles_communs }}
     div.resume { background: #f4f6f8; padding: 1rem 1.25rem; border-radius: 4px; }
     nav.table-des-matieres { background: #f4f6f8; padding: 1rem 1.5rem; border-radius: 4px; margin-bottom: 2rem;
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: .95rem; }
