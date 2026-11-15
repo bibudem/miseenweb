@@ -27,7 +27,7 @@
     h1.titre-document { color: var(--accent); }
     p.sous-titre { color: var(--gris); font-size: 1.15rem; margin-top: -.5rem; }
     blockquote { margin: 1.5rem 0; padding: .25rem 1.25rem; border-left: 4px solid var(--accent); color: #333; }
-    figcaption { font-size: .9rem; color: var(--gris); font-style: italic; }
+    figcaption, p.legende { font-size: .9rem; color: var(--gris); font-style: italic; }
     img { max-width: 100%; height: auto; }
     img.encadree { border: 2px solid var(--texte); box-sizing: border-box; }
     /* Puces particulières reprises du Word */
@@ -38,6 +38,8 @@
     ul.puces-fleche { list-style-type: "➢  "; }
     table { border-collapse: collapse; margin: 1.5rem 0; width: 100%; }
     td, th { border: 1px solid var(--bordure); padding: .4rem .6rem; vertical-align: top; }
+    /* En-tête de ligne : il nomme sa ligne, mais garde l'apparence d'une cellule */
+    th[scope="row"] { font-weight: normal; text-align: start; }
     /* Retrait et centrage des cellules, repris du Word */
     td p.retrait-1, th p.retrait-1 { padding-inline-start: 1.5rem; }
     td p.retrait-2, th p.retrait-2 { padding-inline-start: 3rem; }

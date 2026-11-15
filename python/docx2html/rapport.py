@@ -20,13 +20,14 @@ class EntreeRapport:
     normalisations: list[dict] = field(default_factory=list)
     messages_mammoth: list[dict] = field(default_factory=list)
     avertissements_structure: list[str] = field(default_factory=list)
+    passages_absents: list[str] = field(default_factory=list)      # début des paragraphes du Word absents de la page
     nb_titres: dict[str, int] = field(default_factory=dict)
     images_extraites: int = 0
 
     def finaliser(self) -> None:
         if self.erreur:
             self.statut = "erreur"
-        elif self.messages_mammoth or self.avertissements_structure:
+        elif self.messages_mammoth or self.avertissements_structure or self.passages_absents:
             self.statut = "avertissements"
         else:
             self.statut = "ok"
@@ -67,6 +68,10 @@ def ecrire_rapport(entrees: list[EntreeRapport], dossier: Path, nom: str = "rapp
             lignes.append(f"- Images extraites : {e.images_extraites}")
         if e.erreur:
             lignes.append(f"- **Erreur** : {e.erreur}")
+        if e.passages_absents:
+            lignes.append(f"- **Texte absent de la page** : {len(e.passages_absents)} paragraphe(s) du document")
+            for passage in e.passages_absents[:10]:
+                lignes.append(f"  - « {passage} »")
         if e.normalisations:
             lignes.append(f"- Normalisation : {len(e.normalisations)} paragraphe(s) modifié(s)")
             for m in e.normalisations[:10]:

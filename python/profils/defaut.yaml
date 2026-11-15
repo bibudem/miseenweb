@@ -38,6 +38,7 @@ normalisation:
 post_traitement:
   supprimer_vides: true
   notes_tableaux: true      # sort du tableau la note de sa dernière ligne
+  accessibilite_tableaux: true   # titre rattaché, en-têtes de ligne, cellules reliées aux en-têtes
   alignement_colonnes: true # centre une colonne de données si la plupart de ses cellules le sont
   tableaux_larges: 9        # colonnes à partir desquelles un tableau défile dans sa zone
   sens_ecriture: true       # marque les passages en arabe

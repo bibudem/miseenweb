@@ -8,7 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Callable
 
-from . import apparence, conversion, diagnostic, normalisation, pied_page, post_traitement
+from . import apparence, conversion, diagnostic, integrite, normalisation, pied_page, post_traitement
 from .profils import ErreurProfil, Profil, choisir_profil
 from .rapport import EntreeRapport
 
@@ -72,6 +72,11 @@ def convertir_fichier(
         )
         entree.avertissements_structure = res_post.avertissements
         entree.nb_titres = res_post.nb_titres
+
+        # 5 bis. Contrôle d'intégrité : tout le texte du document est-il dans la page?
+        entree.passages_absents = integrite.passages_absents(chemin_docx, res_post.html)
+        if entree.passages_absents:
+            journal(f"  texte absent de la page : {len(entree.passages_absents)} paragraphe(s)")
 
         # 6. Écriture
         sortie = dossier_sortie / f"{nom_base}.html"

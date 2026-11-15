@@ -31,6 +31,7 @@ commun:
     corriger_faux_titres: true
     entetes_tableaux: true
     notes_tableaux: true
+    accessibilite_tableaux: true
     alignement_colonnes: true
     tableaux_larges: 9              # colonnes
     liens_automatiques: true

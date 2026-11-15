@@ -28,8 +28,8 @@
     p.sous-titre { color: var(--gris); font-size: 1.15rem; margin-top: -.5rem; }
     blockquote { margin: 1.5rem 0; margin-inline-start: 2.5rem; text-align: justify; hyphens: auto; }
     /* Titre d'un tableau ou d'une figure : en italique, sauf son numéro, qui est en gras */
-    figcaption { margin: 1rem 0; font-style: italic; }
-    figcaption strong { font-style: normal; }
+    figcaption, p.legende { margin: 1rem 0; font-style: italic; }
+    figcaption strong, p.legende strong { font-style: normal; }
     img { max-width: 100%; height: auto; }
     /* Puces particulières reprises du Word : elles distinguent des groupes dans une liste */
     ul.puces-coche { list-style-type: "✓  "; }
@@ -65,6 +65,8 @@
     table { border-top: 1.5px solid var(--texte); border-bottom: 1.5px solid var(--texte); }
     td, th { font-size: .9rem; padding: .3rem .4rem; overflow-wrap: break-word; }
     th { font-weight: normal; text-align: start; vertical-align: bottom; border-bottom: 1px solid var(--texte); }
+    /* En-tête de ligne : il nomme sa ligne, mais garde l'apparence d'une cellule */
+    th[scope="row"] { vertical-align: top; border-bottom: 0; }
     p.note-tableau { font-size: .9rem; text-align: start; margin: .25rem 0; }
     table + p.note-tableau, div.tableau-large + p.note-tableau { margin-top: -1.1rem; }
     /* Tableau large : il garde des colonnes lisibles et défile dans sa zone, pas avec la page */

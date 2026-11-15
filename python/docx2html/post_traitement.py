@@ -13,6 +13,8 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   corriger_faux_titres: change en <p> les titres vides et ceux placés dans un tableau
   entetes_tableaux    : change en <th> les cellules des lignes d'en-tête
   notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
+  accessibilite_tableaux : rattache son titre à chaque tableau, marque les en-têtes de ligne
+                        et relie chaque cellule à ses en-têtes (scope, id, headers)
   alignement_colonnes : centre toute une colonne de données quand la plupart de ses
                         cellules sont centrées dans le Word
   tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
@@ -247,11 +249,35 @@ def _sortir_notes_tableaux(soupe: BeautifulSoup) -> int:
     return n
 
 
+def _grille(tableau: Tag) -> list[list[tuple[Tag, int, int]]]:
+    """Position de chaque cellule d'un tableau : par ligne, une liste de (cellule, colonne, largeur).
+
+    Une cellule fusionnée occupe plusieurs colonnes ou plusieurs lignes : la colonne de chaque
+    cellule est donc calculée ligne par ligne, en tenant compte des fusions.
+    """
+    lignes = []
+    occupees: dict[int, int] = {}       # colonne -> lignes encore couvertes par une fusion verticale
+    for ligne in tableau.find_all("tr"):
+        if ligne.find_parent("table") is not tableau:
+            continue
+        rang = []
+        colonne = 0
+        for cellule in ligne.find_all(["td", "th"], recursive=False):
+            while occupees.get(colonne, 0) > 0:
+                colonne += 1
+            largeur = int(cellule.get("colspan", 1))
+            rang.append((cellule, colonne, largeur))
+            if int(cellule.get("rowspan", 1)) > 1:
+                for c in range(colonne, colonne + largeur):
+                    occupees[c] = int(cellule["rowspan"])
+            colonne += largeur
+        lignes.append(rang)
+        occupees = {c: n - 1 for c, n in occupees.items() if n > 1}
+    return lignes
+
+
 def _colonnes_du_tableau(tableau: Tag) -> dict[int, list[Tag]]:
     """Range les cellules de données (<td>) d'un tableau d'après leur bord droit : {bord droit: cellules}.
-
-    Une cellule fusionnée occupe plusieurs colonnes ou plusieurs lignes : la position de
-    chaque cellule est donc calculée ligne par ligne, en tenant compte des fusions.
 
     Le bord droit sert de repère parce qu'un tableau Word a parfois des limites de cellules
     différentes d'une ligne à l'autre : la même colonne de chiffres peut être une cellule
@@ -259,24 +285,128 @@ def _colonnes_du_tableau(tableau: Tag) -> dict[int, list[Tag]]:
     Les cellules de la première colonne, qui nomment les lignes, ne sont pas rangées.
     """
     colonnes: dict[int, list[Tag]] = {}
-    occupees: dict[int, int] = {}       # colonne -> lignes encore couvertes par une fusion verticale
-    for ligne in tableau.find_all("tr"):
-        if ligne.find_parent("table") is not tableau:
-            continue
-        colonne = 0
-        for cellule in ligne.find_all(["td", "th"], recursive=False):
-            while occupees.get(colonne, 0) > 0:
-                colonne += 1
-            largeur = int(cellule.get("colspan", 1))
-            hauteur = int(cellule.get("rowspan", 1))
+    for rang in _grille(tableau):
+        for cellule, colonne, largeur in rang:
             if cellule.name == "td" and colonne > 0:
                 colonnes.setdefault(colonne + largeur, []).append(cellule)
-            if hauteur > 1:
-                for c in range(colonne, colonne + largeur):
-                    occupees[c] = hauteur
-            colonne += largeur
-        occupees = {c: n - 1 for c, n in occupees.items() if n > 1}
     return colonnes
+
+
+# Un paragraphe qui commence ainsi, juste avant un tableau, en porte le numéro
+MOTIF_NUMERO_TABLEAU = re.compile(r"\s*(table|tableau)\s+\d+", re.IGNORECASE)
+
+
+def _legendes_en_paragraphes(soupe: BeautifulSoup) -> int:
+    """Change en <p class="legende"> les <figcaption> placés hors d'un <figure>, ce que HTML interdit."""
+    n = 0
+    for legende in soupe.find_all("figcaption"):
+        if legende.find_parent("figure") is None:
+            legende.name = "p"
+            legende["class"] = legende.get("class", []) + ["legende"]
+            n += 1
+    return n
+
+
+def _nommer_tableau(tableau: Tag, numero: int) -> bool:
+    """Rattache au tableau son numéro et son titre, écrits juste avant lui (aria-labelledby).
+
+    Sans ce lien, un lecteur d'écran annonce un tableau sans dire lequel.
+    """
+    ancre = tableau.parent if "tableau-large" in (tableau.parent.get("class") or []) else tableau
+    precedents = []
+    element = ancre.find_previous_sibling()
+    while element is not None and len(precedents) < 2 and element.name == "p":
+        if len(element.get_text(" ", strip=True)) > 400:
+            break
+        precedents.insert(0, element)
+        element = element.find_previous_sibling()
+    while precedents and not MOTIF_NUMERO_TABLEAU.match(precedents[0].get_text(" ", strip=True)):
+        precedents.pop(0)
+    if not precedents:
+        return False
+    identifiants = []
+    for rang, paragraphe in enumerate(precedents, start=1):
+        if not paragraphe.get("id"):
+            paragraphe["id"] = f"titre-tableau-{numero}" + ("" if rang == 1 else f"-{rang}")
+        identifiants.append(paragraphe["id"])
+    tableau["aria-labelledby"] = " ".join(identifiants)
+    return True
+
+
+def _rendre_tableaux_accessibles(soupe: BeautifulSoup) -> int:
+    """Inscrit dans chaque tableau ce que sa mise en page montre : son nom, et les en-têtes de chaque cellule.
+
+    - Le titre placé avant le tableau lui est rattaché.
+    - La première colonne, quand elle nomme les lignes, devient une colonne d'en-têtes de ligne.
+    - Un en-tête simple reçoit scope="col". Un en-tête sur plusieurs lignes, ou à cellules
+      fusionnées, est relié à chaque cellule par les attributs id et headers.
+    Un tableau sans ligne d'en-tête ne reçoit que son nom : pont.py le signale à l'utilisateur.
+    """
+    n = 0
+    for numero, tableau in enumerate(soupe.find_all("table"), start=1):
+        grille = _grille(tableau)
+        if not grille:
+            continue
+        _nommer_tableau(tableau, numero)
+        nb_entetes = 0
+        for rang in grille:
+            if not rang or any(cellule.name != "th" for cellule, _, _ in rang):
+                break
+            nb_entetes += 1
+        if nb_entetes == 0:
+            continue
+        n += 1
+        entetes, donnees = grille[:nb_entetes], grille[nb_entetes:]
+        nb_colonnes = max(colonne + largeur for rang in grille for _, colonne, largeur in rang)
+
+        # En-têtes de ligne : la première colonne, si elle contient surtout du texte
+        premieres = [(c, largeur) for rang in donnees for c, colonne, largeur in rang[:1] if colonne == 0]
+        remplies = [c for c, _ in premieres if c.get_text(strip=True)]
+        avec_lettres = [c for c in remplies if any(lettre.isalpha() for lettre in c.get_text())]
+        if nb_colonnes >= 2 and remplies and len(avec_lettres) >= 0.8 * len(remplies):
+            for cellule, largeur in premieres:
+                if cellule.get_text(strip=True) and largeur < nb_colonnes:
+                    cellule.name = "th"
+                    cellule["scope"] = "row"
+
+        complexe = nb_entetes > 1 or any(largeur > 1 for rang in entetes for _, _, largeur in rang)
+        if not complexe:
+            for cellule, _, _ in entetes[0]:
+                cellule["scope"] = "col"
+            continue
+
+        # En-tête complexe : chaque cellule de données nomme ses en-têtes de colonne et de ligne
+        par_colonne: dict[int, list[str]] = {}
+        compteur = 0
+        for rang in entetes:
+            for cellule, colonne, largeur in rang:
+                if not cellule.get_text(strip=True):
+                    continue
+                compteur += 1
+                cellule["id"] = f"t{numero}-c{compteur}"
+                for c in range(colonne, colonne + largeur):
+                    par_colonne.setdefault(c, []).append(cellule["id"])
+        groupe, lignes_du_groupe = "", 0        # en-tête de ligne fusionné vers le bas
+        for rang_ligne, rang in enumerate(donnees, start=1):
+            entete_de_ligne = groupe if lignes_du_groupe > 0 else ""
+            for cellule, colonne, largeur in rang:
+                if cellule.name == "th":
+                    cellule["id"] = f"t{numero}-l{rang_ligne}"
+                    entete_de_ligne = cellule["id"]
+                    if int(cellule.get("rowspan", 1)) > 1:
+                        groupe, lignes_du_groupe = cellule["id"], int(cellule["rowspan"])
+                    continue
+                if not cellule.get_text(strip=True):
+                    continue
+                identifiants = []
+                for c in range(colonne, colonne + largeur):
+                    identifiants += [i for i in par_colonne.get(c, []) if i not in identifiants]
+                if entete_de_ligne:
+                    identifiants.append(entete_de_ligne)
+                if identifiants:
+                    cellule["headers"] = " ".join(identifiants)
+            lignes_du_groupe -= 1
+    return n
 
 
 def _harmoniser_alignement(soupe: BeautifulSoup) -> int:
@@ -498,6 +628,8 @@ def appliquer(
     soupe = BeautifulSoup(fragment_html, "html.parser")
     resultat = ResultatPostTraitement(html="")
 
+    _legendes_en_paragraphes(soupe)      # toujours : un <figcaption> hors d'un <figure> est invalide
+
     if config.get("corriger_faux_titres", False):   # avant la suppression des <p> vides
         _corriger_faux_titres(soupe)
 
@@ -515,6 +647,9 @@ def appliquer(
 
     if config.get("supprimer_vides", True):
         _supprimer_vides(soupe)
+
+    if config.get("accessibilite_tableaux", False):   # après la suppression des <p> vides
+        _rendre_tableaux_accessibles(soupe)
 
     if config.get("resume_avant_mots_cles", False):   # après la suppression des <p> vides
         _resume_avant_mots_cles(soupe)

@@ -355,7 +355,14 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
 def _remarques(entree, page: str, profil: Profil | None) -> list[Remarque]:
     soupe = BeautifulSoup(page, "html.parser")
     decalage = _decalage(soupe, profil)
-    remarques = [_traduire_structure(a, soupe, decalage) for a in entree.avertissements_structure]
+    # Le texte absent vient en premier : c'est le seul défaut qui retire de l'information
+    remarques = [
+        Remarque("avertissement", f"Texte du document absent de la page : « {passage} »",
+                 "La conversion n'a pas repris ce paragraphe du document Word. Comparer la page au "
+                 "document avant la publication.", {}, "{n} paragraphes du document absents de la page")
+        for passage in entree.passages_absents
+    ]
+    remarques += [_traduire_structure(a, soupe, decalage) for a in entree.avertissements_structure]
     remarques += _verifier_accessibilite(soupe)
     messages = entree.messages_mammoth
     if groupe := _styles_inconnus(messages):
