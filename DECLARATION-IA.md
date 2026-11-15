@@ -84,8 +84,8 @@
 
 **Sources consultées**
 
-- Site des Bibliothèques de l'Université de Montréal, répertoire GitHub `bibweb` : jetons de design, logo,
-  favoricône et système d'animation, repris dans la page.
+- Site des Bibliothèques de l'Université de Montréal, répertoire GitHub `bibweb` : jetons de design, logo
+  et système d'animation, repris dans la page.
 - W3C. *Web Content Accessibility Guidelines (WCAG) 2.2*. <https://www.w3.org/TR/WCAG22/>
 - Déclaration rédigée avec le générateur DDIA des bibliothèques de l'Université de Montréal, fondé sur
   le modèle de Kari D. Weaver (Université de Waterloo). <https://bibudem.github.io/ddia/>

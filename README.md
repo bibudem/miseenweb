@@ -43,11 +43,10 @@ s'active une seule fois, dans les réglages du répertoire GitHub : **Settings**
   l'image de partage (`public/partage.jpg`) et les captures d'écran (`public/captures/`). Ces fichiers
   font exception au fichier `LICENSE` : la mention « associated documentation files » de la licence
   MIT ne s'y applique pas.
-- **Exclus** : le logo et la favoricône des Bibliothèques (`public/logo-bib.svg`,
-  `public/logo-bib-blanc.svg`, `public/favicon.svg`, `public/favicon.ico`) sont des marques de
-  l'Université de Montréal. Aucune de ces licences ne les couvre, y compris là où ils apparaissent
-  dans l'image de partage et les captures d'écran. Un utilisateur qui réutilise ce code doit les
-  retirer ou les remplacer.
+- **Exclus** : le logo des Bibliothèques (`public/logo-bib.svg`, `public/logo-bib-blanc.svg`) est une
+  marque de l'Université de Montréal. Aucune de ces licences ne le couvre, y compris là où il apparaît
+  dans l'image de partage et les captures d'écran. Un utilisateur qui réutilise ce code doit le
+  retirer ou le remplacer.
 
 Les composants tiers conservent leur propre licence, indiquée dans
 [`DECLARATION-IA.md`](DECLARATION-IA.md). Ce document décrit aussi l'utilisation de l'intelligence
