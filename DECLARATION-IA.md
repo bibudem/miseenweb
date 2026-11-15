@@ -4,7 +4,7 @@
 
 **Outil d'intelligence artificielle :** Claude Opus 5.5 (claude-opus-5-5) par Claude Code d'Anthropic, utilisé le 11 novembre 2026. L'outil peut produire du code ou des analyses erronés, et ses résultats ont été testés et validés par une personne.
 
-**Conceptualisation :** L'IAG a proposé d'exécuter le convertisseur de MiseEnWeb dans le navigateur, avec Pyodide, et de publier la page sur GitHub Pages. Le besoin, offrir l'outil aux étudiants sans installation, ainsi que les choix finaux ont été déterminés par l'auteur du projet.
+**Conceptualisation :** L'IAG a proposé d'exécuter le convertisseur de MiseEnWeb dans le navigateur, avec Pyodide, et de publier la page sur GitHub Pages. Le besoin, offrir l'outil aux utilisateurs sans installation, ainsi que les choix finaux ont été déterminés par l'auteur du projet.
 
 **Méthodologie :** L'IAG a vérifié la faisabilité de l'approche avant de la proposer, en convertissant les documents d'exemple dans Pyodide et en comparant le résultat à celui du programme de bureau. Elle a proposé des méthodes de vérification : tests automatisés dans le navigateur et audit d'accessibilité.
 
@@ -12,20 +12,20 @@
 
 **Visualisation :** L'IAG a adapté le style graphique du site des Bibliothèques (répertoire GitHub `bibweb`) à la page, en s'aidant de la base de connaissances UI/UX Pro Max. Elle a produit l'image de partage, les icônes de l'application et les captures d'écran, à partir du logo existant et selon les indications de l'auteur.
 
-**Rédaction - Révision et édition :** L'IAG a rédigé les textes de la page, les conseils de correction affichés aux étudiants, le README et une ébauche de la présente déclaration, révisés par l'auteur.
+**Rédaction - Révision et édition :** L'IAG a rédigé les textes de la page, les conseils de correction affichés aux utilisateurs, le README et une ébauche de la présente déclaration, révisés par l'auteur.
 
 **Administration du projet :** L'IAG a repéré les licences des composants inclus dans la page, sans que cela constitue un avis juridique.
 
-**Confidentialité et sécurité :** La page convertit les documents dans le navigateur, sans les envoyer à un serveur. Aucun document d'étudiant n'est inclus dans le répertoire GitHub : les tests ont utilisé les documents fictifs du dépôt et un document fictif créé pour l'occasion.
+**Confidentialité et sécurité :** La page convertit les documents dans le navigateur, sans les envoyer à un serveur. Aucun document d'utilisateur n'est inclus dans le répertoire GitHub : les tests ont utilisé les documents fictifs du répertoire GitHub et un document fictif créé pour l'occasion.
 
 ## Répartition du travail
 
 **Mon travail :**
 
-- définir le besoin : permettre aux étudiants d'utiliser MiseEnWeb sans installation;
+- définir le besoin : permettre l'utilisation de MiseEnWeb sans installation;
 - choisir l'approche, l'hébergement et le style graphique, celui du site des Bibliothèques;
 - utiliser la page dans le navigateur et demander les améliorations : vocabulaire accessible aux
-  étudiants, aperçu avec vérification, installation comme application, référencement, animations;
+  utilisateurs, aperçu avec vérification, installation comme application, référencement, animations;
 - corriger des propositions de l'IAG : retrait des pastilles de la bannière, du volet « Options
   avancées » pour une seule option, de la barre de chargement séparée et de l'animation des cartes
   au survol; reformulation de l'explication sur le texte de remplacement des images; thème clair

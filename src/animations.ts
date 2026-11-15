@@ -1,4 +1,4 @@
-// Repris tel quel du site des Bibliothèques (dépôt bibweb, src/lib/animations.ts).
+// Repris tel quel du site des Bibliothèques (répertoire GitHub bibweb, src/lib/animations.ts).
 /*
  * Apparitions au défilement (« reveals ») des bandes de vitrine.
  *
