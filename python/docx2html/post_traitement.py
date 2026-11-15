@@ -409,6 +409,48 @@ def _rendre_tableaux_accessibles(soupe: BeautifulSoup) -> int:
     return n
 
 
+def _regulariser_colonnes(soupe: BeautifulSoup) -> int:
+    """Donne le même découpage aux lignes d'un tableau qui ont le même nombre de cellules.
+
+    Dans Word, les limites des cellules peuvent différer d'une ligne à l'autre sans que cela
+    se voie. Dans une page, les colonnes ne tombent alors plus les unes sous les autres. Quand
+    au moins 60 % des lignes de même nombre de cellules partagent un découpage, les autres
+    le reçoivent. Un tableau à cellules fusionnées vers le bas n'est pas touché.
+    """
+    n = 0
+    for tableau in soupe.find_all("table"):
+        if tableau.find(["td", "th"], rowspan=True):
+            continue
+        lignes = [
+            ligne.find_all(["td", "th"], recursive=False)
+            for ligne in tableau.find_all("tr")
+            if ligne.find_parent("table") is tableau
+        ]
+        decoupage = lambda cellules: tuple(int(c.get("colspan", 1)) for c in cellules)  # noqa: E731
+        largeur = max((sum(decoupage(cellules)) for cellules in lignes), default=0)
+        par_nombre: dict[int, list[list[Tag]]] = {}
+        for cellules in lignes:
+            if len(cellules) >= 2 and sum(decoupage(cellules)) == largeur:
+                par_nombre.setdefault(len(cellules), []).append(cellules)
+        for groupe in par_nombre.values():
+            compte: dict[tuple, int] = {}
+            for cellules in groupe:
+                compte[decoupage(cellules)] = compte.get(decoupage(cellules), 0) + 1
+            courant, occurrences = max(compte.items(), key=lambda paire: paire[1])
+            if len(compte) < 2 or occurrences < 0.6 * len(groupe):
+                continue
+            for cellules in groupe:
+                if decoupage(cellules) == courant:
+                    continue
+                for cellule, colonnes in zip(cellules, courant):
+                    if colonnes > 1:
+                        cellule["colspan"] = str(colonnes)
+                    elif cellule.get("colspan"):
+                        del cellule["colspan"]
+                n += 1
+    return n
+
+
 def _harmoniser_alignement(soupe: BeautifulSoup) -> int:
     """Centre toute une colonne de données quand plus de la moitié de ses cellules sont centrées.
 
@@ -457,6 +499,8 @@ def _encadrer_tableaux_larges(soupe: BeautifulSoup, seuil: int) -> int:
                 "role": "region",
                 "tabindex": "0",
                 "aria-label": f"Tableau large {n}, à faire défiler horizontalement",
+                # Le gabarit calcule de ce nombre la largeur minimale du tableau
+                "style": f"--colonnes: {_largeur_tableau(tableau)}",
             },
         )
         tableau.wrap(zone)
@@ -640,6 +684,7 @@ def appliquer(
         _marquer_entetes(soupe)
 
     if config.get("alignement_colonnes", False):      # après le marquage des en-têtes
+        _regulariser_colonnes(soupe)
         _harmoniser_alignement(soupe)
 
     if int(config.get("tableaux_larges", 0) or 0) > 0:   # après la sortie des notes
