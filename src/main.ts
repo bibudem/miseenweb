@@ -484,22 +484,35 @@ function listeRemarques(groupes: [Remarque, number][]): HTMLUListElement {
 
 // Une ligne repliée par sorte de remarque : la liste des résultats reste courte, et le détail
 // est à un clic. L'endroit à corriger se trouve dans « Aperçu et vérification ».
-function resumeRemarques(remarques: Remarque[], gravite: Remarque['gravite']): HTMLDetailsElement {
+// Trois sortes de lignes : les défauts du document Word, les défauts de la conversion, les informations.
+// L'utilisateur doit savoir d'où vient un point : un défaut du document se corrige dans Word.
+type Sorte = 'document' | 'conversion' | 'info'
+
+function resumeRemarques(remarques: Remarque[], sorte: Sorte): HTMLDetailsElement {
   const groupes = regrouper(remarques)
   let texte: string
-  if (gravite === 'info') {
+  if (sorte === 'info') {
     texte = pluriel(groupes.length, 'information sur la conversion', 'informations sur la conversion')
-  } else if (groupes.length === 1) {
-    texte = `À vérifier : ${titreDuGroupe(...groupes[0]).replace(/\.$/, '')}`
   } else {
-    texte = `À vérifier : ${pluriel(remarques.length, 'point', 'points')}`
+    const etiquette = sorte === 'document' ? 'Document d’origine' : 'Conversion'
+    const points =
+      sorte === 'document'
+        ? pluriel(remarques.length, 'point à corriger', 'points à corriger')
+        : pluriel(remarques.length, 'point à vérifier', 'points à vérifier')
+    texte = `${etiquette} : ${groupes.length === 1 ? titreDuGroupe(...groupes[0]).replace(/\.$/, '') : points}`
   }
   const volet = element('details', 'plus')
-  volet.append(element('summary', '', texte), listeRemarques(groupes))
+  volet.append(element('summary', '', texte))
+  if (sorte === 'document') {
+    volet.append(
+      element('p', 'aide', 'La vérification du document d’origine relève ces points. Les corriger dans Word, puis convertir le document de nouveau.'),
+    )
+  }
+  volet.append(listeRemarques(groupes))
   // Ici, les remarques sont regroupées : c'est l'aperçu qui mène à chaque endroit à corriger
-  if (gravite === 'avertissement') {
+  if (sorte === 'document') {
     const aide = element('p', 'aide')
-    aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' afin de repérer l’emplacement des points à vérifier.')
+    aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' afin de repérer l’emplacement des points à corriger.')
     volet.append(aide)
   }
   return volet
@@ -536,7 +549,10 @@ function afficherResultats(): void {
 
       const avertissements = r.remarques.filter((x) => x.gravite === 'avertissement')
       const informations = r.remarques.filter((x) => x.gravite === 'info')
-      if (avertissements.length) infos.append(resumeRemarques(avertissements, 'avertissement'))
+      const deConversion = avertissements.filter((x) => x.origine === 'conversion')
+      const duDocument = avertissements.filter((x) => x.origine !== 'conversion')
+      if (deConversion.length) infos.append(resumeRemarques(deConversion, 'conversion'))
+      if (duDocument.length) infos.append(resumeRemarques(duDocument, 'document'))
       if (informations.length) infos.append(resumeRemarques(informations, 'info'))
       ligne.append(infos)
 

@@ -169,6 +169,7 @@ class Remarque:
     conseil: str = ""
     cible: dict = field(default_factory=dict)   # {"id": …} ou {"balise": …, "rang": …}
     pluriel: str = ""             # titre d'un groupe de remarques identiques : « {n} images sans… »
+    origine: str = "document"     # « document » : défaut du document Word; « conversion » : défaut de la page
 
 
 def _cible_titre(soupe: BeautifulSoup, extrait: str) -> dict:
@@ -359,7 +360,8 @@ def _remarques(entree, page: str, profil: Profil | None) -> list[Remarque]:
     remarques = [
         Remarque("avertissement", f"Texte du document absent de la page : « {passage} »",
                  "La conversion n'a pas repris ce paragraphe du document Word. Comparer la page au "
-                 "document avant la publication.", {}, "{n} paragraphes du document absents de la page")
+                 "document avant la publication.", {}, "{n} paragraphes du document absents de la page",
+                 "conversion")
         for passage in entree.passages_absents
     ]
     remarques += [_traduire_structure(a, soupe, decalage) for a in entree.avertissements_structure]
@@ -501,7 +503,11 @@ def rapport_html() -> str:
             lignes.append(f'<p class="meta">Page produite : {e(r["sortie"])}. Structure : {e(_resume_titres(r["titres"]))}.</p>')
         if r["erreur"]:
             lignes.append(f'<p class="erreur-texte">{e(r["erreur"])}</p>')
-        for titre, liste in (("À corriger ou à vérifier", avertissements), ("Pour information", infos)):
+        de_conversion = [x for x in avertissements if x.get("origine") == "conversion"]
+        du_document = [x for x in avertissements if x.get("origine") != "conversion"]
+        for titre, liste in (("Conversion : points à vérifier", de_conversion),
+                             ("Document d'origine : points à corriger dans Word", du_document),
+                             ("Pour information", infos)):
             if liste:
                 lignes.append(f"<h3>{titre}</h3><ul>")
                 # Dans la page, chaque remarque mène à son endroit; sur papier, la répéter n'apprend rien

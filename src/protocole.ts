@@ -33,6 +33,8 @@ export interface Remarque {
   cible: { id?: string; balise?: string; rang?: number }
   /** Titre d'un groupe de remarques identiques, par exemple « {n} images sans texte de remplacement » */
   pluriel: string
+  /** « document » : défaut du document Word, à corriger dans Word; « conversion » : défaut de la page produite */
+  origine: 'document' | 'conversion'
 }
 
 export interface Resultat {
