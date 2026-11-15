@@ -1,4 +1,19 @@
+import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { defineConfig, type Plugin } from 'vite'
+
+// Version affichée dans le pied de page : numéro de package.json et commit de la construction.
+// Sans Git (archive téléchargée), le numéro seul est affiché.
+const numero: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')).version
+function commitCourant(): string {
+  try {
+    return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+  } catch {
+    return ''
+  }
+}
+const commit = commitCourant()
+const version = commit ? `${numero} (${commit})` : numero
 
 // Sur GitHub Pages, le site est servi dans un sous-dossier (/<nom du dépôt>/) :
 // le workflow de publication le donne dans BASE. En local, il est servi à la racine.
@@ -14,6 +29,8 @@ function referencement(): Plugin {
     name: 'referencement',
     transformIndexHtml: (html) => html.replaceAll('%URL_SITE%', urlSite),
     generateBundle() {
+      // Lu par la page ouverte, pour savoir si une version plus récente est publiée
+      this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ version }) + '\n' })
       // Sans adresse publique, robots.txt et le plan du site n'auraient pas d'adresse valable
       if (!absolue) return
       this.emitFile({
@@ -36,6 +53,7 @@ function referencement(): Plugin {
 
 export default defineConfig({
   base,
+  define: { __VERSION__: JSON.stringify(version) },
   plugins: [referencement()],
   worker: { format: 'es' },
   build: {

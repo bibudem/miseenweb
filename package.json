@@ -1,7 +1,7 @@
 {
   "name": "miseenweb",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "MiseEnWeb : du document Word à la page web accessible, directement dans le navigateur.",
   "type": "module",
   "license": "MIT",

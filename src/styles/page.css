@@ -1291,6 +1291,27 @@
     color: var(--blanc);
   }
 
+  /* Avis de nouvelle version, sous l'en-tête */
+  .avis-version {
+    border-bottom: 1px solid var(--couleur-bordure);
+    background: var(--couleur-teinte);
+    color: var(--couleur-texte);
+    font-size: var(--texte-petit);
+  }
+
+  .avis-version-rangee {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-1) var(--espace-3);
+    padding-block: var(--espace-1);
+  }
+
+  .avis-version p {
+    margin: 0;
+  }
+
   .pied a:hover {
     color: var(--jaune);
   }

@@ -107,6 +107,14 @@
       </div>
     </header>
 
+    <!-- Affiché quand une version plus récente du site est publiée pendant que la page est ouverte -->
+    <div class="avis-version" data-avis-version hidden>
+      <div class="conteneur avis-version-rangee">
+        <p>Une version plus récente de MiseEnWeb est publiée.</p>
+        <button type="button" class="bouton bouton-contour bouton-compact" data-recharger>Recharger la page</button>
+      </div>
+    </div>
+
     <main>
       <section class="banniere" aria-labelledby="titre-page">
         <div class="conteneur">
@@ -349,6 +357,7 @@
           <li><a href="https://github.com/bibudem/miseenweb" rel="noopener">Code source</a></li>
           <li><a href="https://github.com/bibudem/miseenweb/blob/main/LICENSE" rel="noopener">Licence MIT</a></li>
           <li><a href="https://github.com/bibudem/miseenweb/blob/main/DECLARATION-IA.md" rel="noopener">Utilisation de l'IA</a></li>
+          <li data-version></li>
         </ul>
       </div>
     </footer>

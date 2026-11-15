@@ -1021,6 +1021,28 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   })
 }
 
+// ---- Version du site ----
+// Le pied de page nomme la version affichée. Un onglet resté ouvert conserve son code : au retour
+// sur l'onglet, la page lit version.json et signale une version plus récente.
+declare const __VERSION__: string
+$<HTMLElement>('[data-version]').textContent = `Version ${__VERSION__}`
+
+const avisVersion = $<HTMLElement>('[data-avis-version]')
+$<HTMLButtonElement>('[data-recharger]').addEventListener('click', () => location.reload())
+
+async function verifierVersion(): Promise<void> {
+  if (document.visibilityState !== 'visible' || !avisVersion.hidden) return
+  try {
+    const reponse = await fetch(`${import.meta.env.BASE_URL}version.json`, { cache: 'no-store' })
+    if (!reponse.ok) return
+    const publiee: { version?: string } = await reponse.json()
+    if (!publiee.version || publiee.version === __VERSION__) return
+    avisVersion.hidden = false
+    annoncer('Une version plus récente de MiseEnWeb est publiée.')
+  } catch {}   // hors ligne : la vérification reprend au prochain retour sur l'onglet
+}
+if (import.meta.env.PROD) document.addEventListener('visibilitychange', () => void verifierVersion())
+
 // ---- Thème clair ou sombre ----
 // Le thème initial est posé par le script de <head> : clair par défaut, quel que soit le système.
 // Le bouton bascule et mémorise le choix.
