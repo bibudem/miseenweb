@@ -499,7 +499,7 @@ function resumeRemarques(remarques: Remarque[], gravite: Remarque['gravite']): H
   // Ici, les remarques sont regroupées : c'est l'aperçu qui mène à chaque endroit à corriger
   if (gravite === 'avertissement') {
     const aide = element('p', 'aide')
-    aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' pour voir l’emplacement de chaque point dans la page.')
+    aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' afin de repérer l’emplacement des points à vérifier.')
     volet.append(aide)
   }
   return volet
