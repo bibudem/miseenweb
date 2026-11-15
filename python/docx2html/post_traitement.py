@@ -464,9 +464,20 @@ def _aligner_selon_apa(soupe: BeautifulSoup) -> int:
       seulement des noms de lignes, le centrage y marque une ligne subordonnée : ces noms
       reçoivent un retrait d'un niveau. Quand presque tous sont centrés, ils passent à gauche
       sans retrait.
-    - Autres cellules : centrées. Une cellule de texte long, à plusieurs paragraphes ou qui
-      contient une liste reste à gauche, plus lisible.
+    - Autres colonnes : centrées. Une colonne dont au moins le tiers des cellules contient un
+      texte long, plusieurs paragraphes ou une liste est alignée à gauche, plus lisible. Le
+      choix vaut pour toute la colonne : des cellules centrées et d'autres à gauche, l'une
+      sous l'autre, se liraient mal.
     """
+
+    def est_longue(cellule: Tag) -> bool:
+        remplis = [p for p in cellule.find_all("p", recursive=False) if p.get_text(strip=True)]
+        return (
+            len(cellule.get_text(" ", strip=True)) > LONGUEUR_CENTREE
+            or len(remplis) > 1
+            or cellule.find(["ul", "ol"]) is not None
+        )
+
     n = 0
     for tableau in soupe.find_all("table"):
         grille = _grille(tableau)
@@ -478,8 +489,18 @@ def _aligner_selon_apa(soupe: BeautifulSoup) -> int:
         noms_de_lignes = [c for rang in grille[nb_entetes:] for c, colonne, _ in rang if colonne == 0 and c.get_text(strip=True)]
         centres = [c for c in noms_de_lignes if c.find("p", class_="centre", recursive=False)]
         subordination = bool(centres) and len(centres) <= 0.8 * len(noms_de_lignes)
+        # Colonnes de texte, repérées par leur bord droit
+        par_bord: dict[int, list[Tag]] = {}
+        for rang in grille[nb_entetes:]:
+            for cellule, colonne, largeur in rang:
+                if colonne > 0 and cellule.get_text(strip=True):
+                    par_bord.setdefault(colonne + largeur, []).append(cellule)
+        colonnes_de_texte = {
+            bord for bord, cellules in par_bord.items()
+            if 3 * sum(1 for c in cellules if est_longue(c)) >= len(cellules)
+        }
         for rang_ligne, rang in enumerate(grille):
-            for cellule, colonne, _ in rang:
+            for cellule, colonne, largeur in rang:
                 paragraphes = cellule.find_all("p", recursive=False)
                 en_entete = rang_ligne < nb_entetes
                 premiere_colonne = colonne == 0 and not en_entete
@@ -493,9 +514,7 @@ def _aligner_selon_apa(soupe: BeautifulSoup) -> int:
                     elif paragraphe.get("class") is not None:
                         del paragraphe["class"]
                 texte = cellule.get_text(" ", strip=True)
-                remplis = [p for p in paragraphes if p.get_text(strip=True)]
-                long = len(texte) > LONGUEUR_CENTREE or len(remplis) > 1 or cellule.find(["ul", "ol"]) is not None
-                if texte and not premiere_colonne and (en_entete or not long):
+                if texte and not premiere_colonne and (en_entete or colonne + largeur not in colonnes_de_texte):
                     cellule["class"] = cellule.get("class", []) + ["centre"]
                     n += 1
     return n
