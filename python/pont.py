@@ -191,7 +191,7 @@ def _decalage(soupe: BeautifulSoup, profil: Profil | None) -> int:
 def _traduire_structure(message: str, soupe: BeautifulSoup, decalage: int = 0) -> Remarque:
     if message.startswith("Aucun titre"):
         return Remarque("avertissement", "Aucun titre.",
-                        "Un lecteur d'écran parcourt une page par ses titres. Dans Word, appliquer les styles "
+                        "Les lecteurs d'écran parcourent une page par ses titres. Dans Word, appliquer les styles "
                         "Titre 1 et Titre 2 aux titres.")
     if trouve := re.match(r"Le document ne commence pas par un h1", message):
         return Remarque("avertissement", "Titre principal absent au début du document.",
@@ -316,7 +316,7 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     for rang in _sous_titres_a_la_main(soupe):
         remarques.append(Remarque(
             "avertissement", "Sous-titre en gras sans style de titre.",
-            "Un lecteur d'écran ne reconnaît pas un paragraphe en gras comme un titre. Dans Word, "
+            "Les lecteurs d'écran ne reconnaissent pas un paragraphe en gras comme un titre. Dans Word, "
             "appliquer un style de titre au sous-titre, par exemple Titre 2.",
             {"balise": "p", "rang": rang},
             "{n} sous-titres en gras sans style de titre"))
@@ -326,7 +326,7 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
     for rang in sans_alt:
         remarques.append(Remarque(
             "avertissement", "Image sans texte de remplacement.",
-            "Un lecteur d'écran ne peut pas décrire une image sans texte de remplacement. Dans Word, "
+            "Les lecteurs d'écran ne peuvent pas décrire une image sans texte de remplacement. Dans Word, "
             "faire un clic droit sur l'image, puis choisir « Afficher le texte de remplacement ». Pour une "
             "image décorative, cocher « Marquer comme décoratif ».",
             {"balise": "img", "rang": rang},
@@ -336,7 +336,7 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
         if texte in LIENS_VAGUES:
             remarques.append(Remarque(
                 "avertissement", f"Hyperlien au texte vague : « {lien.get_text(strip=True)} ».",
-                "Un lecteur d'écran peut lire les hyperliens hors de leur phrase. Ce texte n'indique pas la "
+                "Les lecteurs d'écran peuvent lire les hyperliens hors de leur phrase. Ce texte n'indique pas la "
                 "destination de l'hyperlien. Dans Word, placer l'hyperlien sur des mots qui décrivent la "
                 "destination.",
                 {"balise": "a", "rang": rang}))
@@ -344,7 +344,7 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
         if len(tableau.find_all("tr")) > 1 and not tableau.find("th"):
             remarques.append(Remarque(
                 "avertissement", "Tableau sans ligne d'en-tête.",
-                "Un lecteur d'écran associe chaque cellule à l'en-tête de sa colonne. Dans Word, sélectionner "
+                "Les lecteurs d'écran associent chaque cellule à l'en-tête de sa colonne. Dans Word, sélectionner "
                 "la première ligne du tableau. Ouvrir « Propriétés du tableau », onglet « Ligne ». Cocher "
                 "« Répéter en haut de chaque page en tant que ligne d'en-tête ».",
                 {"balise": "table", "rang": rang},
