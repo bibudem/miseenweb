@@ -74,6 +74,10 @@ const lienPage = $<HTMLAnchorElement>('[data-telecharger-page]')
 const sectionVerifier = $<HTMLElement>('[data-section-verifier]')
 const listePoints = $<HTMLUListElement>('[data-points]')
 const comptePoints = $<HTMLElement>('[data-compte-verifier]')
+const sectionConversion = $<HTMLElement>('[data-section-conversion]')
+const listePointsConversion = $<HTMLUListElement>('[data-points-conversion]')
+const comptePointsConversion = $<HTMLElement>('[data-compte-conversion]')
+const aideConvertir = $<HTMLElement>('[data-aide-convertir]')
 const listePlan = $<HTMLOListElement>('[data-plan]')
 const toast = $<HTMLElement>('[data-toast]')
 
@@ -372,6 +376,11 @@ const convertibles = () => [...documents.values()].filter((d) => d.analyse && !d
 function actualiserBoutons(): void {
   const n = convertibles().length
   boutonConvertir.disabled = !pret || enCours || n === 0
+  // Un bouton inactif ne dit pas pourquoi : une phrase, à côté, donne la raison
+  if (enCours || (pret && n > 0)) aideConvertir.textContent = ''
+  else if (!pret) aideConvertir.textContent = 'Le bouton devient actif à la fin de la préparation du convertisseur.'
+  else if (documents.size) aideConvertir.textContent = 'Aucun document de la liste ne peut être converti.'
+  else aideConvertir.textContent = 'Ajouter un document pour activer la conversion.'
   libelleConvertir.textContent = enCours ? 'Conversion…' : n > 1 ? `Convertir ${n} documents` : 'Convertir'
   marquerEtape(blocResultats.hidden ? (documents.size ? 'verifier' : 'ajouter') : 'convertir')
 }
@@ -538,6 +547,7 @@ function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarq
 
 function afficherResultats(): void {
   const nombre = (s: Resultat['statut']) => resultats.filter((r) => r.statut === s).length
+  titreResultats.textContent = resultats.length > 1 ? 'Résultats' : 'Résultat'
   bilan.replaceChildren(
     ...(['ok', 'avertissements', 'erreur'] as const)
       .filter((s) => nombre(s))
@@ -554,7 +564,7 @@ function afficherResultats(): void {
       ligne.append(statut)
 
       const infos = element('div', 'resultat-infos')
-      const nom = element('p', 'fichier-nom', r.fichier)
+      const nom = element('h3', 'fichier-nom', r.fichier)
       nom.append(element('span', 'visuellement-masque', ` : ${STATUTS[r.statut].texte}`))
       infos.append(nom)
       const details = element('p', 'fichier-details')
@@ -575,7 +585,7 @@ function afficherResultats(): void {
 
       if (r.sortie) {
         const actions = element('div', 'resultat-actions')
-        const voir = avecIcone(element('button', 'bouton bouton-plein bouton-compact'), 'eye', 'Aperçu et vérification')
+        const voir = avecIcone(element('button', 'bouton bouton-contour bouton-compact'), 'eye', 'Aperçu et vérification')
         voir.setAttribute('type', 'button')
         voir.setAttribute('aria-label', `Aperçu et vérification de ${r.sortie}`)
         voir.addEventListener('click', () => void ouvrirApercu(r))
@@ -677,25 +687,30 @@ function remplirPanneau(resultat: Resultat): void {
   const doc = cadre.contentDocument
   if (!doc) return
 
-  // Points à vérifier : les avertissements, avec un lien vers l'endroit quand on le connaît
+  // Points à vérifier, par source comme dans la liste des résultats : chaque point mène à son
+  // endroit dans la page quand on le connaît
+  const point = (r: Remarque): HTMLLIElement => {
+    const li = element('li')
+    const cible = elementCible(doc, r.cible)
+    const titre = cible ? element('button', 'point point-lien') : element('div', 'point')
+    if (cible) {
+      ;(titre as HTMLButtonElement).type = 'button'
+      titre.addEventListener('click', () => montrer(cible))
+    }
+    titre.append(element('strong', '', r.titre))
+    if (r.conseil) titre.append(element('span', 'conseil', r.conseil))
+    li.append(titre)
+    return li
+  }
   const points = resultat.remarques.filter((r) => r.gravite === 'avertissement')
-  sectionVerifier.hidden = points.length === 0
-  comptePoints.textContent = `(${points.length})`
-  listePoints.replaceChildren(
-    ...points.map((r) => {
-      const li = element('li')
-      const cible = elementCible(doc, r.cible)
-      const titre = cible ? element('button', 'point point-lien') : element('div', 'point')
-      if (cible) {
-        ;(titre as HTMLButtonElement).type = 'button'
-        titre.addEventListener('click', () => montrer(cible))
-      }
-      titre.append(element('strong', '', r.titre))
-      if (r.conseil) titre.append(element('span', 'conseil', r.conseil))
-      li.append(titre)
-      return li
-    }),
-  )
+  const duDocument = points.filter((r) => r.origine !== 'conversion')
+  const deConversion = points.filter((r) => r.origine === 'conversion')
+  sectionVerifier.hidden = duDocument.length === 0
+  comptePoints.textContent = `(${duDocument.length})`
+  listePoints.replaceChildren(...duDocument.map(point))
+  sectionConversion.hidden = deConversion.length === 0
+  comptePointsConversion.textContent = `(${deConversion.length})`
+  listePointsConversion.replaceChildren(...deConversion.map(point))
 
   // Plan : la liste des titres, imbriquée par niveau
   const titres = [...doc.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6')]

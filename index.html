@@ -186,7 +186,8 @@
 
           <div class="barre-actions">
             <p class="annonce" aria-live="polite" data-annonce></p>
-            <button type="button" class="bouton bouton-plein bouton-grand" data-convertir disabled>
+            <p class="aide aide-convertir" id="aide-convertir" data-aide-convertir></p>
+            <button type="button" class="bouton bouton-plein bouton-grand" data-convertir aria-describedby="aide-convertir" disabled>
               <span data-libelle-convertir>Convertir</span>
               <span class="icone icone-fin" data-icone="arrow-right" aria-hidden="true"></span>
             </button>
@@ -369,8 +370,12 @@
       <div class="apercu-corps">
         <aside class="apercu-panneau" aria-label="Vérification">
           <section data-section-verifier>
-            <h3>À vérifier <span class="compte" data-compte-verifier></span></h3>
+            <h3><span class="icone" data-icone="file-doc" aria-hidden="true"></span>Document d'origine <span class="compte" data-compte-verifier></span></h3>
             <ul class="points" data-points></ul>
+          </section>
+          <section data-section-conversion hidden>
+            <h3><span class="icone" data-icone="file-html" aria-hidden="true"></span>Conversion <span class="compte" data-compte-conversion></span></h3>
+            <ul class="points" data-points-conversion></ul>
           </section>
           <section>
             <h3>Plan du document</h3>

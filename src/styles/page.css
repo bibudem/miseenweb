@@ -892,6 +892,12 @@
     font-weight: var(--graisse-forte);
   }
 
+  /* Dans les résultats, le nom d'un document est un titre : il garde l'apparence du texte */
+  h3.fichier-nom {
+    font-size: inherit;
+    line-height: inherit;
+  }
+
   .fichier-details {
     display: flex;
     flex-wrap: wrap;
@@ -944,6 +950,16 @@
   }
 
   .annonce:empty {
+    display: none;
+  }
+
+  /* Raison pour laquelle le bouton « Convertir » est inactif */
+  .aide-convertir {
+    flex: 1 1 16rem;
+    max-width: none;
+  }
+
+  .aide-convertir:empty {
     display: none;
   }
 
@@ -1578,8 +1594,16 @@
   }
 
   .apercu-panneau h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
     margin-bottom: var(--espace-1);
     font-size: var(--texte-courant);
+  }
+
+  .apercu-panneau h3 .icone {
+    color: var(--couleur-texte-secondaire);
   }
 
   /* Une iframe ne s'étire pas seule dans une grille : elle garderait 150 px de haut */
