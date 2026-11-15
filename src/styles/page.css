@@ -732,6 +732,27 @@
     background-color: color-mix(in srgb, var(--couleur-accent) 8%, transparent);
   }
 
+  /* Action destructive : la couleur d'erreur du thème, en clair comme en sombre */
+  .bouton-danger {
+    background-color: var(--alerte-erreur-icone);
+    color: var(--couleur-surface);
+  }
+
+  .bouton-danger:hover {
+    background-color: color-mix(in srgb, var(--alerte-erreur-icone) 85%, var(--couleur-texte));
+    color: var(--couleur-surface);
+  }
+
+  .bouton-texte.bouton-danger {
+    background-color: transparent;
+    color: var(--alerte-erreur-icone);
+  }
+
+  .bouton-texte.bouton-danger:hover {
+    background-color: color-mix(in srgb, var(--alerte-erreur-icone) 8%, transparent);
+    color: var(--alerte-erreur-icone);
+  }
+
   .bouton-grand {
     min-height: 3.5rem;
     padding-inline: 32px;
@@ -1721,22 +1742,46 @@
     }
   }
 
-  /* ---- Notification ---- */
-  .toast {
-    position: fixed;
-    inset-inline: 0;
-    bottom: var(--espace-3);
-    z-index: 20;
-    width: fit-content;
-    max-width: calc(100vw - 2 * var(--espace-2));
-    margin-inline: auto;
-    padding: 12px 22px;
-    border-radius: var(--rayon-plein);
-    background: var(--bleu-fonce);
-    color: var(--blanc);
+  /* ---- Fenêtre de confirmation ---- */
+  .confirmation {
+    width: min(30rem, 100vw - 2 * var(--espace-2));
+    padding: var(--espace-3);
+    border: 0;
+    border-radius: var(--rayon-moyen);
+    background: var(--couleur-surface);
+    color: var(--couleur-texte);
     box-shadow: var(--ombre-2);
-    font-size: var(--texte-petit);
+  }
+
+  .confirmation[open] {
     animation: apparition var(--duree-moyenne-2) var(--courbe-standard-deceleree);
+  }
+
+  .confirmation::backdrop {
+    background: rgb(11 17 58 / 60%);
+    backdrop-filter: blur(2px);
+  }
+
+  .confirmation h2 {
+    font-size: var(--texte-moyen);
+  }
+
+  .confirmation p {
+    margin-block: var(--espace-1) var(--espace-3);
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .confirmation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--espace-1);
+  }
+
+  /* Message d'erreur d'une action, placé dans un en-tête de fenêtre : il prend toute la ligne */
+  .apercu-entete .erreur-action {
+    flex-basis: 100%;
+    margin: 0;
   }
 
   /* ---- Mobile : bannière plus courte, l'outil arrive plus tôt ---- */

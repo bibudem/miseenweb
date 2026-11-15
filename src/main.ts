@@ -79,7 +79,8 @@ const listePointsConversion = $<HTMLUListElement>('[data-points-conversion]')
 const comptePointsConversion = $<HTMLElement>('[data-compte-conversion]')
 const aideConvertir = $<HTMLElement>('[data-aide-convertir]')
 const listePlan = $<HTMLOListElement>('[data-plan]')
-const toast = $<HTMLElement>('[data-toast]')
+const annonceGlobale = $<HTMLElement>('[data-annonce-globale]')
+const confirmation = $<HTMLDialogElement>('[data-confirmation]')
 
 const AUTO = '__auto__'
 const AUTRE_DOCUMENT = ''
@@ -122,12 +123,29 @@ function annoncer(texte: string): void {
   annonce.textContent = texte
 }
 
-let minuterieToast = 0
-function afficherToast(texte: string): void {
-  toast.textContent = texte
-  toast.hidden = false
-  clearTimeout(minuterieToast)
-  minuterieToast = window.setTimeout(() => (toast.hidden = true), 3500)
+// Confirme une action dans son bouton : le libellé change quelques secondes, puis revient.
+// Le message est aussi dit aux lecteurs d'écran. Aucune bulle temporaire : un message qui
+// disparaît seul peut être manqué.
+function confirmerDansBouton(bouton: HTMLElement, nomIcone: string, texte: string): void {
+  annonceGlobale.textContent = texte
+  if (bouton.dataset.confirme) return
+  const initial = bouton.innerHTML
+  bouton.dataset.confirme = 'oui'
+  avecIcone(bouton, nomIcone, texte)
+  window.setTimeout(() => {
+    bouton.innerHTML = initial
+    delete bouton.dataset.confirme
+  }, 4000)
+}
+
+// Message d'erreur qui reste affiché dans `zone`, jusqu'à la prochaine tentative
+function signalerErreur(zone: HTMLElement, texte: string): void {
+  zone.querySelector('[data-erreur-action]')?.remove()
+  if (!texte) return
+  const message = element('p', 'erreur-texte erreur-action', texte)
+  message.dataset.erreurAction = ''
+  message.setAttribute('role', 'alert')
+  zone.append(message)
 }
 
 function urlObjet(contenu: BlobPart, type: string): string {
@@ -492,7 +510,7 @@ function listeRemarques(groupes: [Remarque, number][]): HTMLUListElement {
 }
 
 // Une ligne repliée par sorte de remarque : la liste des résultats reste courte, et le détail
-// est à un clic. L'endroit à corriger se trouve dans « Aperçu et vérification ».
+// est à un clic. L'endroit à corriger se trouve dans « Vérifier la page ».
 // Deux sources de remarques, chacune sur sa ligne : le document d'origine, dont les défauts se
 // corrigent dans Word, et la conversion. L'icône du fichier concerné précède le libellé.
 type Source = 'document' | 'conversion'
@@ -504,7 +522,7 @@ function pictogramme(nom: string, classe: string): HTMLSpanElement {
   return span
 }
 
-function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarque[]): HTMLDetailsElement {
+function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarque[], contexte = ''): HTMLDetailsElement {
   const groupesACorriger = regrouper(aCorriger)
   const groupesInformations = regrouper(informations)
   let resume: string
@@ -515,8 +533,10 @@ function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarq
       source === 'document'
         ? pluriel(aCorriger.length, 'point à corriger', 'points à corriger')
         : pluriel(aCorriger.length, 'point à vérifier', 'points à vérifier')
-  } else {
+  } else if (groupesInformations.length) {
     resume = pluriel(groupesInformations.length, 'information', 'informations')
+  } else {
+    resume = 'aucune remarque'
   }
 
   const volet = element('details', `bilan-source${aCorriger.length ? ' bilan-a-corriger' : ''}`)
@@ -534,11 +554,14 @@ function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarq
       element('p', 'aide', 'Afin d’améliorer la qualité de la conversion, il est recommandé d’apporter des corrections dans le fichier Word et de relancer le traitement.'),
     )
   }
-  detail.append(listeRemarques([...groupesACorriger, ...groupesInformations]))
+  if (contexte) detail.append(element('p', 'aide', contexte))
+  if (groupesACorriger.length || groupesInformations.length) {
+    detail.append(listeRemarques([...groupesACorriger, ...groupesInformations]))
+  }
   // Ici, les remarques sont regroupées : c'est l'aperçu qui mène à chaque endroit à corriger
   if (source === 'document') {
     const aide = element('p', 'aide')
-    aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' afin de repérer l’emplacement des corrections suggérées.')
+    aide.append('Cliquer sur ', element('strong', '', 'Vérifier la page'), ' afin de repérer l’emplacement des corrections suggérées.')
     detail.append(aide)
   }
   volet.append(sommaire, detail)
@@ -569,7 +592,6 @@ function afficherResultats(): void {
       infos.append(nom)
       const details = element('p', 'fichier-details')
       const puce = element('span', 'puce', r.libelle)
-      puce.title = `Type reconnu : ${r.raison}`
       details.append(puce)
       if (r.sortie) details.append(element('span', '', resumeStructure(r.titres, r.images)))
       infos.append(details)
@@ -580,19 +602,21 @@ function afficherResultats(): void {
       const deConversion = avertissements.filter((x) => x.origine === 'conversion')
       const duDocument = avertissements.filter((x) => x.origine !== 'conversion')
       if (duDocument.length) infos.append(bilanSource('document', duDocument, []))
-      if (deConversion.length || informations.length) infos.append(bilanSource('conversion', deConversion, informations))
+      if (r.sortie) infos.append(bilanSource('conversion', deConversion, informations, `Type de document ${r.raison}.`))
       ligne.append(infos)
 
       if (r.sortie) {
         const actions = element('div', 'resultat-actions')
-        const voir = avecIcone(element('button', 'bouton bouton-contour bouton-compact'), 'eye', 'Aperçu et vérification')
+        const voir = avecIcone(element('button', 'bouton bouton-contour bouton-compact'), 'eye', 'Vérifier la page')
         voir.setAttribute('type', 'button')
-        voir.setAttribute('aria-label', `Aperçu et vérification de ${r.sortie}`)
+        voir.setAttribute('aria-label', `Vérifier la page ${r.sortie}`)
         voir.addEventListener('click', () => void ouvrirApercu(r))
         const copier = avecIcone(element('button', 'bouton bouton-contour bouton-compact'), 'copy', 'Copier le code')
         copier.setAttribute('type', 'button')
         copier.setAttribute('aria-label', `Copier le code HTML de ${r.sortie}`)
-        copier.addEventListener('click', async () => copierCode(await demander<string>({ action: 'apercu', nom: r.sortie })))
+        copier.addEventListener('click', async () =>
+          copierCode(await demander<string>({ action: 'apercu', nom: r.sortie }), copier, infos),
+        )
         actions.append(voir, copier)
         ligne.append(actions)
       }
@@ -609,7 +633,10 @@ function afficherResultats(): void {
 }
 
 async function recommencer(): Promise<void> {
-  if (!recupere && !confirm('Les pages converties n’ont pas été téléchargées. Abandonner ces pages ?')) return
+  if (!recupere) {
+    confirmation.showModal()     // « Abandonner les pages » relance cette fonction
+    return
+  }
   const noms = [...documents.keys()]
   documents.clear()
   resultats = []
@@ -625,7 +652,7 @@ async function recommencer(): Promise<void> {
 }
 
 // ---- Copier le code : le contenu de la page, pour un CMS ou StudiUM ----
-async function copierCode(page: string): Promise<void> {
+async function copierCode(page: string, bouton: HTMLElement, zone: HTMLElement): Promise<void> {
   const doc = new DOMParser().parseFromString(page, 'text/html')
   const contenu = (doc.querySelector('main') ?? doc.body).innerHTML.trim()
   try {
@@ -641,9 +668,10 @@ async function copierCode(page: string): Promise<void> {
       await navigator.clipboard.writeText(contenu)
     }
     recupere = true
-    afficherToast('Le code est copié. Coller le code dans l’éditeur du site.')
+    signalerErreur(zone, '')
+    confirmerDansBouton(bouton, 'check-circle', 'Code copié')
   } catch {
-    afficherToast('Le navigateur a refusé la copie. Télécharger la page.')
+    signalerErreur(zone, 'Le navigateur a refusé la copie. Télécharger la page.')
   }
 }
 
@@ -826,8 +854,9 @@ $<HTMLButtonElement>('[data-vider]').addEventListener('click', async () => {
   if (pret) await Promise.all(noms.map((nom) => demander({ action: 'oublier', nom })))
 })
 
-$<HTMLButtonElement>('[data-copier-apercu]').addEventListener('click', () => {
-  if (pageOuverte) void copierCode(pageOuverte.html)
+$<HTMLButtonElement>('[data-copier-apercu]').addEventListener('click', (e) => {
+  const bouton = e.currentTarget as HTMLElement
+  if (pageOuverte) void copierCode(pageOuverte.html, bouton, bouton.closest<HTMLElement>('.apercu-entete')!)
 })
 $<HTMLButtonElement>('[data-fermer]').addEventListener('click', () => dialogue.close())
 // Un clic sur le fond, hors de la fenêtre d'aperçu, la ferme aussi
@@ -877,6 +906,14 @@ dialogueRapport.addEventListener('close', () => {
   document.querySelector('.zone-impression')?.remove()
 })
 
+// ---- Confirmation avant d'abandonner des pages non téléchargées ----
+$<HTMLButtonElement>('[data-conserver]').addEventListener('click', () => confirmation.close())
+$<HTMLButtonElement>('[data-abandonner]').addEventListener('click', () => {
+  confirmation.close()
+  recupere = true
+  void recommencer()
+})
+
 // Tout se perd en fermant la page : on prévient si les résultats n'ont pas été récupérés
 window.addEventListener('beforeunload', (e) => {
   if (!recupere) e.preventDefault()
@@ -915,7 +952,7 @@ $<HTMLButtonElement>('[data-installer]').addEventListener('click', async () => {
   const { outcome } = await invitation.userChoice
   invitation = null
   zoneInstaller.hidden = true
-  if (outcome === 'accepted') afficherToast('MiseEnWeb est installée. L’application apparaît parmi les applications de l’appareil.')
+  if (outcome === 'accepted') montrerInstallee()      // la mention « MiseEnWeb est installée » reste affichée
 })
 
 window.addEventListener('appinstalled', montrerInstallee)

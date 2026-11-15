@@ -164,7 +164,7 @@
           <div class="liste" data-bloc-liste hidden>
             <div class="liste-entete">
               <h3>Documents <span class="compte" data-compte></span></h3>
-              <button type="button" class="bouton bouton-texte" data-vider>
+              <button type="button" class="bouton bouton-texte bouton-danger" data-vider>
                 <span class="icone" data-icone="trash" aria-hidden="true"></span>Vider la liste
               </button>
             </div>
@@ -285,7 +285,7 @@
             <details class="volet-anime">
               <summary>Vérification avant la publication</summary>
               <p>
-                Vérifier la page produite avant de la publier. Ouvrir « Aperçu et vérification ». Le plan du
+                Vérifier la page produite avant de la publier. Cliquer sur « Vérifier la page ». Le plan du
                 document et la liste des points à vérifier mènent aux endroits concernés.
               </p>
             </details>
@@ -407,7 +407,18 @@
       <iframe sandbox="allow-same-origin" title="Rapport de conversion" data-cadre-rapport></iframe>
     </dialog>
 
-    <p class="toast" role="status" data-toast hidden></p>
+    <!-- Confirmation avant d'abandonner des pages non téléchargées -->
+    <dialog class="confirmation" data-confirmation aria-labelledby="titre-confirmation" aria-describedby="texte-confirmation">
+      <h2 id="titre-confirmation">Pages non téléchargées</h2>
+      <p id="texte-confirmation">Les pages converties n'ont pas été téléchargées. Une nouvelle conversion les efface.</p>
+      <div class="confirmation-actions">
+        <button type="button" class="bouton bouton-contour" data-conserver autofocus>Conserver les pages</button>
+        <button type="button" class="bouton bouton-danger" data-abandonner>Abandonner les pages</button>
+      </div>
+    </dialog>
+
+    <!-- Annonces aux lecteurs d'écran : une action confirmée dans son bouton y est aussi dite -->
+    <p class="visuellement-masque" role="status" data-annonce-globale></p>
 
     <noscript>
       <p class="sans-script">MiseEnWeb requiert JavaScript pour convertir vos documents dans le navigateur.</p>
