@@ -36,7 +36,7 @@ commun:
     notes_tableaux: true
     accessibilite_tableaux: true
     alignement_colonnes: true
-    alignement_apa: true            # la revue suit l'APA, 7e édition
+    alignement_apa: true            # APA, 7e édition; chaque en-tête suit l'alignement de sa colonne
     tableaux_larges: 9              # colonnes
     liens_automatiques: true
     sens_ecriture: true

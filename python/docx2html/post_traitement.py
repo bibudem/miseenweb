@@ -459,7 +459,10 @@ LONGUEUR_CENTREE = 50       # caractères : au-delà, une cellule de données re
 def _aligner_selon_apa(soupe: BeautifulSoup) -> int:
     """Aligne chaque tableau selon l'APA (7e édition), à la place de l'alignement du Word.
 
-    - En-têtes de colonnes : centrés.
+    - En-têtes de colonnes : même alignement que leur colonne, comme le conseille le W3C pour
+      une page web. L'APA centre tous les en-têtes; ici, l'en-tête de la première colonne et
+      celui d'une colonne de texte sont à gauche, au-dessus de cellules alignées à gauche.
+      Un utilisateur de loupe d'écran retrouve ainsi l'en-tête au-dessus du contenu.
     - Première colonne, qui nomme les lignes : à gauche. Quand le Word centre une partie
       seulement des noms de lignes, le centrage y marque une ligne subordonnée : ces noms
       reçoivent un retrait d'un niveau. Quand presque tous sont centrés, ils passent à gauche
@@ -514,7 +517,13 @@ def _aligner_selon_apa(soupe: BeautifulSoup) -> int:
                     elif paragraphe.get("class") is not None:
                         del paragraphe["class"]
                 texte = cellule.get_text(" ", strip=True)
-                if texte and not premiere_colonne and (en_entete or colonne + largeur not in colonnes_de_texte):
+                # Colonnes de données que la cellule couvre, repérées par leur bord droit
+                couvertes = [bord for bord in par_bord if colonne < bord <= colonne + largeur]
+                a_gauche = (
+                    colonne == 0                                              # première colonne et son en-tête
+                    or (bool(couvertes) and all(bord in colonnes_de_texte for bord in couvertes))
+                )
+                if texte and not a_gauche:
                     cellule["class"] = cellule.get("class", []) + ["centre"]
                     n += 1
     return n
