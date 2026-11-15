@@ -505,9 +505,7 @@ def rapport_html() -> str:
             lignes.append(f'<p class="erreur-texte">{e(r["erreur"])}</p>')
         de_conversion = [x for x in avertissements if x.get("origine") == "conversion"]
         du_document = [x for x in avertissements if x.get("origine") != "conversion"]
-        for titre, liste in (("Conversion : points à vérifier", de_conversion),
-                             ("Document d'origine : points à corriger dans Word", du_document),
-                             ("Pour information", infos)):
+        for titre, liste in (("Document d'origine", du_document), ("Conversion", de_conversion + infos)):
             if liste:
                 lignes.append(f"<h3>{titre}</h3><ul>")
                 # Dans la page, chaque remarque mène à son endroit; sur papier, la répéter n'apprend rien

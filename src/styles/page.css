@@ -1461,14 +1461,84 @@
     font-weight: var(--graisse-normale);
   }
 
-  .plus summary {
-    width: fit-content;
-    min-height: var(--taille-cible);
+  /* ---- Remarques d'un document, par source : document d'origine, conversion ----
+     Une ligne par source. L'icône du fichier concerné et un libellé fixe la nomment, un résumé
+     dit ce qu'elle contient, un chevron indique qu'elle se déplie. */
+  .bilan-source {
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--rayon-tres-petit);
+    background: var(--couleur-surface);
+    font-size: var(--texte-petit);
+  }
+
+  .bilan-source summary {
     display: flex;
     align-items: center;
-    color: var(--couleur-lien);
-    font-size: var(--texte-petit);
+    gap: var(--espace-1);
+    min-height: var(--taille-cible);
+    padding: 6px 12px;
+    border-radius: var(--rayon-tres-petit);
+    list-style: none;
     cursor: pointer;
+  }
+
+  .bilan-source summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .bilan-source summary:hover {
+    background: var(--alerte-fond);
+  }
+
+  .bilan-icone,
+  .bilan-chevron {
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .bilan-libelle {
+    font-weight: var(--graisse-forte);
+    white-space: nowrap;
+  }
+
+  .bilan-resume {
+    min-width: 0;
+    color: var(--couleur-texte-secondaire);
+  }
+
+  /* Une source qui demande une action : l'icône prend la couleur d'avertissement */
+  .bilan-a-corriger .bilan-icone {
+    color: var(--alerte-avertissement-icone);
+  }
+
+  .bilan-a-corriger .bilan-resume {
+    color: var(--couleur-texte);
+  }
+
+  .bilan-chevron {
+    margin-inline-start: auto;
+    transition: rotate var(--duree-courte-4) var(--courbe-standard);
+  }
+
+  .bilan-source[open] .bilan-chevron {
+    rotate: 180deg;
+  }
+
+  .bilan-detail {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--couleur-bordure);
+  }
+
+  .bilan-detail .aide,
+  .bilan-detail .remarques {
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bilan-chevron {
+      transition: none;
+    }
   }
 
   .recommencer {

@@ -14,7 +14,7 @@ import type { Analyse, Catalogue, DemandeSansId, Evenement, Remarque, Resultat }
 
 // ---- Icônes Phosphor, intégrées au script ----
 const icones = import.meta.glob(
-  '/node_modules/@phosphor-icons/core/assets/regular/{arrow-counter-clockwise,arrow-right,arrow-square-out,caret-down,check-circle,copy,download-simple,eye,file-doc,file-zip,folder-simple,info,lightning,list-checks,lock-simple,moon,printer,shield-check,sliders-horizontal,sparkle,sun,trash,tree-structure,upload-simple,warning,x,x-circle}.svg',
+  '/node_modules/@phosphor-icons/core/assets/regular/{arrow-counter-clockwise,arrow-right,arrow-square-out,caret-down,check-circle,copy,download-simple,eye,file-doc,file-html,file-zip,folder-simple,info,lightning,list-checks,lock-simple,moon,printer,shield-check,sliders-horizontal,sparkle,sun,trash,tree-structure,upload-simple,warning,x,x-circle}.svg',
   { query: '?raw', import: 'default', eager: true },
 ) as Record<string, string>
 
@@ -484,37 +484,55 @@ function listeRemarques(groupes: [Remarque, number][]): HTMLUListElement {
 
 // Une ligne repliée par sorte de remarque : la liste des résultats reste courte, et le détail
 // est à un clic. L'endroit à corriger se trouve dans « Aperçu et vérification ».
-// Trois sortes de lignes : les défauts du document Word, les défauts de la conversion, les informations.
-// L'utilisateur doit savoir d'où vient un point : un défaut du document se corrige dans Word.
-type Sorte = 'document' | 'conversion' | 'info'
+// Deux sources de remarques, chacune sur sa ligne : le document d'origine, dont les défauts se
+// corrigent dans Word, et la conversion. L'icône du fichier concerné précède le libellé.
+type Source = 'document' | 'conversion'
 
-function resumeRemarques(remarques: Remarque[], sorte: Sorte): HTMLDetailsElement {
-  const groupes = regrouper(remarques)
-  let texte: string
-  if (sorte === 'info') {
-    texte = pluriel(groupes.length, 'information sur la conversion', 'informations sur la conversion')
+function pictogramme(nom: string, classe: string): HTMLSpanElement {
+  const span = element('span', `icone ${classe}`)
+  span.setAttribute('aria-hidden', 'true')
+  span.innerHTML = icone(nom)
+  return span
+}
+
+function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarque[]): HTMLDetailsElement {
+  const groupesACorriger = regrouper(aCorriger)
+  const groupesInformations = regrouper(informations)
+  let resume: string
+  if (groupesACorriger.length === 1) {
+    resume = titreDuGroupe(...groupesACorriger[0]).replace(/\.$/, '')
+  } else if (groupesACorriger.length > 1) {
+    resume =
+      source === 'document'
+        ? pluriel(aCorriger.length, 'point à corriger', 'points à corriger')
+        : pluriel(aCorriger.length, 'point à vérifier', 'points à vérifier')
   } else {
-    const etiquette = sorte === 'document' ? 'Document d’origine' : 'Conversion'
-    const points =
-      sorte === 'document'
-        ? pluriel(remarques.length, 'point à corriger', 'points à corriger')
-        : pluriel(remarques.length, 'point à vérifier', 'points à vérifier')
-    texte = `${etiquette} : ${groupes.length === 1 ? titreDuGroupe(...groupes[0]).replace(/\.$/, '') : points}`
+    resume = pluriel(groupesInformations.length, 'information', 'informations')
   }
-  const volet = element('details', 'plus')
-  volet.append(element('summary', '', texte))
-  if (sorte === 'document') {
-    volet.append(
+
+  const volet = element('details', `bilan-source${aCorriger.length ? ' bilan-a-corriger' : ''}`)
+  const sommaire = element('summary')
+  sommaire.append(
+    pictogramme(source === 'document' ? 'file-doc' : 'file-html', 'bilan-icone'),
+    element('span', 'bilan-libelle', source === 'document' ? 'Document d’origine :' : 'Conversion :'),
+    element('span', 'bilan-resume', resume),
+    pictogramme('caret-down', 'bilan-chevron'),
+  )
+
+  const detail = element('div', 'bilan-detail')
+  if (source === 'document') {
+    detail.append(
       element('p', 'aide', 'La vérification du document d’origine relève ces points. Les corriger dans Word, puis convertir le document de nouveau.'),
     )
   }
-  volet.append(listeRemarques(groupes))
+  detail.append(listeRemarques([...groupesACorriger, ...groupesInformations]))
   // Ici, les remarques sont regroupées : c'est l'aperçu qui mène à chaque endroit à corriger
-  if (sorte === 'document') {
+  if (source === 'document') {
     const aide = element('p', 'aide')
     aide.append('Cliquer sur ', element('strong', '', 'Aperçu et vérification'), ' afin de repérer l’emplacement des points à corriger.')
-    volet.append(aide)
+    detail.append(aide)
   }
+  volet.append(sommaire, detail)
   return volet
 }
 
@@ -551,9 +569,8 @@ function afficherResultats(): void {
       const informations = r.remarques.filter((x) => x.gravite === 'info')
       const deConversion = avertissements.filter((x) => x.origine === 'conversion')
       const duDocument = avertissements.filter((x) => x.origine !== 'conversion')
-      if (deConversion.length) infos.append(resumeRemarques(deConversion, 'conversion'))
-      if (duDocument.length) infos.append(resumeRemarques(duDocument, 'document'))
-      if (informations.length) infos.append(resumeRemarques(informations, 'info'))
+      if (duDocument.length) infos.append(bilanSource('document', duDocument, []))
+      if (deConversion.length || informations.length) infos.append(bilanSource('conversion', deConversion, informations))
       ligne.append(infos)
 
       if (r.sortie) {
