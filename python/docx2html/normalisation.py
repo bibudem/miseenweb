@@ -28,6 +28,13 @@ Réglage à part, dans la même section :
 
 Un sous-titre numéroté est un paragraphe de liste entièrement en gras. Mammoth en ferait une
 liste d'un seul élément, qui recommence à 1 : son numéro est donc écrit dans le texte.
+
+    normalisation:
+      mise_en_forme_cellules: true   # conserve le retrait et le centrage dans les tableaux
+
+Dans un tableau, le retrait d'un paragraphe montre qu'une ligne dépend de la précédente.
+Mammoth ne transmet ni le retrait ni l'alignement : le paragraphe reçoit donc un style
+(« Cellule retrait 1 », « Cellule centrée ») que la carte de styles du profil change en classe.
 """
 
 from __future__ import annotations
@@ -42,6 +49,7 @@ from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.text.paragraph import Paragraph
 
 from .diagnostic import analyser_paragraphe
 
@@ -228,6 +236,44 @@ def _ecrire_numeros_sous_titres(doc) -> list[Modification]:
     return modifications
 
 
+RETRAIT_PAR_NIVEAU = 720     # twips : un demi-pouce, le pas de retrait habituel de Word
+NIVEAUX_DE_RETRAIT = 3
+
+
+def _style_de_cellule(doc, nom: str):
+    """Renvoie le style de paragraphe `nom`, créé dans la copie temporaire s'il n'existe pas."""
+    if nom not in {s.name for s in doc.styles}:
+        doc.styles.add_style(nom, WD_STYLE_TYPE.PARAGRAPH)
+    return nom
+
+
+def _marquer_cellules(doc) -> int:
+    """Donne un style aux paragraphes de tableau en retrait ou centrés. Renvoie leur nombre.
+
+    Seuls les paragraphes de style Normal sont touchés : un style choisi dans Word est conservé.
+    """
+    n = 0
+    for cellule in doc.element.body.iter(qn("w:tc")):
+        for xml in cellule.findall(qn("w:p")):
+            proprietes = xml.pPr
+            style = proprietes.find(qn("w:pStyle")) if proprietes is not None else None
+            if proprietes is None or style is not None or not "".join(xml.itertext()).strip():
+                continue
+            retrait = proprietes.find(qn("w:ind"))
+            gauche = retrait.get(qn("w:left")) or retrait.get(qn("w:start")) if retrait is not None else None
+            niveau = min(NIVEAUX_DE_RETRAIT, round(int(gauche) / RETRAIT_PAR_NIVEAU)) if gauche and gauche.lstrip("-").isdigit() else 0
+            alignement = proprietes.find(qn("w:jc"))
+            if niveau > 0:
+                nom = f"Cellule retrait {niveau}"
+            elif alignement is not None and alignement.get(qn("w:val")) == "center":
+                nom = "Cellule centrée"
+            else:
+                continue
+            Paragraph(xml, doc).style = _style_de_cellule(doc, nom)     # doc : pour retrouver le style
+            n += 1
+    return n
+
+
 def normaliser(source: Path, destination: Path, config: dict) -> list[Modification]:
     """Copie `source` vers `destination` en appliquant les règles.
 
@@ -236,7 +282,8 @@ def normaliser(source: Path, destination: Path, config: dict) -> list[Modificati
     source, destination = Path(source), Path(destination)
     regles = (config or {}).get("regles") or []
     numeros = bool((config or {}).get("numeros_sous_titres"))
-    if not (config or {}).get("active") or not (regles or numeros):
+    cellules = bool((config or {}).get("mise_en_forme_cellules"))
+    if not (config or {}).get("active") or not (regles or numeros or cellules):
         shutil.copyfile(source, destination)
         return []
 
@@ -280,6 +327,8 @@ def normaliser(source: Path, destination: Path, config: dict) -> list[Modificati
 
     if numeros:     # après les règles, qui tiennent compte de la numérotation
         modifications.extend(_ecrire_numeros_sous_titres(doc))
+    if cellules:
+        _marquer_cellules(doc)
 
     doc.save(str(destination))
     return modifications

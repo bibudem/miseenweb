@@ -14,6 +14,10 @@ commun:
       p[style-name='Quote'] => blockquote:fresh
       p[style-name='Intense Quote'] => blockquote.mise-en-relief:fresh
       p[style-name='Caption'] => figcaption:fresh
+      p[style-name='Cellule retrait 1'] => p.retrait-1:fresh
+      p[style-name='Cellule retrait 2'] => p.retrait-2:fresh
+      p[style-name='Cellule retrait 3'] => p.retrait-3:fresh
+      p[style-name='Cellule centrée'] => p.centre:fresh
       r[style-name='Strong'] => strong
       u => em
     inclure_carte_defaut: true
@@ -52,6 +56,7 @@ variantes:
     normalisation:
       active: true
       numeros_sous_titres: true
+      mise_en_forme_cellules: true
       regles:
         - nom: titre-article
           styles_source: ["Normal"]
