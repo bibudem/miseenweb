@@ -62,14 +62,15 @@
     footer.pied-page span:last-child:not(:first-child) { margin-left: auto; white-space: nowrap; }
     footer.pied-page img { height: 1.6rem; vertical-align: middle; }
     /* Tableaux au format APA, 7e édition : filets horizontaux en haut, sous l'en-tête et en bas,
-       aucune bordure verticale, en-têtes sans gras. L'alignement de chaque cellule vient du Word.
+       aucune bordure verticale, en-têtes sans gras. En-têtes et données centrés, première colonne à gauche.
        La largeur des colonnes suit le contenu. */
     table { border-top: 1.5px solid var(--texte); border-bottom: 1.5px solid var(--texte); }
-    td, th { font-size: .9rem; padding: .3rem .4rem; overflow-wrap: break-word; }
+    /* Même police et même taille que le texte courant, comme le demande l'APA */
+    td, th { padding: .3rem .4rem; overflow-wrap: break-word; }
     th { font-weight: normal; text-align: start; vertical-align: bottom; border-bottom: 1px solid var(--texte); }
     /* En-tête de ligne : il nomme sa ligne, mais garde l'apparence d'une cellule */
     th[scope="row"] { vertical-align: top; border-bottom: 0; }
-    p.note-tableau { font-size: .9rem; text-align: start; margin: .25rem 0; }
+    p.note-tableau { text-align: start; margin: .25rem 0; }
     table + p.note-tableau, div.tableau-large + p.note-tableau { margin-top: -1.1rem; }
     /* Tableau large : il garde des colonnes lisibles et défile dans sa zone, pas avec la page */
     /* La zone dépasse la colonne de texte et prend la largeur de la fenêtre, jusqu'à 72rem.
@@ -98,6 +99,7 @@
     td p.retrait-2, th p.retrait-2 { padding-inline-start: 3rem; }
     td p.retrait-3, th p.retrait-3 { padding-inline-start: 4.5rem; }
     td p.centre, th p.centre { text-align: center; }
+    td.centre, th.centre { text-align: center; }
     td p + p, th p + p { margin-top: .35rem; }
   </style>
 </head>

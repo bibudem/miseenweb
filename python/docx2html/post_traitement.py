@@ -15,6 +15,8 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
   accessibilite_tableaux : rattache son titre à chaque tableau, marque les en-têtes de ligne
                         et relie chaque cellule à ses en-têtes (scope, id, headers)
+  alignement_apa      : aligne les tableaux selon l'APA, sans égard au Word : en-têtes et
+                        données centrés, première colonne à gauche
   alignement_colonnes : centre toute une colonne de données quand la plupart de ses
                         cellules sont centrées dans le Word
   tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
@@ -451,6 +453,54 @@ def _regulariser_colonnes(soupe: BeautifulSoup) -> int:
     return n
 
 
+LONGUEUR_CENTREE = 50       # caractères : au-delà, une cellule de données reste alignée à gauche
+
+
+def _aligner_selon_apa(soupe: BeautifulSoup) -> int:
+    """Aligne chaque tableau selon l'APA (7e édition), à la place de l'alignement du Word.
+
+    - En-têtes de colonnes : centrés.
+    - Première colonne, qui nomme les lignes : à gauche. Quand le Word centre une partie
+      seulement des noms de lignes, le centrage y marque une ligne subordonnée : ces noms
+      reçoivent un retrait d'un niveau. Quand presque tous sont centrés, ils passent à gauche
+      sans retrait.
+    - Autres cellules : centrées. Une cellule de texte long, à plusieurs paragraphes ou qui
+      contient une liste reste à gauche, plus lisible.
+    """
+    n = 0
+    for tableau in soupe.find_all("table"):
+        grille = _grille(tableau)
+        nb_entetes = 0
+        for rang in grille:
+            if not rang or any(cellule.name != "th" for cellule, _, _ in rang):
+                break
+            nb_entetes += 1
+        noms_de_lignes = [c for rang in grille[nb_entetes:] for c, colonne, _ in rang if colonne == 0 and c.get_text(strip=True)]
+        centres = [c for c in noms_de_lignes if c.find("p", class_="centre", recursive=False)]
+        subordination = bool(centres) and len(centres) <= 0.8 * len(noms_de_lignes)
+        for rang_ligne, rang in enumerate(grille):
+            for cellule, colonne, _ in rang:
+                paragraphes = cellule.find_all("p", recursive=False)
+                en_entete = rang_ligne < nb_entetes
+                premiere_colonne = colonne == 0 and not en_entete
+                for paragraphe in paragraphes:
+                    classes = [c for c in paragraphe.get("class", []) if c != "centre"]
+                    etait_centre = len(classes) != len(paragraphe.get("class", []))
+                    if premiere_colonne and subordination and etait_centre and not any(c.startswith("retrait-") for c in classes):
+                        classes.append("retrait-1")
+                    if classes:
+                        paragraphe["class"] = classes
+                    elif paragraphe.get("class") is not None:
+                        del paragraphe["class"]
+                texte = cellule.get_text(" ", strip=True)
+                remplis = [p for p in paragraphes if p.get_text(strip=True)]
+                long = len(texte) > LONGUEUR_CENTREE or len(remplis) > 1 or cellule.find(["ul", "ol"]) is not None
+                if texte and not premiere_colonne and (en_entete or not long):
+                    cellule["class"] = cellule.get("class", []) + ["centre"]
+                    n += 1
+    return n
+
+
 def _harmoniser_alignement(soupe: BeautifulSoup) -> int:
     """Centre toute une colonne de données quand plus de la moitié de ses cellules sont centrées.
 
@@ -693,6 +743,9 @@ def appliquer(
     if config.get("alignement_colonnes", False):      # après le marquage des en-têtes
         _regulariser_colonnes(soupe)
         _harmoniser_alignement(soupe)
+
+    if config.get("alignement_apa", False):           # remplace l'alignement repris du Word
+        _aligner_selon_apa(soupe)
 
     if int(config.get("tableaux_larges", 0) or 0) > 0:   # après la sortie des notes
         _encadrer_tableaux_larges(soupe, int(config["tableaux_larges"]))
