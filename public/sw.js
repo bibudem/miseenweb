@@ -53,7 +53,9 @@ self.addEventListener('fetch', (evenement) => {
   evenement.respondWith(
     caches.open(CACHE_PAGE).then(async (cache) => {
       try {
-        const reponse = await fetch(requete)
+        // « no-cache » : le navigateur revalide la page auprès du serveur au lieu de resservir sa copie.
+        // Sans cela, une nouvelle version du site reste invisible jusqu'à dix minutes.
+        const reponse = await fetch(requete, { cache: 'no-cache' })
         if (reponse.ok) await cache.put(requete, reponse.clone())
         return reponse
       } catch {
