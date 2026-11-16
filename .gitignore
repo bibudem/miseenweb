@@ -4,5 +4,8 @@ dist/
 public/pyodide/
 .DS_Store
 __pycache__/
+# Environnement virtuel et cache des tests du convertisseur
+.venv/
+.pytest_cache/
 # Documents de test : articles de la revue et pages produites, jamais publiés
 essais/
