@@ -36,7 +36,7 @@ commun:
     notes_tableaux: true
     accessibilite_tableaux: true
     alignement_colonnes: true
-    alignement_apa: true            # APA, 7e édition; chaque en-tête suit l'alignement de sa colonne
+    tableaux: apa                   # APA, 7e édition : trois lignes horizontales, colonnes centrées
     tableaux_larges: 9              # colonnes
     liens_automatiques: true
     sens_ecriture: true

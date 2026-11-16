@@ -43,7 +43,8 @@ post_traitement:
   notes_tableaux: true      # sort du tableau la note de sa dernière ligne
   accessibilite_tableaux: true   # titre rattaché, en-têtes de ligne, cellules reliées aux en-têtes
   alignement_colonnes: true # centre une colonne de données si la plupart de ses cellules le sont
-  tableaux_larges: 9        # colonnes à partir desquelles un tableau défile dans sa zone
+  tableaux: bordures        # présentation : « bordures » (autour de chaque cellule) ou « apa » (trois lignes horizontales)
+  tableaux_larges: 9      # colonnes à partir desquelles un tableau défile dans sa zone
   sens_ecriture: true       # marque les passages en arabe
   identifiants_titres: true
   decaler_niveaux: auto     # s'il y a un titre de style Title : Title = h1, Heading 1 = h2, etc.

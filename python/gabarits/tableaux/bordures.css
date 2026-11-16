@@ -1,0 +1,4 @@
+    /* Présentation « bordures » : une bordure autour de chaque cellule. Valeur par défaut. */
+    td, th { border: 1px solid var(--bordure); }
+    /* En-tête de ligne : il nomme sa ligne, mais garde l'apparence d'une cellule */
+    th[scope="row"] { font-weight: normal; text-align: start; }

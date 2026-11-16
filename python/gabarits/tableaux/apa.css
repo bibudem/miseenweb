@@ -1,0 +1,14 @@
+    /* Présentation « apa » (APA, 7e édition) : lignes horizontales en haut, sous l'en-tête et en bas,
+       aucune bordure verticale, en-têtes sans gras. En-têtes et données centrés, première colonne à gauche.
+       La largeur des colonnes suit le contenu. */
+    table { border-top: 1.5px solid var(--texte); border-bottom: 1.5px solid var(--texte); }
+    /* Même police et même taille que le texte courant, comme le demande l'APA */
+    td, th { padding: .3rem .4rem; overflow-wrap: break-word; }
+    th { font-weight: normal; text-align: start; vertical-align: bottom; border-bottom: 1px solid var(--texte); }
+    /* En-tête de ligne : il nomme sa ligne, mais garde l'apparence d'une cellule */
+    th[scope="row"] { vertical-align: top; border-bottom: 0; }
+    p.note-tableau { text-align: start; margin: .25rem 0; }
+    div.tableau-large td, div.tableau-large th { min-width: 3.25rem; }
+    td p, th p { margin: 0; }
+    td.centre, th.centre { text-align: center; }
+    td p + p, th p + p { margin-top: .35rem; }
