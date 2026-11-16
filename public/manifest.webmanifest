@@ -54,17 +54,10 @@
     },
     {
       "src": "captures/mobile-accueil.png",
-      "sizes": "780x1688",
+      "sizes": "866x1494",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "MiseEnWeb sur téléphone"
-    },
-    {
-      "src": "captures/mobile-resultats.png",
-      "sizes": "780x1688",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Les résultats et leurs remarques, sur téléphone"
     }
   ]
 }
