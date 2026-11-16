@@ -279,9 +279,10 @@ def _marquer_cellules(doc) -> int:
         for xml in cellule.findall(qn("w:p")):
             proprietes = xml.pPr
             style = proprietes.find(qn("w:pStyle")) if proprietes is not None else None
-            if proprietes is None or style is not None or not "".join(xml.itertext()).strip():
+            if style is not None or not "".join(xml.itertext()).strip():
                 continue
-            retrait = proprietes.find(qn("w:ind"))
+            # Un paragraphe sans propriétés peut quand même avoir un retrait fait avec des espaces
+            retrait = proprietes.find(qn("w:ind")) if proprietes is not None else None
             gauche = retrait.get(qn("w:left")) or retrait.get(qn("w:start")) if retrait is not None else None
             niveau = round(int(gauche) / RETRAIT_PAR_NIVEAU) if gauche and gauche.lstrip("-").isdigit() else 0
             if niveau <= 0:     # retrait fait avec des espaces : une page web ne les affiche pas
@@ -289,7 +290,7 @@ def _marquer_cellules(doc) -> int:
                 espaces = len(texte) - len(texte.lstrip(" \u00a0"))
                 niveau = max(1, round(espaces / ESPACES_PAR_NIVEAU)) if espaces >= 2 else 0
             niveau = min(NIVEAUX_DE_RETRAIT, niveau)
-            alignement = proprietes.find(qn("w:jc"))
+            alignement = proprietes.find(qn("w:jc")) if proprietes is not None else None
             if niveau > 0:
                 nom = f"Cellule retrait {niveau}"
             elif alignement is not None and alignement.get(qn("w:val")) == "center":
