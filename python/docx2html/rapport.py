@@ -21,6 +21,7 @@ class EntreeRapport:
     messages_mammoth: list[dict] = field(default_factory=list)
     avertissements_structure: list[str] = field(default_factory=list)
     passages_absents: list[str] = field(default_factory=list)      # début des paragraphes du Word absents de la page
+    titres_tableaux_reunis: list[str] = field(default_factory=list)   # numéros des tableaux dont le titre a été réuni au numéro
     nb_titres: dict[str, int] = field(default_factory=dict)
     images_extraites: int = 0
 
@@ -72,6 +73,8 @@ def ecrire_rapport(entrees: list[EntreeRapport], dossier: Path, nom: str = "rapp
             lignes.append(f"- **Texte absent de la page** : {len(e.passages_absents)} paragraphe(s) du document")
             for passage in e.passages_absents[:10]:
                 lignes.append(f"  - « {passage} »")
+        if e.titres_tableaux_reunis:
+            lignes.append("- Numéro et titre réunis sur une ligne : " + ", ".join(e.titres_tableaux_reunis))
         if e.normalisations:
             lignes.append(f"- Normalisation : {len(e.normalisations)} paragraphe(s) modifié(s)")
             for m in e.normalisations[:10]:

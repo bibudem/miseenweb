@@ -1,0 +1,14 @@
+    /* Présentation « chicago » (Chicago Manual of Style, 18e édition, paragraphes 3.54 à 3.74) :
+       lignes horizontales en haut, sous l'en-tête et en bas, aucune bordure verticale (3.54).
+       En-têtes de colonne centrés et alignés en bas; première colonne à gauche (3.72).
+       Le numéro et le titre sont réunis sur une ligne par le convertisseur (3.55). */
+    table { border-top: 1.5px solid var(--texte); border-bottom: 1.5px solid var(--texte); }
+    td, th { padding: .3rem .4rem; overflow-wrap: break-word; }
+    th { font-weight: normal; text-align: center; vertical-align: bottom; border-bottom: 1px solid var(--texte); }
+    th.premiere-colonne { text-align: start; }
+    /* En-tête de ligne : il nomme sa ligne, mais garde l'apparence d'une cellule */
+    th[scope="row"] { text-align: start; vertical-align: top; border-bottom: 0; }
+    p.note-tableau { text-align: start; margin: .25rem 0; }
+    div.tableau-large td, div.tableau-large th { min-width: 3.25rem; }
+    td p, th p { margin: 0; }
+    td p + p, th p + p { margin-top: .35rem; }

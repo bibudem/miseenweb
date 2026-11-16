@@ -375,6 +375,15 @@ def _remarques(entree, page: str, profil: Profil | None) -> list[Remarque]:
         remarques.append(groupe)
         messages = [m for m in messages if not MOTIF_STYLE_INCONNU.match(m["message"])]
     remarques += [r for r in map(_traduire_mammoth, messages) if r is not None]
+    for numero in entree.titres_tableaux_reunis:
+        paragraphe = next((p for p in soupe.find_all("p", id=re.compile("^titre-tableau"))
+                           if p.get_text(" ", strip=True).startswith(numero)), None)
+        remarques.append(Remarque(
+            "info", f"Numéro et titre de tableau réunis sur une ligne : « {numero} »",
+            "Le document Word place le numéro et le titre sur deux paragraphes. La présentation Chicago "
+            "les place sur la même ligne. Vérifier que le texte réuni au numéro est le titre du tableau.",
+            {"id": paragraphe["id"]} if paragraphe is not None else {},
+            "{n} numéros de tableau réunis à leur titre sur une ligne", "conversion"))
     # Quand les titres sont décalés d'un niveau, seul le premier paragraphe reconnu comme titre
     # est le titre du document : les suivants deviennent des titres de section.
     titres_reconnus = 0

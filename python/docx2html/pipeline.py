@@ -72,6 +72,7 @@ def convertir_fichier(
         )
         entree.avertissements_structure = res_post.avertissements
         entree.nb_titres = res_post.nb_titres
+        entree.titres_tableaux_reunis = res_post.titres_tableaux_reunis
 
         # 5 bis. Contrôle d'intégrité : tout le texte du document est-il dans la page?
         entree.passages_absents = integrite.passages_absents(chemin_docx, res_post.html)

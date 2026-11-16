@@ -15,10 +15,12 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
   accessibilite_tableaux : rattache son titre à chaque tableau, marque les en-têtes de ligne
                         et relie chaque cellule à ses en-têtes (scope, id, headers)
-  tableaux            : présentation des tableaux, « bordures » (défaut) ou « apa ». Chaque valeur
-                        correspond à un fichier de gabarits/tableaux/. Avec « apa », l'alignement
-                        suit l'APA sans égard au Word : en-têtes et données centrés, première
-                        colonne à gauche
+  tableaux            : présentation des tableaux, « bordures » (défaut), « apa » ou « chicago ».
+                        Chaque valeur correspond à un fichier de gabarits/tableaux/.
+                        « apa » : l'alignement suit l'APA sans égard au Word, en-têtes et données
+                        centrés, première colonne à gauche.
+                        « chicago » : le numéro et le titre du tableau sont réunis sur une ligne,
+                        et chaque réunion est inscrite au rapport
   alignement_colonnes : centre toute une colonne de données quand la plupart de ses
                         cellules sont centrées dans le Word
   tableaux_larges     : nombre de colonnes à partir duquel un tableau est placé dans une
@@ -70,6 +72,7 @@ class ResultatPostTraitement:
     titre: str = ""
     avertissements: list[str] = field(default_factory=list)
     nb_titres: dict[str, int] = field(default_factory=dict)
+    titres_tableaux_reunis: list[str] = field(default_factory=list)   # numéros, par exemple « Tableau 3 »
 
 
 def slugifier(texte: str, longueur_max: int = 60) -> str:
@@ -310,6 +313,48 @@ def _legendes_en_paragraphes(soupe: BeautifulSoup) -> int:
             legende["class"] = legende.get("class", []) + ["legende"]
             n += 1
     return n
+
+
+# Paragraphe qui ne contient qu'un numéro de tableau : « Tableau 3 », « Table 2.1. »
+MOTIF_NUMERO_SEUL = re.compile(r"\s*(table|tableau)\s+\d+(\.\d+)?\s*[.:]?\s*$", re.IGNORECASE)
+
+
+def _reunir_numeros_et_titres(soupe: BeautifulSoup) -> list[str]:
+    """Réunit sur une ligne le numéro d'un tableau et son titre, écrits en deux paragraphes avant lui.
+
+    Chicago Manual of Style, 18e édition, paragraphe 3.55. La réunion a lieu seulement si le
+    paragraphe placé deux rangs avant le tableau ne contient qu'un numéro de tableau, et si le
+    paragraphe suivant, le titre, ne dépasse pas 400 caractères. Renvoie les numéros réunis.
+    """
+    reunis = []
+    for tableau in soupe.find_all("table"):
+        ancre = tableau.parent if "tableau-large" in (tableau.parent.get("class") or []) else tableau
+        titre = ancre.find_previous_sibling()
+        numero = titre.find_previous_sibling() if titre is not None else None
+        if titre is None or numero is None or titre.name != "p" or numero.name != "p":
+            continue
+        texte_numero = numero.get_text(" ", strip=True)
+        texte_titre = titre.get_text(" ", strip=True)
+        if not MOTIF_NUMERO_SEUL.match(texte_numero) or not texte_titre or len(texte_titre) > 400:
+            continue
+        if MOTIF_NUMERO_TABLEAU.match(texte_titre):      # deux numéros de suite : rien de sûr
+            continue
+        numero.append("" if texte_numero[-1] in ".:" else ".")
+        numero.append(" ")
+        for enfant in list(titre.contents):
+            numero.append(enfant.extract())
+        titre.decompose()
+        reunis.append(texte_numero.rstrip(".: "))
+    return reunis
+
+
+def _marquer_premiere_colonne(soupe: BeautifulSoup) -> None:
+    """Donne la classe « premiere-colonne » à l'en-tête de la première colonne de chaque tableau."""
+    for tableau in soupe.find_all("table"):
+        for rang in _grille(tableau):
+            for cellule, colonne, _ in rang:
+                if cellule.name == "th" and colonne == 0 and cellule.get("scope") != "row":
+                    cellule["class"] = cellule.get("class", []) + ["premiere-colonne"]
 
 
 def _nommer_tableau(tableau: Tag, numero: int) -> bool:
@@ -820,6 +865,10 @@ def appliquer(
 
     if config.get("supprimer_vides", True):
         _supprimer_vides(soupe)
+
+    if config.get("tableaux") == "chicago":           # avant le rattachement du titre au tableau
+        resultat.titres_tableaux_reunis = _reunir_numeros_et_titres(soupe)
+        _marquer_premiere_colonne(soupe)
 
     if config.get("accessibilite_tableaux", False):   # après la suppression des <p> vides
         _rendre_tableaux_accessibles(soupe)

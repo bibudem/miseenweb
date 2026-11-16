@@ -56,6 +56,7 @@ def pont(tmp_path, monkeypatch):
 
     Renvoie une fonction : elle dépose un document, le convertit comme le fait le site et
     renvoie le résultat affiché à l'utilisateur (statut, profil, remarques).
+    « profil » force un profil, comme le fait l'utilisateur quand il choisit le type de document.
     """
     import importlib
     import json
@@ -66,10 +67,10 @@ def pont(tmp_path, monkeypatch):
     module = importlib.import_module("pont")
     module.ENTREE.mkdir()
 
-    def _convertir(document, nom="essai.docx"):
+    def _convertir(document, nom="essai.docx", profil=""):
         document.save(module.ENTREE / nom)
         module.lire(nom)
-        resultats = json.loads(module.convertir([{"nom": nom, "profil": ""}], module.AUTO, lambda m: None))
+        resultats = json.loads(module.convertir([{"nom": nom, "profil": profil}], module.AUTO, lambda m: None))
         assert not resultats[0]["erreur"], resultats[0]["erreur"]
         return resultats[0]
 
