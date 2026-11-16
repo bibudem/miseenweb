@@ -7,6 +7,8 @@ dans le répertoire GitHub. Chaque document est écrit dans un dossier temporair
 import sys
 from pathlib import Path
 
+sys.dont_write_bytecode = True      # aucun dossier __pycache__ dans python/ ni dans tests/
+
 import pytest
 from bs4 import BeautifulSoup
 from docx import Document
@@ -46,3 +48,30 @@ def convertir(tmp_path, catalogue):
         return page, entree
 
     return _convertir
+
+
+@pytest.fixture
+def pont(tmp_path, monkeypatch):
+    """Le pont entre la page et le convertisseur, avec ses dossiers dans un dossier temporaire.
+
+    Renvoie une fonction : elle dépose un document, le convertit comme le fait le site et
+    renvoie le résultat affiché à l'utilisateur (statut, profil, remarques).
+    """
+    import importlib
+    import json
+
+    monkeypatch.setenv("MISEENWEB_RACINE", str(tmp_path))
+    monkeypatch.setenv("MISEENWEB_APP", str(RACINE / "python"))
+    sys.modules.pop("pont", None)                 # le pont lit ses dossiers à l'importation
+    module = importlib.import_module("pont")
+    module.ENTREE.mkdir()
+
+    def _convertir(document, nom="essai.docx"):
+        document.save(module.ENTREE / nom)
+        module.lire(nom)
+        resultats = json.loads(module.convertir([{"nom": nom, "profil": ""}], module.AUTO, lambda m: None))
+        assert not resultats[0]["erreur"], resultats[0]["erreur"]
+        return resultats[0]
+
+    yield _convertir
+    sys.modules.pop("pont", None)

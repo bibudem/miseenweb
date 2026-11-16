@@ -18,6 +18,7 @@ import base64
 import html
 import json
 import mimetypes
+import os
 import re
 import shutil
 import zipfile
@@ -34,9 +35,12 @@ from docx2html.pipeline import convertir_fichier
 from docx2html.profils import Profil, charger_profils, choisir_profil
 from docx2html.rapport import ecrire_rapport
 
-ENTREE = Path("/entree")
-SORTIE = Path("/sortie")
-PROFILS = charger_profils(Path("/app/profils"))
+# Dans le navigateur, les dossiers sont à la racine du système de fichiers en mémoire.
+# Les tests automatiques les placent ailleurs, par deux variables d'environnement.
+_RACINE = Path(os.environ.get("MISEENWEB_RACINE", "/"))
+ENTREE = _RACINE / "entree"
+SORTIE = _RACINE / "sortie"
+PROFILS = charger_profils(Path(os.environ.get("MISEENWEB_APP", "/app")) / "profils")
 AUTO = "__auto__"
 
 # Noms des profils pour les personnes : ceux des fichiers YAML sont des identifiants
