@@ -70,3 +70,17 @@ def test_profil_depose_offert_dans_le_menu_des_regles(nouveau_document, pont, mo
 def test_revues_du_site_non_marquees_comme_deposees(module_pont):
     revues = json.loads(module_pont.catalogue())["revues"]
     assert revues == [{"nom": "Science infirmière et pratiques en santé", "issn": "2561-7516", "depose": False}]
+
+
+def test_revue_imposee_et_issn_inconnu_le_choix_du_menu_s_applique(nouveau_document, module_pont):
+    """Un ISSN que le site ne connaît pas ne retire pas la revue choisie dans le menu."""
+    nouveau_document.add_heading("Titre du document fictif", level=1)
+    nouveau_document.sections[0].footer.paragraphs[0].text = "ISSN 1234-5678"
+    nom = "1234_mise_en_page.docx"
+    nouveau_document.save(module_pont.ENTREE / nom)
+    module_pont.lire(nom)
+    analyse = json.loads(module_pont.analyser(nom, "Science infirmière et pratiques en santé"))
+    assert analyse["issn"] == "1234-5678"
+    assert analyse["profil"] == "science-infirmiere/mise-en-page"
+    # En détection automatique, un ISSN inconnu limite toujours le choix aux règles générales
+    assert json.loads(module_pont.analyser(nom, module_pont.AUTO))["profil"] == "defaut"
