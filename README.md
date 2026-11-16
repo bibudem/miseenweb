@@ -20,7 +20,7 @@ npm run build    # site statique dans dist/
 Au premier lancement, Pyodide et les bibliothèques Python (16 Mo) sont téléchargés dans
 `public/pyodide/`.
 
-## Organisation
+## Structure
 
 - `index.html` et `src/` : la page, son style et le worker qui exécute Python.
 - `python/pont.py` : le lien entre la page et le convertisseur.
