@@ -11,6 +11,7 @@ import './styles/animations.css'
 import './animations'
 
 import type { Analyse, Catalogue, DemandeSansId, Evenement, Remarque, Resultat } from './protocole'
+import { installerProfil } from './profil'
 
 // ---- Icônes Phosphor, intégrées au script ----
 const icones = import.meta.glob(
@@ -216,18 +217,36 @@ worker.addEventListener('error', () => {
   texteEtat.textContent = 'Ce navigateur ne peut pas exécuter le convertisseur. Utiliser une version récente de Chrome, Edge, Firefox ou Safari.'
 })
 
-function demarre(donnees: Catalogue): void {
+// Refait les menus quand la liste des profils change : au démarrage, puis au dépôt ou au retrait d'un profil
+function appliquerCatalogue(donnees: Catalogue): void {
   catalogue = donnees
-  pret = true
-  etat.dataset.etat = 'pret'
-  texteEtat.textContent = 'Convertisseur prêt'
+  const choix = menuRevue.value
   menuRevue.replaceChildren(
     new Option('Détection automatique (recommandé)', AUTO),
     ...catalogue.revues.map((r) => new Option(`Revue : ${r.nom}`, r.nom)),
     new Option('Document général : thèse, rapport ou autre', AUTRE_DOCUMENT),
   )
-  menuRevue.disabled = false
+  // Le choix est conservé s'il existe encore; une revue retirée ramène à la détection automatique
+  menuRevue.value = [...menuRevue.options].some((o) => o.value === choix) ? choix : AUTO
+  // Un document réglé à la main sur un profil retiré revient à la détection automatique
+  const noms = new Set(catalogue.profils.map((p) => p.nom))
+  for (const doc of documents.values()) if (doc.profil && !noms.has(doc.profil)) doc.profil = ''
   void analyser()
+}
+
+const profilPret = installerProfil({
+  demander,
+  surCatalogue: appliquerCatalogue,
+  annoncer: (texte) => (annonceGlobale.textContent = texte),
+})
+
+function demarre(donnees: Catalogue): void {
+  pret = true
+  etat.dataset.etat = 'pret'
+  texteEtat.textContent = 'Convertisseur prêt'
+  menuRevue.disabled = false
+  appliquerCatalogue(donnees)
+  void profilPret()      // dépose de nouveau le profil conservé dans ce navigateur, s'il y en a un
 }
 
 // ---- Ajout des documents ----

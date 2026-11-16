@@ -76,3 +76,9 @@ def pont(tmp_path, monkeypatch):
 
     yield _convertir
     sys.modules.pop("pont", None)
+
+
+@pytest.fixture
+def module_pont(pont):
+    """Le module du pont lui-même, pour appeler ses autres fonctions (catalogue, dépôt d'un profil)."""
+    return sys.modules["pont"]

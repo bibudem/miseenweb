@@ -109,7 +109,7 @@ def _fusionner(commun: dict, variante: dict) -> dict:
     return resultat
 
 
-def _profils_du_fichier(chemin: Path, donnees: dict) -> list[Profil]:
+def profils_du_fichier(chemin: Path, donnees: dict) -> list[Profil]:
     """Renvoie le profil d'un fichier, ou un profil par variante pour un fichier de revue."""
     nom = str(donnees.get("nom") or chemin.stem)
     variantes = donnees.get("variantes")
@@ -137,7 +137,7 @@ def charger_profils(dossier: Path) -> dict[str, Profil]:
             donnees = yaml.safe_load(f) or {}
         if not isinstance(donnees, dict):
             raise ErreurProfil(f"Profil mal formé (doit être un dictionnaire) : {chemin}")
-        for profil in _profils_du_fichier(chemin, donnees):
+        for profil in profils_du_fichier(chemin, donnees):
             if profil.nom in profils:
                 raise ErreurProfil(f"Deux profils portent le nom « {profil.nom} »")
             profils[profil.nom] = profil

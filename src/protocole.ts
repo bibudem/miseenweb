@@ -9,6 +9,15 @@ export interface ProfilCatalogue {
   nom: string
   libelle: string
   revue: string
+  /** Vrai pour un profil déposé par l'utilisateur, faux pour un profil du site */
+  depose: boolean
+}
+
+/** Réponse au dépôt d'un profil : « messages » est vide quand le profil est accepté */
+export interface DepotProfil {
+  messages: string[]
+  libelles: string[]
+  catalogue: Catalogue
 }
 
 export interface Catalogue {
@@ -58,6 +67,8 @@ type SansId =
   | { action: 'archive' }
   | { action: 'apercu'; nom: string }
   | { action: 'rapport' }
+  | { action: 'deposerProfil'; texte: string }
+  | { action: 'retirerProfil' }
 
 export type Demande = SansId & { id: number }
 export type DemandeSansId = SansId

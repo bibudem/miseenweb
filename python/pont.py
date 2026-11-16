@@ -32,15 +32,19 @@ from bs4 import BeautifulSoup
 from docx2html.diagnostic import inventorier
 from docx2html.pied_page import issn_du_document
 from docx2html.pipeline import convertir_fichier
-from docx2html.profils import Profil, charger_profils, choisir_profil
+from docx2html.profils import Profil, charger_profils, choisir_profil, profils_du_fichier
 from docx2html.rapport import ecrire_rapport
+from docx2html.validation import valider_texte
 
 # Dans le navigateur, les dossiers sont à la racine du système de fichiers en mémoire.
 # Les tests automatiques les placent ailleurs, par deux variables d'environnement.
 _RACINE = Path(os.environ.get("MISEENWEB_RACINE", "/"))
 ENTREE = _RACINE / "entree"
 SORTIE = _RACINE / "sortie"
-PROFILS = charger_profils(Path(os.environ.get("MISEENWEB_APP", "/app")) / "profils")
+_APP = Path(os.environ.get("MISEENWEB_APP", "/app"))
+PROFILS = charger_profils(_APP / "profils")
+_PROFILS_DU_SITE = frozenset(PROFILS)      # le catalogue commun, tel que publié
+_profils_deposes: set[str] = set()         # noms des profils ajoutés par l'utilisateur
 AUTO = "__auto__"
 
 # Noms des profils pour les personnes : ceux des fichiers YAML sont des identifiants
@@ -76,8 +80,43 @@ def catalogue() -> str:
     profils = sorted(PROFILS.values(), key=lambda p: (bool(p.revue), p.revue, libelle(p)))
     return json.dumps({
         "revues": [{"nom": nom, "issn": issn} for nom, issn in sorted(revues.items())],
-        "profils": [{"nom": p.nom, "libelle": libelle(p), "revue": p.revue} for p in profils],
+        "profils": [{"nom": p.nom, "libelle": libelle(p), "revue": p.revue,
+                     "depose": p.nom in _profils_deposes} for p in profils],
     })
+
+
+def retirer_profil() -> str:
+    """Retire le profil déposé par l'utilisateur. Renvoie le catalogue, pour les menus de la page."""
+    for nom in _profils_deposes:
+        PROFILS.pop(nom, None)
+    _profils_deposes.clear()
+    return catalogue()
+
+
+def deposer_profil(texte: str) -> str:
+    """Valide le profil déposé par l'utilisateur et, s'il est valide, l'ajoute aux profils du site.
+
+    Un seul profil déposé à la fois : un nouveau dépôt valide remplace le précédent. Un dépôt
+    refusé ne change rien. Renvoie {"messages": […], "libelles": […], "catalogue": {…}} :
+    « messages » est vide quand le profil est accepté.
+    """
+    reserves = {nom.split("/")[0] for nom in _PROFILS_DU_SITE}
+    donnees, messages = valider_texte(texte, _APP / "gabarits", reserves)
+    if donnees is not None:
+        revues = {p.issn: p.revue for nom, p in PROFILS.items() if nom in _PROFILS_DU_SITE and p.issn}
+        issn = str(donnees.get("issn") or "")
+        if issn in revues:
+            donnees, messages = None, [f"issn : « {issn} » est déjà l'ISSN de la revue « {revues[issn]} », "
+                                       "dont le profil fait partie du site."]
+    libelles = []
+    if donnees is not None:
+        retirer_profil()
+        # Le profil n'est pas écrit sur le disque : son chemin sert seulement à situer les gabarits
+        for profil in profils_du_fichier(_APP / "profils" / "profil-depose.yaml", donnees):
+            PROFILS[profil.nom] = profil
+            _profils_deposes.add(profil.nom)
+            libelles.append(libelle(profil))
+    return json.dumps({"messages": messages, "libelles": libelles, "catalogue": json.loads(catalogue())})
 
 
 def _profils_pour(issn: str | None, revue: str) -> dict:

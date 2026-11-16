@@ -121,6 +121,10 @@ async function traiter(demande: Demande): Promise<unknown> {
       return pont.apercu(demande.nom)
     case 'rapport':
       return pont.rapport()
+    case 'deposerProfil':
+      return JSON.parse(pont.deposer_profil(demande.texte))
+    case 'retirerProfil':
+      return JSON.parse(pont.retirer_profil())
   }
 }
 

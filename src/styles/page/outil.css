@@ -381,6 +381,39 @@
     font-size: var(--texte-petit);
   }
 
+  /* ---- Profil de revue déposé par l'utilisateur ---- */
+  .profil-depose {
+    margin-top: var(--espace-2);
+    font-size: var(--texte-petit);
+  }
+
+  /* Le bouton s'aligne sur le texte d'aide placé au-dessus */
+  .profil-depose > .bouton-texte {
+    margin-inline-start: -12px;
+  }
+
+  .profil-actif {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .profil-erreurs {
+    max-width: 60ch;
+  }
+
+  .profil-erreurs:empty {
+    display: none;
+  }
+
+  .profil-erreurs ul {
+    margin: 4px 0;
+    padding-inline-start: 1.25rem;
+  }
+
   /* ---- Liste des documents ---- */
   .liste {
     margin-top: var(--espace-4);

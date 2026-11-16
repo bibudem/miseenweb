@@ -191,6 +191,15 @@
               les règles générales. En détection automatique, MiseEnWeb reconnaît la revue par l'ISSN du
               pied de page et par le nom du fichier.
             </p>
+            <div class="profil-depose">
+              <input type="file" accept=".yaml,.yml" hidden data-entree-profil>
+              <button type="button" class="bouton bouton-texte" data-deposer-profil disabled>Utiliser un profil de revue</button>
+              <p class="profil-actif" data-profil-actif hidden>
+                <span data-texte-profil-actif></span>
+                <button type="button" class="bouton bouton-texte bouton-danger" data-retirer-profil>Retirer le profil</button>
+              </p>
+              <div class="profil-erreurs erreur-texte" role="alert" data-profil-erreurs></div>
+            </div>
           </div>
 
           <div class="barre-actions">
