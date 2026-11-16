@@ -43,19 +43,28 @@ function conserver(profil: ProfilConserve | null): void {
   } catch {}      // navigation privée ou stockage refusé : le profil vaut pour la visite en cours
 }
 
-/** Branche le dépôt d'un profil. Renvoie la fonction à appeler quand le convertisseur est prêt. */
-export function installerProfil({ demander, surCatalogue, annoncer }: Liens): () => Promise<void> {
+/** Vrai pour un fichier de profil, d'après son nom */
+export const estProfil = (nom: string) => /\.ya?ml$/i.test(nom)
+
+interface Depot {
+  /** À appeler quand le convertisseur est prêt : dépose de nouveau le profil conservé, s'il y en a un */
+  pret: () => Promise<void>
+  /** Dépose un fichier de profil, choisi par le bouton ou glissé dans la page */
+  deposerFichier: (fichier: File) => Promise<void>
+}
+
+/** Branche le dépôt d'un profil. */
+export function installerProfil({ demander, surCatalogue, annoncer }: Liens): Depot {
   const entree = $<HTMLInputElement>('[data-entree-profil]')
   const boutonDeposer = $<HTMLButtonElement>('[data-deposer-profil]')
   const ligneActif = $<HTMLElement>('[data-profil-actif]')
-  const texteActif = $<HTMLElement>('[data-texte-profil-actif]')
   const boutonRetirer = $<HTMLButtonElement>('[data-retirer-profil]')
   const zoneErreurs = $<HTMLElement>('[data-profil-erreurs]')
 
   function montrerActif(libelles: string[]): void {
-    ligneActif.hidden = libelles.length === 0
-    boutonDeposer.textContent = libelles.length ? 'Remplacer le profil' : 'Utiliser un profil de revue'
-    texteActif.textContent = libelles.length
+    ligneActif.hidden = boutonRetirer.hidden = libelles.length === 0
+    boutonDeposer.textContent = libelles.length ? 'Remplacer le profil' : 'Utiliser un profil'
+    ligneActif.textContent = libelles.length
       ? `Profil ajouté : ${libelles.map((l) => `« ${l} »`).join(', ')}. Il est conservé dans ce navigateur.`
       : ''
   }
@@ -98,16 +107,19 @@ export function installerProfil({ demander, surCatalogue, annoncer }: Liens): ()
 
   boutonDeposer.addEventListener('click', () => entree.click())
 
-  entree.addEventListener('change', async () => {
-    const fichier = entree.files?.[0]
-    entree.value = ''      // le même fichier, corrigé, peut être déposé de nouveau
-    if (!fichier) return
+  async function deposerFichier(fichier: File): Promise<void> {
     try {
       await deposer({ fichier: fichier.name, texte: await fichier.text() })
     } catch (erreur) {
       console.error(erreur)
       montrerErreurs(`Le profil « ${fichier.name} » n’a pas pu être lu.`, ['Vérifier que le fichier est un profil, au format YAML.'], '')
     }
+  }
+
+  entree.addEventListener('change', () => {
+    const fichier = entree.files?.[0]
+    entree.value = ''      // le même fichier, corrigé, peut être déposé de nouveau
+    if (fichier) void deposerFichier(fichier)
   })
 
   boutonRetirer.addEventListener('click', async () => {
@@ -120,9 +132,12 @@ export function installerProfil({ demander, surCatalogue, annoncer }: Liens): ()
     boutonDeposer.focus()      // le bouton de retrait vient de disparaître
   })
 
-  return async () => {
-    boutonDeposer.disabled = false
-    const conserve = lireConserve()
-    if (conserve) await deposer(conserve, true).catch(console.error)
+  return {
+    deposerFichier,
+    pret: async () => {
+      boutonDeposer.disabled = false
+      const conserve = lireConserve()
+      if (conserve) await deposer(conserve, true).catch(console.error)
+    },
   }
 }

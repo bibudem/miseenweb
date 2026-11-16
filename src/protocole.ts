@@ -3,6 +3,8 @@
 export interface Revue {
   nom: string
   issn: string
+  /** Vrai pour le profil déposé par l'utilisateur, faux pour une revue du site */
+  depose: boolean
 }
 
 export interface ProfilCatalogue {

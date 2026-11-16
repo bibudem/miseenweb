@@ -387,18 +387,17 @@
     font-size: var(--texte-petit);
   }
 
-  /* Le bouton s'aligne sur le texte d'aide placé au-dessus */
-  .profil-depose > .bouton-texte {
-    margin-inline-start: -12px;
-  }
-
   .profil-actif {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 8px;
     max-width: 60ch;
     margin: 0;
+  }
+
+  /* Les boutons s'alignent sur le texte placé au-dessus */
+  .profil-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    margin-inline-start: -12px;
   }
 
   .profil-erreurs {

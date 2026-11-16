@@ -193,11 +193,11 @@
             </p>
             <div class="profil-depose">
               <input type="file" accept=".yaml,.yml" hidden data-entree-profil>
-              <button type="button" class="bouton bouton-texte" data-deposer-profil disabled>Utiliser un profil de revue</button>
-              <p class="profil-actif" data-profil-actif hidden>
-                <span data-texte-profil-actif></span>
-                <button type="button" class="bouton bouton-texte bouton-danger" data-retirer-profil>Retirer le profil</button>
-              </p>
+              <p class="profil-actif" data-profil-actif hidden></p>
+              <div class="profil-actions">
+                <button type="button" class="bouton bouton-texte" data-deposer-profil disabled>Utiliser un profil</button>
+                <button type="button" class="bouton bouton-texte bouton-danger" data-retirer-profil hidden>Retirer le profil</button>
+              </div>
               <div class="profil-erreurs erreur-texte" role="alert" data-profil-erreurs></div>
             </div>
           </div>

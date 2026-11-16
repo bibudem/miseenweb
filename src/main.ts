@@ -11,7 +11,7 @@ import './styles/animations.css'
 import './animations'
 
 import type { Analyse, Catalogue, DemandeSansId, Evenement, Remarque, Resultat } from './protocole'
-import { installerProfil } from './profil'
+import { estProfil, installerProfil } from './profil'
 
 // ---- Icônes Phosphor, intégrées au script ----
 const icones = import.meta.glob(
@@ -223,7 +223,7 @@ function appliquerCatalogue(donnees: Catalogue): void {
   const choix = menuRevue.value
   menuRevue.replaceChildren(
     new Option('Détection automatique (recommandé)', AUTO),
-    ...catalogue.revues.map((r) => new Option(`Revue : ${r.nom}`, r.nom)),
+    ...catalogue.revues.map((r) => new Option(`${r.depose ? 'Profil' : 'Revue'} : ${r.nom}`, r.nom)),
     new Option('Document général : thèse, rapport ou autre', AUTRE_DOCUMENT),
   )
   // Le choix est conservé s'il existe encore; une revue retirée ramène à la détection automatique
@@ -234,7 +234,7 @@ function appliquerCatalogue(donnees: Catalogue): void {
   void analyser()
 }
 
-const profilPret = installerProfil({
+const depotProfil = installerProfil({
   demander,
   surCatalogue: appliquerCatalogue,
   annoncer: (texte) => (annonceGlobale.textContent = texte),
@@ -246,7 +246,7 @@ function demarre(donnees: Catalogue): void {
   texteEtat.textContent = 'Convertisseur prêt'
   menuRevue.disabled = false
   appliquerCatalogue(donnees)
-  void profilPret()      // dépose de nouveau le profil conservé dans ce navigateur, s'il y en a un
+  void depotProfil.pret()      // dépose de nouveau le profil conservé dans ce navigateur, s'il y en a un
 }
 
 // ---- Ajout des documents ----
@@ -256,6 +256,11 @@ async function ajouter(fichiers: File[]): Promise<void> {
   for (const fichier of fichiers) {
     const nom = fichier.name
     const minuscule = nom.toLowerCase()
+    // Un fichier de profil glissé avec les documents suit le chemin du bouton « Utiliser un profil »
+    if (estProfil(nom)) {
+      if (pret) void depotProfil.deposerFichier(fichier)
+      continue
+    }
     if (nom.startsWith('~$')) remarques.push(`« ${nom} » est un fichier temporaire de Word. Le fichier est ignoré.`)
     else if (minuscule.endsWith('.doc'))
       remarques.push(`« ${nom} » est dans le format .doc. Ouvrir le fichier dans Word, puis enregistrer le fichier dans le format .docx.`)

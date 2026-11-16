@@ -50,3 +50,23 @@ def test_nom_et_issn_d_un_profil_du_site_refuses(module_pont):
     assert "déjà le nom d'un profil du site" in reponse["messages"][0]
     reponse = json.loads(module_pont.deposer_profil(PROFIL + 'issn: "2561-7516"\n'))
     assert "déjà l'ISSN de la revue « Science infirmière et pratiques en santé »" in reponse["messages"][0]
+
+
+def test_profil_depose_offert_dans_le_menu_des_regles(nouveau_document, pont, module_pont):
+    reponse = json.loads(module_pont.deposer_profil(PROFIL))
+    deposes = [r for r in reponse["catalogue"]["revues"] if r["depose"]]
+    assert deposes == [{"nom": "Articles de ma revue", "issn": "", "depose": True}]
+
+    # Choisi dans le menu, le profil s'applique d'après ses règles de reconnaissance
+    nouveau_document.add_heading("Titre du document fictif", level=1)
+    nom = "article_ma_revue.docx"
+    nouveau_document.save(module_pont.ENTREE / nom)
+    module_pont.lire(nom)
+    assert json.loads(module_pont.analyser(nom, "Articles de ma revue"))["profil"] == "ma-revue"
+    # « Document général » écarte le profil déposé, comme il écarte une revue
+    assert json.loads(module_pont.analyser(nom, ""))["profil"] == "defaut"
+
+
+def test_revues_du_site_non_marquees_comme_deposees(module_pont):
+    revues = json.loads(module_pont.catalogue())["revues"]
+    assert revues == [{"nom": "Science infirmière et pratiques en santé", "issn": "2561-7516", "depose": False}]

@@ -74,12 +74,24 @@ def libelle(profil: Profil) -> str:
 
 # ---- Catalogue et choix du profil ------------------------------------------------------
 
+def _groupe(profil: Profil) -> str:
+    """Nom sous lequel un profil figure dans le menu « Règles de conversion ». Vide : profil général.
+
+    Une revue regroupe ses variantes sous son nom. Un profil déposé sans nom de revue forme
+    son propre groupe, pour être choisi dans ce menu comme une revue.
+    """
+    if profil.revue:
+        return profil.revue
+    return libelle(profil) if profil.nom in _profils_deposes else ""
+
+
 def catalogue() -> str:
     """Revues et profils, pour les menus de la page."""
-    revues = {p.revue: p.issn for p in PROFILS.values() if p.revue}
+    revues = {_groupe(p): p for p in PROFILS.values() if _groupe(p)}
     profils = sorted(PROFILS.values(), key=lambda p: (bool(p.revue), p.revue, libelle(p)))
     return json.dumps({
-        "revues": [{"nom": nom, "issn": issn} for nom, issn in sorted(revues.items())],
+        "revues": [{"nom": nom, "issn": p.issn, "depose": p.nom in _profils_deposes}
+                   for nom, p in sorted(revues.items())],
         "profils": [{"nom": p.nom, "libelle": libelle(p), "revue": p.revue,
                      "depose": p.nom in _profils_deposes} for p in profils],
     })
@@ -124,19 +136,21 @@ def _profils_pour(issn: str | None, revue: str) -> dict:
 
     - Détection automatique : un ISSN connu limite le choix à sa revue, un ISSN inconnu aux
       profils génériques ; sans ISSN, tous les profils sont candidats, choisis par leurs règles.
-    - Revue imposée : profils génériques et profils de cette revue (l'ISSN l'emporte, comme dans
-      l'interface de bureau). Chaîne vide : profils génériques seulement.
+    - Revue imposée : profils génériques et profils de cette revue. L'ISSN du document l'emporte
+      s'il est celui d'une revue connue. Un ISSN inconnu ne change rien au choix : un profil
+      déposé sans ISSN reste applicable aux articles de sa revue. Chaîne vide : profils
+      génériques seulement.
     """
-    generiques = {n: p for n, p in PROFILS.items() if not p.revue}
+    generiques = {n: p for n, p in PROFILS.items() if not _groupe(p)}
     if revue == AUTO:
         if not issn:
             return dict(PROFILS)
         return {n: p for n, p in PROFILS.items() if not p.revue or p.issn == issn}
     if not revue:
         return generiques
-    if issn:
-        return {n: p for n, p in PROFILS.items() if not p.revue or p.issn == issn}
-    return {n: p for n, p in PROFILS.items() if not p.revue or p.revue == revue}
+    if issn and any(p.issn == issn for p in PROFILS.values()):
+        return {n: p for n, p in PROFILS.items() if not _groupe(p) or p.issn == issn}
+    return {n: p for n, p in PROFILS.items() if not _groupe(p) or _groupe(p) == revue}
 
 
 def lire(nom: str) -> None:
