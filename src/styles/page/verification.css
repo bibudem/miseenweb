@@ -1,0 +1,487 @@
+/* Fenêtres : vérification de la page, rapport et confirmation. Type de document et remarques. */
+
+@layer composants {
+  /* ---- Aperçu ---- */
+  .apercu {
+    width: min(72rem, 100vw - 2 * var(--espace-2));
+    height: min(56rem, 100dvh - 2 * var(--espace-2));
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-radius: var(--rayon-moyen);
+    background: var(--couleur-surface);
+    color: var(--couleur-texte);
+    box-shadow: var(--ombre-2);
+  }
+
+  /* Le rapport est un texte étroit : sa fenêtre l'est aussi */
+  .apercu-rapport {
+    width: min(54rem, 100vw - 2 * var(--espace-2));
+  }
+
+  .apercu[open] {
+    display: flex;
+    flex-direction: column;
+    animation: apparition var(--duree-moyenne-2) var(--courbe-standard-deceleree);
+  }
+
+  .apercu::backdrop {
+    background: rgb(11 17 58 / 60%);
+    backdrop-filter: blur(2px);
+  }
+
+  .apercu-entete {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-1) var(--espace-2);
+    padding: 12px 12px 12px var(--espace-3);
+    border-bottom: 1px solid var(--couleur-bordure);
+  }
+
+  .apercu-entete h2 {
+    font-size: var(--texte-moyen);
+    overflow-wrap: anywhere;
+  }
+
+  .apercu-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--espace-1);
+  }
+
+  .apercu-actions .bouton {
+    min-height: var(--taille-cible);
+    padding-inline: 16px;
+  }
+
+  .apercu iframe {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    border-radius: 0 0 var(--rayon-moyen) var(--rayon-moyen);
+    /* La page produite est conçue pour un fond blanc */
+    background: #fff;
+  }
+
+  .sans-script {
+    margin: var(--espace-3);
+    padding: var(--espace-2);
+    border-radius: var(--rayon-carte);
+    background: var(--alerte-avertissement-fond);
+  }
+}
+
+/* ---- Ajouts : type de document, remarques, vérification, notifications ---- */
+@layer composants {
+  /* Pointeur fin (souris) ou écran tactile : on ne parle de glisser qu'avec une souris */
+  .si-tactile {
+    display: none;
+  }
+
+  @media (pointer: coarse) {
+    .si-pointeur {
+      display: none !important;
+    }
+
+    .si-tactile {
+      display: inline;
+    }
+  }
+
+  .depot > .bouton-texte {
+    margin-top: var(--espace-1);
+    font-size: var(--texte-petit);
+  }
+
+  .liste > .aide {
+    margin-bottom: var(--espace-1);
+  }
+
+  /* Menu du type de document, dans chaque ligne */
+  .fichier {
+    align-items: start;
+  }
+
+  .fichier-infos {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .champ-compact {
+    max-width: 26rem;
+  }
+
+  .champ-compact select {
+    min-height: var(--taille-cible);
+    padding-block: 6px;
+    font-size: var(--texte-petit);
+  }
+
+  /* Résultats */
+  .resultat-infos {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .resultat-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-1);
+    justify-content: flex-end;
+  }
+
+  .bouton-compact {
+    min-height: var(--taille-cible);
+    padding-inline: 16px;
+    font-size: var(--texte-petit);
+  }
+
+  .erreur-texte {
+    color: var(--alerte-erreur-icone);
+    font-size: var(--texte-petit);
+  }
+
+  .remarques {
+    display: grid;
+    gap: 8px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--texte-petit);
+  }
+
+  .remarque {
+    display: grid;
+    gap: 2px;
+    padding: 10px 14px;
+    border-inline-start: 4px solid var(--alerte-avertissement-icone);
+    border-radius: 0 var(--rayon-tres-petit) var(--rayon-tres-petit) 0;
+    background: var(--alerte-avertissement-fond);
+  }
+
+  .remarque-info {
+    border-inline-start-color: var(--alerte-info-icone);
+    background: var(--alerte-fond);
+  }
+
+  .conseil {
+    color: var(--couleur-texte-secondaire);
+    font-weight: var(--graisse-normale);
+  }
+
+  /* ---- Remarques d'un document, par source : document d'origine, conversion ----
+     Une ligne par source. L'icône du fichier concerné et un libellé fixe la nomment, un résumé
+     dit ce qu'elle contient, un chevron indique qu'elle se déplie. */
+  .bilan-source {
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--rayon-tres-petit);
+    background: var(--couleur-surface);
+    font-size: var(--texte-petit);
+  }
+
+  .bilan-source summary {
+    display: flex;
+    align-items: center;
+    gap: var(--espace-1);
+    /* Pleine largeur et couleur du texte : l'ancienne règle « .resultat summary » en faisait un lien */
+    width: auto;
+    color: var(--couleur-texte);
+    min-height: var(--taille-cible);
+    padding: 6px 12px;
+    border-radius: var(--rayon-tres-petit);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .bilan-source summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .bilan-source summary:hover {
+    background: var(--alerte-fond);
+  }
+
+  .bilan-icone,
+  .bilan-chevron {
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .bilan-libelle {
+    font-weight: var(--graisse-forte);
+    white-space: nowrap;
+  }
+
+  .bilan-resume {
+    min-width: 0;
+    color: var(--couleur-texte-secondaire);
+  }
+
+  /* Une source qui demande une action : l'icône prend la couleur d'avertissement */
+  .bilan-a-corriger .bilan-icone {
+    color: var(--alerte-avertissement-icone);
+  }
+
+  .bilan-a-corriger .bilan-resume {
+    color: var(--couleur-texte);
+  }
+
+  .bilan-chevron {
+    margin-inline-start: auto;
+    transition: rotate var(--duree-courte-4) var(--courbe-standard);
+  }
+
+  .bilan-source[open] .bilan-chevron {
+    rotate: 180deg;
+  }
+
+  .bilan-detail {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--couleur-bordure);
+  }
+
+  .bilan-detail .aide,
+  .bilan-detail .remarques {
+    margin: 0;
+  }
+
+  .bilan-detail .aide {
+    max-width: none;
+  }
+
+  /* Les remarques sont des encadrés, sans le retrait d'une liste à puces */
+  .bilan-detail .remarques {
+    padding: 0;
+    color: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bilan-chevron {
+      transition: none;
+    }
+  }
+
+  .recommencer {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ---- Aperçu : panneau de vérification à gauche, page à droite ---- */
+  .apercu-corps {
+    display: grid;
+    grid-template-columns: minmax(16rem, 22rem) 1fr;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .apercu-panneau {
+    display: grid;
+    align-content: start;
+    gap: var(--espace-3);
+    padding: var(--espace-3);
+    overflow-y: auto;
+    border-inline-end: 1px solid var(--couleur-bordure);
+    background: var(--couleur-fond);
+  }
+
+  .apercu-panneau h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: var(--espace-1);
+    font-size: var(--texte-courant);
+  }
+
+  .apercu-panneau h3 .icone {
+    color: var(--couleur-texte-secondaire);
+  }
+
+  /* Une iframe ne s'étire pas seule dans une grille : elle garderait 150 px de haut */
+  .apercu iframe {
+    height: 100%;
+    min-height: 0;
+    border-radius: 0 0 var(--rayon-moyen) 0;
+  }
+
+  .points {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .point {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-inline-start: 4px solid var(--alerte-avertissement-icone);
+    border-radius: 0 var(--rayon-tres-petit) var(--rayon-tres-petit) 0;
+    background: var(--alerte-avertissement-fond);
+    font-size: var(--texte-tres-petit);
+    text-align: start;
+  }
+
+  .point-lien {
+    cursor: pointer;
+    transition: filter var(--duree-courte-4) var(--courbe-standard);
+  }
+
+  .point-lien:hover {
+    filter: brightness(0.96);
+  }
+
+  .point-lien strong::after {
+    content: ' →';
+  }
+
+  .plan,
+  .plan ol {
+    margin: 0;
+    padding-inline-start: 0;
+    list-style: none;
+  }
+
+  .plan ol {
+    margin-inline-start: 10px;
+    padding-inline-start: 10px;
+    border-inline-start: 1px solid var(--couleur-bordure);
+  }
+
+  .plan-titre {
+    display: block;
+    width: 100%;
+    min-height: var(--taille-cible);
+    padding: 4px 8px;
+    border: 0;
+    border-radius: var(--rayon-tres-petit);
+    background: transparent;
+    color: var(--couleur-texte);
+    font-size: var(--texte-tres-petit);
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .plan-titre[data-niveau='1'] {
+    font-weight: var(--graisse-grasse);
+  }
+
+  .plan-titre:hover {
+    background: var(--couleur-teinte);
+  }
+
+  @media (width < 800px) {
+    .apercu-corps {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+
+    .apercu-panneau {
+      max-height: 38dvh;
+      border-inline-end: 0;
+      border-bottom: 1px solid var(--couleur-bordure);
+    }
+
+    .apercu iframe {
+      border-radius: 0 0 var(--rayon-moyen) var(--rayon-moyen);
+    }
+
+    /* Le bouton de fermeture reste en haut à droite, à côté du titre */
+    .apercu-entete {
+      position: relative;
+      padding: 10px 52px 10px var(--espace-2);
+    }
+
+    .apercu-entete [data-fermer] {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+    }
+
+    .apercu-actions .bouton {
+      padding-inline: 12px;
+      font-size: var(--texte-tres-petit);
+      white-space: nowrap;
+    }
+
+    .apercu-panneau {
+      padding: var(--espace-2);
+    }
+  }
+
+  /* ---- Fenêtre de confirmation ---- */
+  .confirmation {
+    width: min(30rem, 100vw - 2 * var(--espace-2));
+    padding: var(--espace-3);
+    border: 0;
+    border-radius: var(--rayon-moyen);
+    background: var(--couleur-surface);
+    color: var(--couleur-texte);
+    box-shadow: var(--ombre-2);
+  }
+
+  .confirmation[open] {
+    animation: apparition var(--duree-moyenne-2) var(--courbe-standard-deceleree);
+  }
+
+  .confirmation::backdrop {
+    background: rgb(11 17 58 / 60%);
+    backdrop-filter: blur(2px);
+  }
+
+  .confirmation h2 {
+    font-size: var(--texte-moyen);
+  }
+
+  .confirmation p {
+    margin-block: var(--espace-1) var(--espace-3);
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .confirmation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--espace-1);
+  }
+
+  /* Message d'erreur d'une action, placé dans un en-tête de fenêtre : il prend toute la ligne */
+  .apercu-entete .erreur-action {
+    flex-basis: 100%;
+    margin: 0;
+  }
+
+  /* ---- Mobile : bannière plus courte, l'outil arrive plus tôt ---- */
+  @media (width < 600px) {
+    .banniere {
+      padding-block: var(--espace-5) calc(var(--espace-5) + 4rem);
+    }
+
+    .banniere h1::after {
+      margin-top: var(--espace-2);
+    }
+
+    .chapeau {
+      margin-top: var(--espace-2);
+      font-size: var(--texte-moyen);
+    }
+
+
+    .outil {
+      margin-top: -4rem;
+    }
+
+    .navigation ul {
+      gap: 0 var(--espace-2);
+    }
+  }
+}

@@ -1,0 +1,553 @@
+/* Carte de conversion : dépôt des documents, boutons, choix de la revue, liste, progression. */
+
+@layer composants {
+  /* ---- Cartes ---- */
+  .carte {
+    border: 1px solid color-mix(in srgb, var(--couleur-texte) 8%, transparent);
+    border-radius: var(--rayon-carte);
+    background-color: var(--couleur-surface);
+  }
+
+  /* ---- Outil ---- */
+  .outil {
+    position: relative;
+    display: grid;
+    gap: var(--espace-3);
+    margin-top: -5rem;
+  }
+
+  .carte-outil,
+  .carte-resultats {
+    padding: var(--espace-carte);
+    box-shadow: var(--ombre-2);
+  }
+
+  @media (width >= 900px) {
+    .carte-outil,
+    .carte-resultats {
+      padding: var(--espace-5);
+    }
+  }
+
+  .entete-outil {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-1) var(--espace-3);
+  }
+
+  .entete-outil h2 {
+    font-size: var(--texte-tres-grand);
+  }
+
+  /* État du convertisseur : point qui pulse pendant le chargement */
+  .etat-moteur {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    border-radius: var(--rayon-plein);
+    background: var(--alerte-fond);
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  .indicateur {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--couleur-accent);
+    animation: pulsation var(--duree-pulsation) ease-in-out infinite;
+  }
+
+  /* Chargement à même la pastille : elle se remplit de gauche à droite (--avancement, posé par
+     main.ts), puis passe au vert quand le convertisseur est prêt */
+  .etat-moteur {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .etat-moteur::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: -1;
+    width: var(--avancement, 0%);
+    background: var(--couleur-teinte-forte);
+    transition: width var(--duree-moyenne-2) var(--courbe-standard);
+  }
+
+  .etat-moteur:not([data-etat='chargement'])::before {
+    display: none;
+  }
+
+  /* Largeur fixe pendant le chargement : le texte change à chaque étape, la jauge reste lisible */
+  .etat-moteur[data-etat='chargement'] {
+    width: min(100%, 26rem);
+  }
+
+  .etat-moteur[data-etat='pret'] {
+    background: var(--alerte-succes-fond);
+    color: var(--couleur-texte);
+  }
+
+  .etat-moteur[data-etat='pret'] .indicateur {
+    background: var(--alerte-succes-icone);
+    animation: none;
+  }
+
+  .etat-moteur[data-etat='echec'] {
+    background: var(--alerte-erreur-fond);
+    color: var(--couleur-texte);
+  }
+
+  .etat-moteur[data-etat='echec'] .indicateur {
+    background: var(--alerte-erreur-icone);
+    animation: none;
+  }
+
+  @keyframes pulsation {
+    50% {
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+  }
+
+  /* Étapes 1, 2, 3 */
+  .etapes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-1) var(--espace-4);
+    margin: var(--espace-3) 0;
+    padding: 0;
+    list-style: none;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-reduit);
+  }
+
+  .etapes li {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .numero {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: 50%;
+    font-size: var(--texte-tres-petit);
+    font-weight: var(--graisse-forte);
+    transition:
+      background-color var(--duree-moyenne-1) var(--courbe-standard),
+      color var(--duree-moyenne-1) var(--courbe-standard);
+  }
+
+  .etapes [aria-current='step'] {
+    color: var(--couleur-texte);
+    font-weight: var(--graisse-forte);
+  }
+
+  .etapes [aria-current='step'] .numero {
+    border-color: var(--couleur-fond-fort);
+    background: var(--couleur-fond-fort);
+    color: var(--couleur-sur-fonce);
+  }
+
+  .etapes [data-fait] .numero {
+    border-color: var(--alerte-succes-icone);
+    background: var(--alerte-succes-fond);
+    color: var(--alerte-succes-icone);
+  }
+
+  /* Zone de dépôt */
+  .depot {
+    display: grid;
+    justify-items: center;
+    gap: var(--espace-1);
+    padding: var(--espace-5) var(--espace-3);
+    border: 2px dashed var(--couleur-teinte-forte);
+    border-radius: var(--rayon-moyen);
+    background: color-mix(in srgb, var(--couleur-teinte) 45%, var(--couleur-surface));
+    text-align: center;
+    transition:
+      border-color var(--duree-moyenne-1) var(--courbe-standard),
+      background-color var(--duree-moyenne-1) var(--courbe-standard);
+  }
+
+  .depot[data-survol] {
+    border-color: var(--couleur-accent);
+    background: var(--couleur-teinte);
+  }
+
+  .depot-icone {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: var(--espace-1);
+    color: var(--couleur-accent);
+    transition: transform var(--duree-moyenne-2) var(--courbe-standard-deceleree);
+  }
+
+  .depot[data-survol] .depot-icone {
+    transform: translateY(-4px) scale(1.06);
+  }
+
+  .depot-titre {
+    font-size: var(--texte-grand);
+    font-weight: var(--graisse-forte);
+  }
+
+  .depot-aide {
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  .depot-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--espace-1) var(--espace-2);
+    margin-top: var(--espace-2);
+  }
+
+  /* ---- Boutons (pilules, comme bibweb) ---- */
+  .bouton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    max-width: 100%;
+    min-height: 3.125rem;
+    padding: 6px 24px;
+    border: 1px solid transparent;
+    border-radius: var(--rayon-plein);
+    background: transparent;
+    font-size: var(--texte-reduit);
+    font-weight: var(--graisse-moyenne);
+    line-height: 1.3;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--duree-moyenne-1) var(--courbe-standard),
+      color var(--duree-moyenne-1) var(--courbe-standard),
+      border-color var(--duree-moyenne-1) var(--courbe-standard);
+  }
+
+  .bouton-plein {
+    background-color: var(--couleur-fond-fort);
+    color: var(--couleur-sur-fonce);
+  }
+
+  .bouton-plein:hover {
+    background-color: var(--couleur-fond-fort-survol);
+    color: var(--couleur-sur-fonce);
+  }
+
+  .bouton-contour {
+    border-color: currentColor;
+    color: var(--couleur-texte);
+  }
+
+  .bouton-contour:hover {
+    background-color: color-mix(in srgb, var(--couleur-texte) 6%, transparent);
+    color: var(--couleur-texte);
+  }
+
+  .bouton-texte {
+    min-height: var(--taille-cible);
+    padding-inline: 12px;
+    color: var(--couleur-accent);
+  }
+
+  .bouton-texte:hover {
+    background-color: color-mix(in srgb, var(--couleur-accent) 8%, transparent);
+  }
+
+  /* Action destructive : la couleur d'erreur du thème, en clair comme en sombre */
+  .bouton-danger {
+    background-color: var(--alerte-erreur-icone);
+    color: var(--couleur-surface);
+  }
+
+  .bouton-danger:hover {
+    background-color: color-mix(in srgb, var(--alerte-erreur-icone) 85%, var(--couleur-texte));
+    color: var(--couleur-surface);
+  }
+
+  .bouton-texte.bouton-danger {
+    background-color: transparent;
+    color: var(--alerte-erreur-icone);
+  }
+
+  .bouton-texte.bouton-danger:hover {
+    background-color: color-mix(in srgb, var(--alerte-erreur-icone) 8%, transparent);
+    color: var(--alerte-erreur-icone);
+  }
+
+  .bouton-grand {
+    min-height: 3.5rem;
+    padding-inline: 32px;
+    font-size: var(--texte-courant);
+    font-weight: var(--graisse-forte);
+  }
+
+  .bouton:disabled {
+    background-color: color-mix(in srgb, var(--couleur-texte) 10%, transparent);
+    color: color-mix(in srgb, var(--couleur-texte) 45%, transparent);
+    cursor: not-allowed;
+  }
+
+  .icone-fin {
+    transition: transform var(--duree-courte-4) var(--courbe-standard-deceleree);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .bouton:not(:disabled):hover .icone-fin {
+      transform: translateX(3px);
+    }
+  }
+
+  .bouton-icone {
+    display: inline-grid;
+    place-items: center;
+    width: var(--taille-cible);
+    height: var(--taille-cible);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--couleur-texte-secondaire);
+    cursor: pointer;
+    transition: background-color var(--duree-moyenne-1) var(--courbe-standard);
+  }
+
+  .bouton-icone:hover {
+    background: color-mix(in srgb, var(--couleur-texte) 8%, transparent);
+    color: var(--couleur-texte);
+  }
+
+  .bouton-icone .icone {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* ---- Choix de la revue ---- */
+  .reglage {
+    display: grid;
+    gap: 6px;
+    margin-top: var(--espace-4);
+  }
+
+  .reglage label {
+    font-weight: var(--graisse-forte);
+  }
+
+  .champ-liste {
+    position: relative;
+    max-width: 36rem;
+  }
+
+  .champ-liste select {
+    width: 100%;
+    min-height: 3.125rem;
+    padding: 10px 48px 10px 16px;
+    border: 1px solid var(--couleur-contour);
+    border-radius: var(--rayon-tres-petit);
+    background: var(--couleur-surface);
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .champ-liste select:disabled {
+    cursor: progress;
+    opacity: 0.7;
+  }
+
+  .champ-liste .icone {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+
+  .aide {
+    max-width: 60ch;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  /* ---- Liste des documents ---- */
+  .liste {
+    margin-top: var(--espace-4);
+  }
+
+  .liste-entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-2);
+    margin-bottom: var(--espace-1);
+  }
+
+  .liste-entete h3 {
+    font-size: var(--texte-moyen);
+  }
+
+  .compte {
+    color: var(--couleur-texte-secondaire);
+    font-weight: var(--graisse-normale);
+  }
+
+  .fichiers,
+  .resultats {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--couleur-bordure);
+    list-style: none;
+  }
+
+  .fichier {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--espace-1) var(--espace-2);
+    padding-block: 12px;
+    border-bottom: 1px solid var(--couleur-bordure);
+  }
+
+  @keyframes apparition {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  .fichier-icone {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--rayon-tres-petit);
+    background: var(--couleur-teinte);
+    color: var(--couleur-accent);
+  }
+
+  .fichier-icone .icone {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .fichier-nom {
+    overflow-wrap: anywhere;
+    font-weight: var(--graisse-forte);
+  }
+
+  /* Dans les résultats, le nom d'un document est un titre : il garde l'apparence du texte */
+  h3.fichier-nom {
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .fichier-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+    margin-top: 2px;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-tres-petit);
+  }
+
+  .puce {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-radius: var(--rayon-plein);
+    background: var(--couleur-teinte);
+    color: var(--couleur-texte);
+    font-size: var(--texte-tres-petit);
+    font-weight: var(--graisse-moyenne);
+  }
+
+  .puce-attente {
+    background: var(--alerte-fond);
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .puce-erreur {
+    background: var(--alerte-erreur-fond);
+  }
+
+  .puce-revue {
+    background: var(--couleur-teinte-jaune);
+  }
+
+  /* ---- Barre d'actions et progression ---- */
+  .barre-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--espace-2);
+    margin-top: var(--espace-4);
+  }
+
+  .annonce {
+    flex: 1 1 16rem;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  .annonce:empty {
+    display: none;
+  }
+
+  /* Raison pour laquelle le bouton « Convertir » est inactif */
+  .aide-convertir {
+    flex: 1 1 16rem;
+    max-width: none;
+  }
+
+  .aide-convertir:empty {
+    display: none;
+  }
+
+  .progression {
+    display: grid;
+    gap: var(--espace-1);
+    margin-top: var(--espace-3);
+    font-size: var(--texte-petit);
+  }
+
+  progress {
+    width: 100%;
+    height: 8px;
+    border: 0;
+    border-radius: var(--rayon-plein);
+    background: var(--couleur-teinte);
+    overflow: hidden;
+    appearance: none;
+  }
+
+  progress::-webkit-progress-bar {
+    background: var(--couleur-teinte);
+  }
+
+  progress::-webkit-progress-value {
+    border-radius: var(--rayon-plein);
+    background: var(--couleur-accent);
+    transition: width var(--duree-moyenne-2) var(--courbe-standard);
+  }
+
+  progress::-moz-progress-bar {
+    border-radius: var(--rayon-plein);
+    background: var(--couleur-accent);
+  }
+}

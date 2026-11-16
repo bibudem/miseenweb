@@ -1,0 +1,349 @@
+/* Structure de la page, icônes, en-tête et bannière. */
+
+@layer composants {
+  /* ---- Structure ---- */
+  .conteneur {
+    width: 100%;
+    max-width: calc(var(--largeur-max) + 2 * var(--gouttiere));
+    margin-inline: auto;
+    padding-inline: var(--gouttiere);
+  }
+
+  .conteneur-etroit {
+    max-width: calc(52rem + 2 * var(--gouttiere));
+  }
+
+  .lien-evitement {
+    position: absolute;
+    top: var(--espace-1);
+    left: var(--espace-1);
+    z-index: 10;
+    padding: var(--espace-1) var(--espace-2);
+    border-radius: var(--rayon-plein);
+    background: var(--couleur-fond-fort);
+    color: var(--couleur-sur-fonce);
+    transform: translateY(-200%);
+  }
+
+  .lien-evitement:focus {
+    transform: none;
+  }
+
+  /* ---- Icônes (Phosphor, comme bibweb) ---- */
+  .icone {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: 1.25em;
+    height: 1.25em;
+  }
+
+  .icone svg,
+  [data-icone] > svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ---- En-tête : logo de l'UdeM, trait, « Les bibliothèques » ---- */
+  .entete {
+    border-bottom: 1px solid color-mix(in srgb, var(--couleur-texte) 12%, transparent);
+    background-color: var(--couleur-surface);
+  }
+
+  .entete .rangee {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-1) var(--espace-3);
+    max-width: calc(var(--largeur-max) + 2 * var(--gouttiere));
+    min-height: 4.25rem;
+    margin-inline: auto;
+    padding: var(--espace-1) var(--gouttiere);
+  }
+
+  .marque {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--couleur-texte);
+    font-size: clamp(0.9375rem, 3.6vw, 1.0625rem);
+    font-weight: var(--graisse-normale);
+    text-decoration: none;
+  }
+
+  .marque:hover {
+    color: var(--couleur-texte);
+  }
+
+  .marques {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 3vw, 20px);
+  }
+
+  .separateur {
+    align-self: stretch;
+    width: 1px;
+    margin-block: 6px;
+    background: currentColor;
+    opacity: 0.35;
+  }
+
+  /* Le nom de l'outil ramène au haut de la page, comme le nom du site dans bibweb */
+  .nom-outil {
+    color: var(--couleur-texte);
+    text-decoration: none;
+    margin: 0;
+    font-size: clamp(var(--texte-moyen), 1rem + 1vw, var(--texte-tres-grand));
+    font-weight: var(--graisse-forte);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  /* Logo des Bibliothèques : bleu en thème clair, blanc en thème sombre */
+  .logo-sombre,
+  [data-theme='sombre'] .logo-clair {
+    display: none;
+  }
+
+  [data-theme='sombre'] .logo-sombre {
+    display: block;
+  }
+
+  /* En-tête : marque à gauche, liens et bascule du thème à droite. Sur petit écran, la marque
+     occupe la première ligne ; les liens et la bascule, à droite, la seconde. */
+  .navigation {
+    margin-inline-start: auto;
+  }
+
+  @media (width < 700px) {
+    .marques {
+      width: 100%;
+    }
+
+    .navigation {
+      flex: 1;
+      margin-inline-start: 0;
+    }
+
+    /* Déjà dans le pied de page : sur petit écran, la place va à la bascule du thème */
+    .lien-code-source {
+      display: none;
+    }
+  }
+
+  /* Bascule du thème : un interrupteur soleil / lune */
+  .bascule-theme {
+    display: inline-grid;
+    place-items: center;
+    min-width: var(--taille-cible);
+    min-height: var(--taille-cible);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .bascule-piste {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 3.5rem;
+    height: 1.875rem;
+    padding: 0 7px;
+    border: 1px solid var(--couleur-contour);
+    border-radius: var(--rayon-plein);
+    background: var(--couleur-teinte);
+    color: var(--couleur-texte-secondaire);
+    transition: background-color var(--duree-moyenne-1) var(--courbe-standard);
+  }
+
+  .bascule-piste .icone {
+    position: relative;
+    z-index: 1;
+    width: 1rem;
+    height: 1rem;
+    transition: color var(--duree-moyenne-1) var(--courbe-standard);
+  }
+
+  .bascule-pastille {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--couleur-fond-fort);
+    box-shadow: var(--ombre-1);
+    transition: translate var(--duree-moyenne-2) var(--courbe-standard);
+  }
+
+  /* L'icône sous la pastille est celle du thème en cours, en blanc */
+  .icone-soleil,
+  [data-theme='sombre'] .icone-lune {
+    color: var(--couleur-sur-fonce);
+  }
+
+  [data-theme='sombre'] .icone-soleil {
+    color: var(--couleur-texte-secondaire);
+  }
+
+  [data-theme='sombre'] .bascule-pastille {
+    translate: calc(3.5rem - 1.5rem - 6px) 0;
+  }
+
+  .bascule-theme:hover .bascule-piste {
+    background: var(--couleur-teinte-forte);
+  }
+
+  .bascule-theme:focus-visible {
+    outline: none;
+  }
+
+  .bascule-theme:focus-visible .bascule-piste {
+    outline: 3px solid var(--couleur-focus);
+    outline-offset: 2px;
+  }
+
+  /* Le « En » de MiseEnWeb, en bleu comme dans l'en-tête. Le pied de page est toujours foncé :
+     il prend le bleu clair du thème sombre, car le bleu principal y serait illisible (2,6:1). */
+  .en {
+    color: var(--couleur-accent);
+  }
+
+  .pied .en {
+    color: #93c3f5;
+  }
+
+  .nom-outil:hover {
+    color: var(--couleur-texte);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Logo horizontal des Bibliothèques (version blanche en thème sombre, par <picture>) */
+  .marque img {
+    width: auto;
+    height: clamp(44px, 11vw, 56px);
+  }
+
+  .navigation ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-1) var(--espace-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .navigation a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--taille-cible);
+    color: var(--couleur-texte);
+    font-size: var(--texte-reduit);
+    text-decoration: none;
+  }
+
+  .navigation a:hover {
+    color: var(--couleur-lien);
+    text-decoration: underline;
+  }
+
+  .navigation .icone {
+    width: 1em;
+    height: 1em;
+  }
+
+  /* ---- Bannière ---- */
+  .banniere {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--espace-8) calc(var(--espace-8) + 5rem);
+    background-color: var(--bleu-fonce);
+    color: var(--blanc);
+    isolation: isolate;
+  }
+
+  /* Halo bleu et grille discrète : de la profondeur sans photo à charger */
+  .banniere::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60rem 30rem at 85% -10%, color-mix(in srgb, var(--bleu-principal) 70%, transparent), transparent 70%),
+      radial-gradient(40rem 24rem at -10% 110%, color-mix(in srgb, var(--bleu-principal) 35%, transparent), transparent 70%);
+  }
+
+  .banniere::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 5%) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 5%) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(180deg, #000, transparent 85%);
+  }
+
+  /* Logo de MiseEnWeb, grand, dans l'espace libre à droite du titre */
+  .titre-groupe {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-4);
+  }
+
+  .logo-outil {
+    flex-shrink: 0;
+    width: clamp(140px, 18vw, 220px);
+    height: auto;
+    margin-inline-end: clamp(0px, 4vw, 64px);
+    filter: drop-shadow(0 18px 40px rgb(0 0 0 / 35%));
+  }
+
+  /* Petit écran : pas de place à côté du titre, le logo passe au-dessus, plus petit */
+  @media (width < 700px) {
+    .titre-groupe {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      gap: var(--espace-3);
+    }
+
+    .logo-outil {
+      width: 64px;
+      margin-inline-end: 0;
+      filter: none;
+    }
+  }
+
+  .banniere h1 {
+    max-width: 18ch;
+  }
+
+  /* Le trait jaune de la marque, sous le titre */
+  .banniere h1::after {
+    content: '';
+    display: block;
+    width: 4.5rem;
+    height: 6px;
+    margin-top: var(--espace-3);
+    border-radius: var(--rayon-plein);
+    background: var(--jaune);
+  }
+
+  .chapeau {
+    max-width: var(--mesure-texte);
+    margin-top: var(--espace-3);
+    color: var(--bleu-200);
+    font-family: var(--police-serif);
+    font-size: var(--texte-grand);
+    font-weight: var(--graisse-normale);
+    line-height: 1.55;
+  }
+}

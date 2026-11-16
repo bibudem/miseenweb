@@ -1,0 +1,115 @@
+/* Mouvement, installation de l'application et symbole de touche. */
+
+/* ---- Mouvement, comme sur le site des Bibliothèques ----
+   Les révélations au défilement viennent de animations.css et animations.ts (repris de bibweb). */
+@layer composants {
+  /* Volet <details> qui s'ouvre et se ferme en hauteur et en opacité (repris de bibweb, global.css).
+     Sans prise en charge, il s'ouvre d'un coup. */
+  @supports (interpolate-size: allow-keywords) and selector(::details-content) {
+    .volet-anime {
+      interpolate-size: allow-keywords;
+    }
+
+    .volet-anime::details-content {
+      block-size: 0;
+      overflow-y: clip;
+      opacity: 0;
+      transition:
+        block-size var(--duree-moyenne-1) var(--courbe-emphase),
+        opacity var(--duree-moyenne-1) var(--courbe-emphase),
+        content-visibility var(--duree-moyenne-1) allow-discrete;
+    }
+
+    .volet-anime[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+
+    @media print, (prefers-reduced-motion: reduce) {
+      .volet-anime::details-content {
+        transition: none;
+      }
+    }
+  }
+
+  /* Lignes de documents et de résultats : elles arrivent l'une après l'autre (--rang, posé par main.ts) */
+  .fichier[data-nouveau],
+  .resultat {
+    animation: apparition var(--duree-moyenne-4) var(--courbe-emphase-deceleree) backwards;
+    animation-delay: calc(min(var(--rang, 0), 5) * var(--duree-courte-1));
+  }
+
+  /* Le logo de la bannière arrive en douceur au chargement */
+  .logo-outil {
+    animation: arrivee-logo var(--duree-longue-2, 500ms) var(--courbe-emphase-deceleree) backwards;
+  }
+
+  @keyframes arrivee-logo {
+    from {
+      opacity: 0;
+      scale: 0.92;
+      translate: 0 8px;
+    }
+  }
+
+  /* Bouton principal : il s'enfonce légèrement au clic */
+  .bouton:not(:disabled):active {
+    scale: 0.98;
+  }
+
+  .bouton {
+    transition:
+      background-color var(--duree-moyenne-1) var(--courbe-standard),
+      color var(--duree-moyenne-1) var(--courbe-standard),
+      border-color var(--duree-moyenne-1) var(--courbe-standard),
+      scale var(--duree-courte-3) var(--courbe-standard);
+  }
+}
+
+/* ---- Installer l'application (question fréquente) ---- */
+@layer composants {
+  .questions .reponse {
+    display: grid;
+    gap: var(--espace-2);
+    max-width: 62ch;
+    padding-bottom: var(--espace-3);
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .questions .reponse p {
+    padding-bottom: 0;
+  }
+
+  .installer-etapes {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  .installer-etapes strong {
+    color: var(--couleur-texte);
+  }
+}
+
+/* Symbole d'un bouton du navigateur (menu ⋮) : en gras, dans un petit cadre de touche */
+@layer composants {
+  .touche {
+    display: inline-grid;
+    place-items: center;
+    width: 1.6em;
+    height: 1.6em;
+    margin-inline: 2px;
+    border: 1px solid var(--couleur-contour);
+    border-radius: 6px;
+    background: var(--couleur-surface);
+    color: var(--couleur-texte);
+    vertical-align: -0.4em;
+    box-shadow: 0 1px 0 var(--couleur-contour);
+  }
+
+  .touche svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+}

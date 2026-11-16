@@ -1,0 +1,197 @@
+/* Bandes de contenu, questions fréquentes et pied de page. */
+
+@layer composants {
+  /* ---- Bandes de contenu ---- */
+  .bande {
+    padding-block: var(--espace-bande);
+  }
+
+  .bande h2 {
+    margin-bottom: var(--espace-2);
+  }
+
+  .intro {
+    max-width: var(--mesure-texte);
+    color: var(--couleur-texte-secondaire);
+    font-family: var(--police-serif);
+    font-size: var(--texte-moyen);
+    font-weight: var(--graisse-normale);
+  }
+
+  .grille-cartes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--espace-3);
+    margin: var(--espace-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .carte-etape {
+    display: grid;
+    align-content: start;
+    gap: var(--espace-2);
+    padding: var(--espace-carte);
+  }
+
+  .carte-etape p {
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .pastille {
+    display: grid;
+    place-items: center;
+    width: 3.125rem;
+    height: 3.125rem;
+    padding: 12px;
+    border-radius: 50%;
+    background: var(--couleur-teinte);
+    color: var(--couleur-accent);
+  }
+
+  .pastille-grande {
+    flex-shrink: 0;
+    width: 4rem;
+    height: 4rem;
+    padding: 16px;
+    background: var(--couleur-surface);
+  }
+
+  .bande-teinte {
+    background: var(--couleur-teinte);
+  }
+
+  .confidentialite {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espace-3);
+  }
+
+  .confidentialite > div {
+    flex: 1 1 20rem;
+  }
+
+  .confidentialite h2 {
+    margin-bottom: var(--espace-1);
+  }
+
+  .confidentialite p {
+    max-width: 62ch;
+    font-family: var(--police-serif);
+    font-size: var(--texte-moyen);
+    font-weight: var(--graisse-normale);
+  }
+
+  /* ---- Questions ---- */
+  .questions {
+    border-top: 1px solid var(--couleur-bordure);
+  }
+
+  .questions details {
+    border-bottom: 1px solid var(--couleur-bordure);
+  }
+
+  .questions summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-2);
+    min-height: var(--taille-cible);
+    padding-block: var(--espace-2);
+    font-size: var(--texte-moyen);
+    font-weight: var(--graisse-forte);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .questions summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .questions summary::after {
+    content: '';
+    flex-shrink: 0;
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-inline-end: 6px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-3px);
+    transition: transform var(--duree-moyenne-1) var(--courbe-standard);
+  }
+
+  .questions details[open] summary::after {
+    transform: rotate(-135deg) translateY(-3px);
+  }
+
+  .questions details p {
+    max-width: 62ch;
+    padding-bottom: var(--espace-3);
+    color: var(--couleur-texte-secondaire);
+  }
+
+  /* ---- Pied de page ---- */
+  .pied {
+    padding-block: var(--espace-5);
+    background: var(--bleu-fonce);
+    color: var(--blanc);
+    font-size: var(--texte-petit);
+  }
+
+  .rangee-pied {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-2) var(--espace-4);
+  }
+
+  .pied-marque {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pied-liens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-1) var(--espace-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pied a {
+    color: var(--blanc);
+  }
+
+  /* Avis de nouvelle version, sous l'en-tête */
+  .avis-version {
+    border-bottom: 1px solid var(--couleur-bordure);
+    background: var(--couleur-teinte);
+    color: var(--couleur-texte);
+    font-size: var(--texte-petit);
+  }
+
+  .avis-version-rangee {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espace-1) var(--espace-3);
+    padding-block: var(--espace-1);
+  }
+
+  .avis-version p {
+    margin: 0;
+  }
+
+  .pied a:hover {
+    color: var(--jaune);
+  }
+
+  .pied :focus-visible {
+    outline-color: var(--jaune);
+  }
+}

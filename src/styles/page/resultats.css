@@ -1,0 +1,113 @@
+/* Liste des résultats. */
+
+@layer composants {
+  /* ---- Résultats ---- */
+  .carte-resultats {
+    display: grid;
+    gap: var(--espace-3);
+    animation: apparition var(--duree-moyenne-2) var(--courbe-standard-deceleree);
+  }
+
+  .resultats-entete {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--espace-2) var(--espace-3);
+  }
+
+  .resultats-entete h2 {
+    font-size: var(--texte-tres-grand);
+  }
+
+  .resultats-entete h2:focus {
+    outline: none;
+  }
+
+  .bilan {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: var(--espace-1) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .resultats-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-1) var(--espace-2);
+  }
+
+  .resultat {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--espace-1) var(--espace-2);
+    padding-block: var(--espace-2);
+    border-bottom: 1px solid var(--couleur-bordure);
+  }
+
+  .statut {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+  }
+
+  .statut .icone {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .statut-ok {
+    background: var(--alerte-succes-fond);
+    color: var(--alerte-succes-icone);
+  }
+
+  .statut-avertissements {
+    background: var(--alerte-avertissement-fond);
+    color: var(--alerte-avertissement-icone);
+  }
+
+  .statut-erreur {
+    background: var(--alerte-erreur-fond);
+    color: var(--alerte-erreur-icone);
+  }
+
+  .resultat details {
+    margin-top: 6px;
+    font-size: var(--texte-petit);
+  }
+
+  .resultat summary {
+    width: fit-content;
+    color: var(--couleur-lien);
+    cursor: pointer;
+  }
+
+  .resultat details ul {
+    margin: 6px 0 0;
+    padding-inline-start: 1.25rem;
+    color: var(--couleur-texte-secondaire);
+  }
+
+  .resultat .bouton {
+    min-height: var(--taille-cible);
+    padding-inline: 16px;
+  }
+
+  @media (width < 600px) {
+    .fichier,
+    .resultat {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .fichier > :last-child,
+    .resultat > :last-child {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+}
