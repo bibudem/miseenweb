@@ -99,15 +99,31 @@
   }
 
   @media (width < 600px) {
-    .fichier,
     .resultat {
       grid-template-columns: auto minmax(0, 1fr);
     }
 
-    .fichier > :last-child,
     .resultat > :last-child {
       grid-column: 2;
       justify-self: start;
+    }
+  }
+
+  /* Écran étroit : le menu du type passe sous le nom, le bouton de retrait reste au bout de la première ligne */
+  @media (width < 720px) {
+    .fichier {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .fichier > .champ-compact {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      max-width: none;
+    }
+
+    .fichier > .bouton-icone {
+      grid-column: 2;
+      grid-row: 1;
     }
   }
 }

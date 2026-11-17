@@ -123,7 +123,7 @@ def _valeur(valeur: Any, sorte: Any, ou: str, gabarits: Path, messages: list[str
             _section(element, sorte[1], f"{ou} > élément {rang}", gabarits, messages)
 
 
-_REGLE_DE_NOM = "Écrire des minuscules sans accent, des chiffres et des traits d'union, par exemple « ma-revue »."
+_REGLE_DE_NOM = "Écrire des minuscules sans accent, des chiffres et des traits d'union, par exemple « ma-publication »."
 
 
 def _parmi(valeur: Any, permises: list, ou: str, messages: list[str]) -> None:
@@ -167,7 +167,7 @@ def valider(donnees: Any, gabarits: Path, noms_reserves: frozenset[str] | set[st
 
     nom = donnees.get("nom")
     if not nom:
-        messages.append("nom : réglage obligatoire. Il identifie le profil, par exemple « ma-revue ».")
+        messages.append("nom : réglage obligatoire. Il identifie le profil, par exemple « ma-publication ».")
     elif isinstance(nom, str):
         if not MOTIF_NOM.match(nom):
             messages.append(f"nom : valeur « {nom} » refusée. {_REGLE_DE_NOM}")
@@ -193,7 +193,7 @@ def valider(donnees: Any, gabarits: Path, noms_reserves: frozenset[str] | set[st
         elif not issn and not _a_une_regle(detection) and not (not depose and isinstance(detection, dict)
                                                                and detection.get("defaut")):
             messages.append(f"{ou} : aucune règle de reconnaissance. Ajouter « motif_nom_fichier » ou "
-                            "« styles_presents », ou inscrire l'ISSN de la revue dans « issn ».")
+                            "« styles_presents », ou inscrire l'ISSN de la publication dans « issn ».")
     return messages
 
 

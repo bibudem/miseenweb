@@ -77,7 +77,7 @@ def libelle(profil: Profil) -> str:
 # ---- Catalogue et choix du profil ------------------------------------------------------
 
 def _groupe(profil: Profil) -> str:
-    """Nom sous lequel un profil figure dans le menu « Règles de conversion ». Vide : profil général.
+    """Nom sous lequel un profil figure dans le menu « Règles ». Vide : profil général.
 
     Une revue regroupe ses variantes sous son nom. Un profil déposé sans nom de revue forme
     son propre groupe, pour être choisi dans ce menu comme une revue.
@@ -115,7 +115,7 @@ def _valider_depot(texte: str) -> tuple[dict | None, list[str]]:
         revues = {p.issn: p.revue for nom, p in PROFILS.items() if nom in _PROFILS_DU_SITE and p.issn}
         issn = str(donnees.get("issn") or "")
         if issn in revues:
-            donnees, messages = None, [f"issn : « {issn} » est déjà l'ISSN de la revue « {revues[issn]} », "
+            donnees, messages = None, [f"issn : « {issn} » est déjà l'ISSN de la publication « {revues[issn]} », "
                                        "dont le profil fait partie du site."]
     return donnees, messages
 
@@ -229,12 +229,12 @@ def _choisir(nom: str, revue: str, profil_force: str = "") -> tuple[Profil | Non
         return PROFILS[profil_force], "type de document choisi à la main", infos
     profil, raison = choisir_profil(_profils_pour(infos["issn"], revue), nom, infos["styles"], issn=infos["issn"])
     raison = {
-        "détecté par son ISSN": "seul type de document de la revue",
+        "détecté par son ISSN": "seul type de document de la publication",
         "détecté par ses règles": "reconnu d'après le nom du fichier et les styles du document",
         "aucune règle ne correspond, profil par défaut": "aucun type particulier reconnu",
     }.get(raison.split(" (")[0], raison)
     if infos["issn"] and profil.issn == infos["issn"]:
-        raison += f", revue reconnue par l'ISSN {infos['issn']}"
+        raison += f", publication reconnue par l'ISSN {infos['issn']}"
     return profil, raison, infos
 
 

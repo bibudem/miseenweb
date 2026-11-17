@@ -124,7 +124,7 @@
     padding: 0;
     list-style: none;
     color: var(--couleur-texte-secondaire);
-    font-size: var(--texte-reduit);
+    font-size: var(--texte-courant);
   }
 
   .etapes li {
@@ -140,7 +140,7 @@
     height: 1.75rem;
     border: 1px solid var(--couleur-bordure);
     border-radius: 50%;
-    font-size: var(--texte-tres-petit);
+    font-size: var(--texte-petit);
     font-weight: var(--graisse-forte);
     transition:
       background-color var(--duree-moyenne-1) var(--courbe-standard),
@@ -158,10 +158,25 @@
     color: var(--couleur-sur-fonce);
   }
 
+  /* Étape faite : un crochet gris remplace le numéro. La forme porte l'information, pas la couleur */
   .etapes [data-fait] .numero {
-    border-color: var(--alerte-succes-icone);
-    background: var(--alerte-succes-fond);
-    color: var(--alerte-succes-icone);
+    border-color: var(--couleur-bordure);
+    background: var(--alerte-fond);
+    position: relative;
+    color: var(--couleur-texte-secondaire);
+    font-size: 0;      /* le numéro reste dans la page pour le lecteur d'écran */
+  }
+
+  /* Placé par rapport au cercle, et non à la suite du numéro : le crochet tombe au centre */
+  .etapes [data-fait] .numero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+    margin: auto;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E") center / contain no-repeat;
   }
 
   /* Zone de dépôt */
@@ -226,7 +241,7 @@
     border: 1px solid transparent;
     border-radius: var(--rayon-plein);
     background: transparent;
-    font-size: var(--texte-reduit);
+    font-size: var(--texte-courant);
     font-weight: var(--graisse-moyenne);
     line-height: 1.3;
     text-decoration: none;
@@ -335,11 +350,23 @@
     height: 1.25rem;
   }
 
-  /* ---- Choix de la revue ---- */
+  /* ---- Paramètres de conversion : une section, comme la liste des documents, et ses réglages ---- */
+  .parametres {
+    margin-top: var(--espace-4);
+  }
+
+  .parametres h3 {
+    font-size: var(--texte-moyen);
+  }
+
   .reglage {
     display: grid;
     gap: 6px;
-    margin-top: var(--espace-4);
+    margin-top: var(--espace-3);
+  }
+
+  .parametres h3 + .reglage {
+    margin-top: var(--espace-2);
   }
 
   .reglage label {
@@ -381,23 +408,24 @@
     font-size: var(--texte-petit);
   }
 
-  /* ---- Profil de revue déposé par l'utilisateur ---- */
-  .profil-depose {
-    margin-top: var(--espace-2);
-    font-size: var(--texte-petit);
+  /* ---- Profil d'une publication : même présentation que le réglage placé au-dessus ---- */
+  .reglage-titre {
+    margin: 0;
+    font-weight: var(--graisse-forte);
   }
 
   .profil-actif {
     max-width: 60ch;
     margin: 0;
+    font-size: var(--texte-petit);
   }
 
-  /* Les boutons s'alignent sur le texte placé au-dessus */
   .profil-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0 8px;
-    margin-inline-start: -12px;
+    align-items: center;
+    gap: var(--espace-1) var(--espace-2);
+    margin-top: 6px;
   }
 
   .profil-erreurs {
@@ -444,13 +472,27 @@
     list-style: none;
   }
 
+  /* Une ligne par document : le nom et ses détails, le menu du type, le bouton de retrait */
   .fichier {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem) auto;
     align-items: center;
     gap: var(--espace-1) var(--espace-2);
-    padding-block: 12px;
+    padding-block: 6px;
     border-bottom: 1px solid var(--couleur-bordure);
+  }
+
+  /* Chaque élément a sa colonne, même quand le menu manque (document en lecture ou en erreur) */
+  .fichier > .fichier-infos {
+    grid-column: 1;
+  }
+
+  .fichier > .champ-compact {
+    grid-column: 2;
+  }
+
+  .fichier > .bouton-icone {
+    grid-column: 3;
   }
 
   @keyframes apparition {
@@ -493,7 +535,7 @@
     gap: 4px 10px;
     margin-top: 2px;
     color: var(--couleur-texte-secondaire);
-    font-size: var(--texte-tres-petit);
+    font-size: var(--texte-petit);
   }
 
   .puce {
@@ -504,7 +546,7 @@
     border-radius: var(--rayon-plein);
     background: var(--couleur-teinte);
     color: var(--couleur-texte);
-    font-size: var(--texte-tres-petit);
+    font-size: var(--texte-petit);
     font-weight: var(--graisse-moyenne);
   }
 
@@ -517,8 +559,9 @@
     background: var(--alerte-erreur-fond);
   }
 
+  /* Publication reconnue : une information, pas une alerte. Le bleu pâle des pastilles ordinaires */
   .puce-revue {
-    background: var(--couleur-teinte-jaune);
+    background: var(--couleur-teinte);
   }
 
   /* ---- Barre d'actions et progression ---- */
@@ -529,6 +572,8 @@
     justify-content: flex-end;
     gap: var(--espace-2);
     margin-top: var(--espace-4);
+    padding-top: var(--espace-3);
+    border-top: 1px solid var(--couleur-bordure);
   }
 
   .annonce {
@@ -541,10 +586,11 @@
     display: none;
   }
 
-  /* Raison pour laquelle le bouton « Convertir » est inactif */
+  /* Raison pour laquelle le bouton « Convertir » est inactif : collée au bouton, dont elle est la légende */
   .aide-convertir {
     flex: 1 1 16rem;
     max-width: none;
+    text-align: end;
   }
 
   .aide-convertir:empty {
@@ -581,5 +627,332 @@
   progress::-moz-progress-bar {
     border-radius: var(--rayon-plein);
     background: var(--couleur-accent);
+  }
+
+  /* ---- Assistant de création d'un profil ---- */
+  /* Trois tailles de texte : le titre de l'écran (--texte-moyen), le texte courant, et le petit texte
+     des précisions (--texte-petit). Deux graisses : celle du texte courant, et la forte pour les titres
+     et les étiquettes. La hiérarchie passe par la taille et la graisse, la couleur ne fait que l'appuyer. */
+  /* Pendant la création, l'assistant remplace le reste de la carte */
+  .carte-outil[data-assistant-ouvert] > :not(.entete-outil, .assistant) {
+    display: none;
+  }
+
+  /* Le compte des étapes prend la place de l'état du convertisseur, au bout de la ligne du titre */
+  .carte-outil[data-assistant-ouvert] .etat-moteur {
+    display: none;
+  }
+
+  .assistant-etape {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Jauge d'avancement : le bleu foncé de l'étape en cours, sur l'accueil */
+  .assistant-jauge {
+    position: relative;
+    overflow: hidden;
+    width: 7rem;
+    height: 6px;
+    border-radius: var(--rayon-plein);
+    background: var(--couleur-teinte-forte);
+  }
+
+  .assistant-jauge::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--avancement, 0%);
+    border-radius: inherit;
+    background: var(--couleur-fond-fort);
+    transition: width var(--duree-moyenne-2) var(--courbe-standard);
+  }
+
+  .assistant-titre {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: var(--espace-3) 0 var(--espace-2);
+    font-size: var(--texte-moyen);      /* comme « Documents » et « Paramètres de conversion » */
+  }
+
+  .assistant-titre:focus-visible {
+    outline: none;      /* le titre reçoit le focus pour être annoncé, pas pour être activé */
+  }
+
+  .assistant-formulaire {
+    display: grid;
+    gap: var(--espace-3);
+    max-width: 40rem;
+  }
+
+  .assistant-formulaire p {
+    margin: 0;
+  }
+
+  .assistant-formulaire > p:first-child,
+  .assistant-constat {
+    max-width: 60ch;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  .assistant-consigne {
+    display: grid;
+    gap: var(--espace-1);
+  }
+
+  /* L'instruction se démarque du constat par sa taille, celle du texte courant, et par sa couleur */
+  .assistant-instruction {
+    color: var(--couleur-texte);
+  }
+
+  /* Nom de la revue, au-dessus du titre de la carte */
+  .assistant-contexte {
+    display: block;
+    overflow-wrap: anywhere;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  /* Nombre relevé par l'analyse : un compteur discret, en gris pâle. Aucune pastille du site n'est jaune */
+  .assistant-nombre {
+    display: inline-block;
+    min-width: 1.5rem;
+    padding: 0 7px;
+    border-radius: var(--rayon-plein);
+    background: var(--alerte-fond);
+    color: var(--couleur-texte);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .assistant-champ {
+    display: grid;
+    gap: 6px;
+  }
+
+  .assistant-champ label {
+    font-weight: var(--graisse-forte);
+  }
+
+  .assistant-champ input {
+    width: 100%;
+    min-height: 3.125rem;
+    padding: 10px 16px;
+    border: 1px solid var(--couleur-contour);
+    border-radius: var(--rayon-tres-petit);
+    background: var(--couleur-surface);
+    color: inherit;
+    font: inherit;
+  }
+
+  .assistant-champ input[aria-invalid="true"] {
+    border-color: var(--alerte-erreur-icone);
+  }
+
+  .assistant .erreur-texte:empty {
+    display: none;
+  }
+
+  /* Carte d'une question : en-tête teinté, corps blanc. Sans ombre : seule la carte de l'outil est en relief */
+  .assistant-carte {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--rayon-petit);
+    background: var(--couleur-surface);
+  }
+
+  /* Flottante et pleine largeur, la légende devient l'en-tête de la carte au lieu de couper la bordure */
+  .assistant-carte legend {
+    display: flex;
+    gap: var(--espace-2);
+    align-items: baseline;
+    justify-content: space-between;
+    float: left;
+    width: 100%;
+    padding: 12px var(--espace-3);
+    border-bottom: 1px solid var(--couleur-bordure);
+    background: var(--couleur-teinte);
+  }
+
+  .assistant-carte-sujet {
+    font-weight: var(--graisse-forte);
+  }
+
+  /* Place de la carte dans la série, au bout de l'en-tête */
+  .assistant-carte-rang {
+    flex: none;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .assistant-carte-corps {
+    display: grid;
+    gap: var(--espace-2);
+    clear: both;
+    padding: var(--espace-2) var(--espace-3) var(--espace-3);
+  }
+
+  .assistant-pastilles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Extraits des documents : le trait de gauche des remarques du rapport */
+  .assistant-exemples {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 10px 14px;
+    border-inline-start: 4px solid var(--couleur-accent);
+    border-radius: 0 var(--rayon-tres-petit) var(--rayon-tres-petit) 0;
+    background: var(--alerte-fond);
+    list-style: none;
+    overflow-wrap: anywhere;
+  }
+
+  /* Le fond clair garde lisible un logo sombre à fond transparent, en thème sombre aussi */
+  .assistant-apercu {
+    justify-self: start;
+    max-width: min(100%, 16rem);
+    max-height: 8rem;
+    padding: 6px;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--rayon-tres-petit);
+    background: #fff;
+    object-fit: contain;
+  }
+
+  .assistant-options {
+    display: grid;
+    gap: 6px;
+  }
+
+  .assistant-option {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    min-height: var(--taille-cible);
+    padding: 8px 14px;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--rayon-tres-petit);
+    cursor: pointer;
+    transition: background-color var(--duree-courte-3) var(--courbe-standard), border-color var(--duree-courte-3) var(--courbe-standard);
+  }
+
+  .assistant-option input {
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: 0;
+    accent-color: var(--couleur-accent);
+  }
+
+  .assistant-option:hover {
+    border-color: var(--couleur-contour);
+  }
+
+  .assistant-option:has(input:checked) {
+    border-color: var(--couleur-accent);
+    background: var(--couleur-teinte);
+  }
+
+  .assistant-option:has(input:focus-visible) {
+    outline: 2px solid var(--couleur-focus);
+    outline-offset: 2px;
+  }
+
+  /* Résumé : le nom du réglage à gauche, sa valeur à droite */
+  .assistant-resume {
+    display: grid;
+    grid-template-columns: minmax(8rem, max-content) 1fr;
+    gap: 10px var(--espace-3);
+    margin: 0;
+  }
+
+  .assistant-resume dt {
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  .assistant-resume dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  @media (width < 30rem) {
+    .assistant-resume {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+
+    .assistant-resume dd {
+      margin-bottom: 8px;
+    }
+  }
+
+  /* Avis : un constat propre à ces documents, ou une conséquence à connaître. Ce n'est pas une erreur */
+  .assistant-avis {
+    padding: 10px 14px;
+    border-inline-start: 4px solid var(--alerte-info-icone);
+    border-radius: 0 var(--rayon-tres-petit) var(--rayon-tres-petit) 0;
+    background: var(--alerte-fond);
+    font-size: var(--texte-petit);
+  }
+
+  .assistant-avis:empty {
+    display: none;
+  }
+
+  .assistant-erreurs:empty {
+    display: none;
+  }
+
+  .assistant-erreurs ul {
+    margin: 4px 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  /* Bouton radio dessiné par la page : son anneau reste visible sur le fond teinté de l'option choisie */
+  .assistant-option input[type='radio'] {
+    appearance: none;
+    border: 1.5px solid var(--couleur-contour);
+    border-radius: 50%;
+    background: var(--couleur-surface);
+  }
+
+  .assistant-option input[type='radio']:checked {
+    border-color: var(--couleur-accent);
+    background: radial-gradient(circle, var(--couleur-accent) 0 42%, var(--couleur-surface) 46%);
+  }
+
+  .assistant-option input[type='radio']:focus-visible {
+    outline: none;      /* le contour de focus est porté par la ligne de l'option */
+  }
+
+  /* Barre de boutons : le retour à gauche, la suite à droite */
+  .assistant-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espace-2);
+    justify-content: flex-end;
+    margin-top: var(--espace-1);
+    padding-top: var(--espace-3);
+    border-top: 1px solid var(--couleur-bordure);
+  }
+
+  .assistant-retour {
+    margin-inline-end: auto;
   }
 }

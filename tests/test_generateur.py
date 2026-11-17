@@ -49,7 +49,7 @@ def _en_gras(document, texte, taille):
 
 def test_nom_de_profil_tire_du_nom_de_la_revue():
     assert generateur.nom_de_profil("Revue d'études fictives") == "revue-d-etudes-fictives"
-    assert generateur.nom_de_profil("  ") == "revue"
+    assert generateur.nom_de_profil("  ") == "publication"
 
 
 def test_profil_produit_valide():
@@ -85,7 +85,8 @@ def test_article_converti_avec_le_profil_produit(nouveau_document, pont, module_
     reponse = json.loads(module_pont.deposer_profil(generateur.generer_profil(REPONSES)))
     assert reponse["messages"] == []
 
-    _en_gras(nouveau_document, "Titre de l'article fictif", 16)
+    titre_long = "Titre de l'article fictif " + "très " * 30 + "long"       # plus de 120 caractères
+    _en_gras(nouveau_document, titre_long, 16)
     _en_gras(nouveau_document, "Méthode fictive", 12)
     nouveau_document.add_paragraph("Texte courant du document fictif.")
     _en_gras(nouveau_document, "Mise en évidence fictive", 10)       # taille sans rôle : reste un paragraphe
@@ -97,7 +98,7 @@ def test_article_converti_avec_le_profil_produit(nouveau_document, pont, module_
 
     from bs4 import BeautifulSoup
     page = BeautifulSoup((module_pont.SORTIE / resultat["sortie"]).read_text(encoding="utf-8"), "html.parser")
-    assert page.h1.get_text() == "Titre de l'article fictif"
+    assert page.h1.get_text() == titre_long
     assert [h.get_text() for h in page.find_all("h2")] == ["Méthode fictive"]
     assert page.find("img")["alt"] == "Logo de la revue fictive"
     assert page.find("footer", class_="pied-page") is not None
@@ -134,7 +135,7 @@ def test_releve_et_profil_par_le_pont(nouveau_document, module_pont):
 
 def test_profil_genere_avec_l_issn_d_une_revue_du_site_refuse(module_pont):
     reponse = json.loads(module_pont.generer_profil(json.dumps({**REPONSES, "issn": "2561-7516"})))
-    assert "déjà l'ISSN de la revue" in reponse["messages"][0]
+    assert "déjà l'ISSN de la publication" in reponse["messages"][0]
 
 
 def test_reponses_incompletes_signalees(module_pont):

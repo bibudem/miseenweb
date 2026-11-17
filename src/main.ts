@@ -12,10 +12,11 @@ import './animations'
 
 import type { Analyse, Catalogue, DemandeSansId, Evenement, Remarque, Resultat } from './protocole'
 import { estProfil, installerProfil } from './profil'
+import { installerAssistant } from './assistant'
 
 // ---- Icônes Phosphor, intégrées au script ----
 const icones = import.meta.glob(
-  '/node_modules/@phosphor-icons/core/assets/regular/{arrow-counter-clockwise,arrow-right,arrow-square-out,caret-down,check-circle,copy,download-simple,eye,file-doc,file-html,file-zip,folder-simple,info,lightning,list-checks,lock-simple,moon,printer,shield-check,sliders-horizontal,sparkle,sun,trash,tree-structure,upload-simple,warning,x,x-circle}.svg',
+  '/node_modules/@phosphor-icons/core/assets/regular/{arrow-counter-clockwise,arrow-right,arrow-square-out,caret-down,check-circle,copy,download-simple,eye,file-doc,file-html,file-zip,folder-simple,info,arrow-left,image,layout,lightning,list-checks,lock-simple,magnifying-glass,moon,newspaper,paragraph,plus,printer,shield-check,sliders-horizontal,sparkle,sun,trash,tree-structure,upload-simple,warning,x,x-circle}.svg',
   { query: '?raw', import: 'default', eager: true },
 ) as Record<string, string>
 
@@ -53,6 +54,7 @@ const listeFichiers = $<HTMLUListElement>('[data-fichiers]')
 const compte = $<HTMLElement>('[data-compte]')
 const annonce = $<HTMLElement>('[data-annonce]')
 const boutonConvertir = $<HTMLButtonElement>('[data-convertir]')
+const boutonChoisir = $<HTMLButtonElement>('[data-choisir-fichiers]')
 const libelleConvertir = $<HTMLElement>('[data-libelle-convertir]')
 const blocProgression = $<HTMLElement>('[data-progression]')
 const texteProgression = $<HTMLElement>('[data-texte-progression]')
@@ -98,6 +100,8 @@ const documents = new Map<string, Depose>()
 let catalogue: Catalogue = { revues: [], profils: [] }
 let pret = false
 let enCours = false
+// Vrai après un clic sur « Convertir » qui n'a rien pu lancer : la raison s'affiche alors à côté du bouton
+let raisonDemandee = false
 let resultats: Resultat[] = []
 let rapportHtml = ''     // rapport de la dernière conversion
 let recupere = true       // faux tant que les résultats n'ont pas été téléchargés
@@ -224,7 +228,7 @@ function appliquerCatalogue(donnees: Catalogue): void {
   const choix = menuRevue.options.length ? menuRevue.value : AUTO
   menuRevue.replaceChildren(
     new Option('Détection automatique (recommandé)', AUTO),
-    ...catalogue.revues.map((r) => new Option(`${r.depose ? 'Profil' : 'Revue'} : ${r.nom}`, r.nom)),
+    ...catalogue.revues.map((r) => new Option(`${r.depose ? 'Profil' : 'Publication'} : ${r.nom}`, r.nom)),
     new Option('Document général : thèse, rapport ou autre', AUTRE_DOCUMENT),
   )
   // Le choix est conservé s'il existe encore; une revue retirée ramène à la détection automatique
@@ -239,6 +243,17 @@ const depotProfil = installerProfil({
   demander,
   surCatalogue: appliquerCatalogue,
   annoncer: (texte) => (annonceGlobale.textContent = texte),
+  confirmer,
+})
+
+const assistant = installerAssistant({
+  demander,
+  documents: () => [...documents.keys()],
+  icone,
+  deposerProfil: depotProfil.deposerTexte,
+  profilActif: depotProfil.actif,
+  publicationsDuSite: () => catalogue.revues.filter((r) => !r.depose && r.issn),
+  annoncer: (texte) => (annonceGlobale.textContent = texte),
 })
 
 function demarre(donnees: Catalogue): void {
@@ -247,6 +262,7 @@ function demarre(donnees: Catalogue): void {
   texteEtat.textContent = 'Convertisseur prêt'
   menuRevue.disabled = false
   appliquerCatalogue(donnees)
+  assistant.actualiser(pret)
   void depotProfil.pret()      // dépose de nouveau le profil conservé dans ce navigateur, s'il y en a un
 }
 
@@ -257,7 +273,7 @@ async function ajouter(fichiers: File[]): Promise<void> {
   for (const fichier of fichiers) {
     const nom = fichier.name
     const minuscule = nom.toLowerCase()
-    // Un fichier de profil glissé avec les documents suit le chemin du bouton « Utiliser un profil »
+    // Un fichier de profil glissé avec les documents suit le chemin du bouton « Choisir un fichier de profil »
     if (estProfil(nom)) {
       if (pret) void depotProfil.deposerFichier(fichier)
       continue
@@ -315,7 +331,11 @@ function menuType(doc: Depose): HTMLSelectElement {
   const menu = element('select', 'type-document')
   menu.dataset.nom = doc.nom
   menu.setAttribute('aria-label', `Type de document pour ${doc.nom}`)
-  const auto = doc.profil ? 'Détection automatique' : `Automatique : ${doc.analyse?.libelle ?? '…'}`
+  // La pastille voisine nomme déjà la publication reconnue : le menu ne la répète pas
+  const publication = doc.analyse?.revueIssn
+  const reconnu = doc.analyse?.libelle ?? '…'
+  const type = publication && reconnu.startsWith(`${publication} : `) ? reconnu.slice(publication.length + 3) : reconnu
+  const auto = doc.profil ? 'Détection automatique' : `Automatique : ${type}`
   menu.append(new Option(auto, ''))
   const groupes = new Map<string, HTMLOptGroupElement>()
   for (const p of catalogue.profils) {
@@ -352,6 +372,13 @@ function afficherListe(): void {
   const maintenant = performance.now()
   let rangNouveau = 0
   blocListe.hidden = documents.size === 0
+  raisonDemandee = false
+  // Un seul bouton principal à la fois : l'ajout quand la liste est vide, la conversion ensuite
+  boutonChoisir.classList.toggle('bouton-plein', documents.size === 0)
+  boutonChoisir.classList.toggle('bouton-contour', documents.size > 0)
+  boutonConvertir.classList.toggle('bouton-plein', documents.size > 0)
+  boutonConvertir.classList.toggle('bouton-contour', documents.size === 0)
+  assistant.actualiser(pret)
   compte.textContent = `(${documents.size})`
   listeFichiers.replaceChildren(
     ...[...documents.values()].map((doc) => {
@@ -362,11 +389,8 @@ function afficherListe(): void {
         ligne.toggleAttribute('data-nouveau', true)
         ligne.style.animationDelay = `${-ecoule}ms`
       }
-      const pictogramme = element('span', 'fichier-icone')
-      pictogramme.setAttribute('aria-hidden', 'true')
-      pictogramme.innerHTML = `<span class="icone">${icone('file-doc')}</span>`
-      ligne.append(pictogramme)
-
+      // Une ligne par document : le nom et ses détails, le menu du type, le bouton de retrait.
+      // Sans icône : le titre « Documents » dit déjà ce que la liste contient.
       const infos = element('div', 'fichier-infos')
       infos.append(element('p', 'fichier-nom', doc.nom))
       const details = element('div', 'fichier-details')
@@ -376,16 +400,15 @@ function afficherListe(): void {
       else if (a.erreur) details.append(element('span', 'puce puce-erreur', a.erreur))
       else {
         if (a.revueIssn) details.append(element('span', 'puce puce-revue', a.revueIssn))
-        else if (a.issn) details.append(element('span', 'puce puce-attente', `ISSN ${a.issn} : revue inconnue`))
+        else if (a.issn) details.append(element('span', 'puce puce-attente', `ISSN ${a.issn} : publication inconnue`))
       }
       infos.append(details)
       if (a && !a.erreur && pret) {
         const champ = element('div', 'champ-liste champ-compact')
         champ.append(menuType(doc))
         champ.insertAdjacentHTML('beforeend', `<span class="icone" aria-hidden="true">${icone('caret-down')}</span>`)
-        infos.append(champ)
-      }
-      ligne.append(infos)
+        ligne.append(infos, champ)
+      } else ligne.append(infos)
 
       const retirer = element('button', 'bouton-icone')
       retirer.type = 'button'
@@ -418,12 +441,16 @@ const convertibles = () => [...documents.values()].filter((d) => d.analyse && !d
 
 function actualiserBoutons(): void {
   const n = convertibles().length
-  boutonConvertir.disabled = !pret || enCours || n === 0
-  // Un bouton inactif ne dit pas pourquoi : une phrase, à côté, donne la raison
+  // Le bouton reste actif, sauf pendant une conversion : un bouton grisé ne dit pas pourquoi.
+  // Sans document à convertir, un clic affiche la raison.
+  boutonConvertir.disabled = enCours
   if (enCours || (pret && n > 0)) aideConvertir.textContent = ''
-  else if (!pret) aideConvertir.textContent = 'Le bouton devient actif à la fin de la préparation du convertisseur.'
+  else if (!pret) aideConvertir.textContent = 'Le convertisseur se prépare. La conversion se lance à la fin de la préparation.'
   else if (documents.size) aideConvertir.textContent = 'Aucun document de la liste ne peut être converti.'
-  else aideConvertir.textContent = 'Ajouter un document pour activer la conversion.'
+  else aideConvertir.textContent = 'Ajouter un ou plusieurs documents afin de lancer la conversion.'
+  // Liste vide : la zone de dépôt le dit déjà à l'écran. La phrase reste pour le lecteur d'écran,
+  // qui la lit avec le bouton, et elle s'affiche après un clic sans effet.
+  aideConvertir.classList.toggle('visuellement-masque', pret && !enCours && documents.size === 0 && !raisonDemandee)
   libelleConvertir.textContent = enCours ? 'Conversion…' : n > 1 ? `Convertir ${n} documents` : 'Convertir'
   marquerEtape(blocResultats.hidden ? (documents.size ? 'verifier' : 'ajouter') : 'convertir')
 }
@@ -440,7 +467,14 @@ function marquerEtape(courante: string): void {
 // ---- Conversion ----
 async function convertir(): Promise<void> {
   const aConvertir = convertibles().map((d) => ({ nom: d.nom, profil: d.profil }))
-  if (!aConvertir.length) return
+  if (!pret || !aConvertir.length) {
+    // Rien à lancer : la raison s'affiche à côté du bouton et le focus va à l'ajout de documents
+    raisonDemandee = true
+    actualiserBoutons()
+    annoncer(aideConvertir.textContent ?? '')
+    if (pret && !documents.size) boutonChoisir.focus()
+    return
+  }
   enCours = true
   actualiserBoutons()
   blocProgression.hidden = false
@@ -888,15 +922,27 @@ document.addEventListener('click', (e) => {
 })
 for (const lien of [lienPrincipal, lienZip, lienPage]) lien.addEventListener('click', () => (recupere = true))
 
-$<HTMLButtonElement>('[data-vider]').addEventListener('click', async () => {
+async function viderListe(): Promise<void> {
   const noms = [...documents.keys()]
   documents.clear()
   afficherListe()
   annoncer('La liste est vide.')
   // Le bouton « Vider la liste » disparaît avec la liste : le focus va au bouton d'ajout
-  $<HTMLButtonElement>('[data-choisir-fichiers]').focus()
+  boutonChoisir.focus()
   if (pret) await Promise.all(noms.map((nom) => demander({ action: 'oublier', nom })))
-})
+}
+
+$<HTMLButtonElement>('[data-vider]').addEventListener('click', () =>
+  confirmer(
+    {
+      titre: 'Vider la liste',
+      texte: `${documents.size > 1 ? `Les ${documents.size} documents sont retirés` : 'Le document est retiré'} de la liste. Les fichiers restent sur l’ordinateur.`,
+      conserver: 'Conserver la liste',
+      effacer: 'Vider la liste',
+    },
+    () => void viderListe(),
+  ),
+)
 
 $<HTMLButtonElement>('[data-copier-apercu]').addEventListener('click', (e) => {
   const bouton = e.currentTarget as HTMLElement
@@ -950,25 +996,52 @@ dialogueRapport.addEventListener('close', () => {
   document.querySelector('.zone-impression')?.remove()
 })
 
-// ---- Confirmation avant d'abandonner des pages non téléchargées ----
-// Une seule fenêtre, un seul message, quelle que soit la sortie : nouvelle conversion, retour à
-// l'accueil ou hyperlien vers un autre site. « suite » est l'action reprise après l'abandon.
-let suiteApresAbandon: (() => void) | null = null
+// ---- Confirmation avant une action qui efface quelque chose ----
+// Une seule fenêtre pour toutes les confirmations. « suite » est l'action reprise si la personne confirme.
+interface TextesConfirmation {
+  titre: string
+  texte: string
+  /** Bouton qui annule : il a le focus à l'ouverture */
+  conserver: string
+  /** Bouton qui confirme l'effacement */
+  effacer: string
+}
 
-function confirmerAbandon(suite: () => void): void {
-  suiteApresAbandon = suite
+let suiteConfirmee: (() => void) | null = null
+
+function confirmer(textes: TextesConfirmation, suite: () => void): void {
+  $<HTMLElement>('#titre-confirmation').textContent = textes.titre
+  $<HTMLElement>('#texte-confirmation').textContent = textes.texte
+  $<HTMLButtonElement>('[data-conserver]').textContent = textes.conserver
+  $<HTMLButtonElement>('[data-abandonner]').textContent = textes.effacer
+  suiteConfirmee = suite
   confirmation.showModal()
+}
+
+// Pages converties non téléchargées : un seul message, quelle que soit la sortie (nouvelle
+// conversion, retour à l'accueil, hyperlien vers un autre site)
+function confirmerAbandon(suite: () => void): void {
+  confirmer(
+    {
+      titre: 'Pages non téléchargées',
+      texte: 'Les pages converties n’ont pas été téléchargées. Quitter les résultats les efface.',
+      conserver: 'Conserver les pages',
+      effacer: 'Abandonner les pages',
+    },
+    () => {
+      recupere = true
+      suite()
+    },
+  )
 }
 
 $<HTMLButtonElement>('[data-conserver]').addEventListener('click', () => confirmation.close())
 $<HTMLButtonElement>('[data-abandonner]').addEventListener('click', () => {
+  const suite = suiteConfirmee
   confirmation.close()
-  recupere = true
-  suiteApresAbandon?.()
+  suite?.()
 })
-confirmation.addEventListener('close', () => {
-  if (!recupere) suiteApresAbandon = null
-})
+confirmation.addEventListener('close', () => (suiteConfirmee = null))
 
 // Tout se perd en fermant la page : on prévient si les résultats n'ont pas été récupérés
 window.addEventListener('beforeunload', (e) => {

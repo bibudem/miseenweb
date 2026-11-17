@@ -49,7 +49,7 @@ def test_nom_et_issn_d_un_profil_du_site_refuses(module_pont):
     reponse = json.loads(module_pont.deposer_profil(PROFIL.replace("ma-revue", "science-infirmiere")))
     assert "déjà le nom d'un profil du site" in reponse["messages"][0]
     reponse = json.loads(module_pont.deposer_profil(PROFIL + 'issn: "2561-7516"\n'))
-    assert "déjà l'ISSN de la revue « Science infirmière et pratiques en santé »" in reponse["messages"][0]
+    assert "déjà l'ISSN de la publication « Science infirmière et pratiques en santé »" in reponse["messages"][0]
 
 
 def test_profil_depose_offert_dans_le_menu_des_regles(nouveau_document, pont, module_pont):

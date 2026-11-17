@@ -100,19 +100,16 @@
     margin-bottom: var(--espace-1);
   }
 
-  /* Menu du type de document, dans chaque ligne */
-  .fichier {
-    align-items: start;
-  }
-
   .fichier-infos {
     display: grid;
-    gap: 6px;
+    gap: 2px;
     min-width: 0;
   }
 
+  /* Menu du type de document : une colonne à droite du nom, la même largeur à chaque ligne */
   .champ-compact {
-    max-width: 26rem;
+    width: 100%;
+    max-width: 22rem;
   }
 
   .champ-compact select {
@@ -327,7 +324,7 @@
     border-inline-start: 4px solid var(--alerte-avertissement-icone);
     border-radius: 0 var(--rayon-tres-petit) var(--rayon-tres-petit) 0;
     background: var(--alerte-avertissement-fond);
-    font-size: var(--texte-tres-petit);
+    font-size: var(--texte-petit);
     text-align: start;
   }
 
@@ -366,7 +363,7 @@
     border-radius: var(--rayon-tres-petit);
     background: transparent;
     color: var(--couleur-texte);
-    font-size: var(--texte-tres-petit);
+    font-size: var(--texte-petit);
     text-align: start;
     cursor: pointer;
   }
@@ -409,7 +406,7 @@
 
     .apercu-actions .bouton {
       padding-inline: 12px;
-      font-size: var(--texte-tres-petit);
+      font-size: var(--texte-petit);
       white-space: nowrap;
     }
 

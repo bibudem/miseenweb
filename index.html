@@ -135,6 +135,7 @@
         <div class="carte carte-outil">
           <div class="entete-outil">
             <h2 id="titre-outil">Convertir des documents</h2>
+            <p class="assistant-etape" data-assistant-etape aria-hidden="true" hidden></p>
             <p class="etat-moteur" role="status" data-etat="chargement">
               <span class="indicateur" aria-hidden="true"></span>
               <span data-texte-etat>Préparation du convertisseur…</span>
@@ -146,6 +147,8 @@
             <li data-etape="verifier"><span class="numero">2</span>Vérifier</li>
             <li data-etape="convertir"><span class="numero">3</span>Convertir</li>
           </ol>
+
+          <section class="assistant" data-assistant aria-labelledby="titre-assistant" hidden></section>
 
           <div class="depot" data-depot>
             <span class="depot-icone" data-icone="file-doc" aria-hidden="true"></span>
@@ -163,7 +166,7 @@
               </button>
             </div>
             <button type="button" class="bouton bouton-texte" data-exemples>
-              <span class="icone" data-icone="sparkle" aria-hidden="true"></span>Tester avec des documents d'exemple
+              <span class="icone" data-icone="sparkle" aria-hidden="true"></span>Tester avec des exemples
             </button>
             <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden data-entree-fichiers aria-label="Choisir des fichiers" />
             <input type="file" webkitdirectory hidden data-entree-dossier aria-label="Choisir un dossier" />
@@ -180,32 +183,50 @@
             <ul class="fichiers" data-fichiers></ul>
           </div>
 
+          <section class="parametres" aria-labelledby="titre-parametres">
+          <h3 id="titre-parametres">Paramètres de conversion</h3>
+
           <div class="reglage">
-            <label for="revue">Règles de conversion</label>
+            <label for="revue">Règles</label>
             <div class="champ-liste">
               <select id="revue" aria-describedby="aide-revue" disabled></select>
               <span class="icone" data-icone="caret-down" aria-hidden="true"></span>
             </div>
             <p id="aide-revue" class="aide">
-              Une revue a ses règles de mise en page. Un article, une thèse ou un rapport sans revue suit
-              les règles générales. En détection automatique, MiseEnWeb reconnaît la revue par l'ISSN du
-              pied de page et par le nom du fichier.
+              MiseEnWeb reconnaît une publication par l'ISSN du pied de page ou par le nom du fichier.
+              Il applique alors les règles connues pour cette publication. Un document qui n'est pas reconnu
+              se voit appliquer des règles générales.
             </p>
-            <div class="profil-depose">
-              <input type="file" accept=".yaml,.yml" hidden data-entree-profil>
-              <p class="profil-actif" data-profil-actif hidden></p>
-              <div class="profil-actions">
-                <button type="button" class="bouton bouton-texte" data-deposer-profil disabled>Utiliser un profil</button>
-                <button type="button" class="bouton bouton-texte bouton-danger" data-retirer-profil hidden>Retirer le profil</button>
-              </div>
-              <div class="profil-erreurs erreur-texte" role="alert" data-profil-erreurs></div>
-            </div>
           </div>
+
+          <div class="reglage profil-depose" role="group" aria-labelledby="titre-profil">
+            <p class="reglage-titre" id="titre-profil">Profil</p>
+            <p class="aide">
+              Un profil contient les règles de conversion d'une publication. Il s'ajoute à partir d'un fichier
+              .yaml ou .yml. Pour créer un profil avec l'assistant de création de profil, ajouter d'abord au
+              moins deux documents.
+            </p>
+            <input type="file" accept=".yaml,.yml" hidden data-entree-profil>
+            <p class="profil-actif" data-profil-actif hidden></p>
+            <div class="profil-actions">
+              <button type="button" class="bouton bouton-contour" data-deposer-profil disabled>
+                <span class="icone" data-icone="upload-simple" aria-hidden="true"></span><span data-libelle-deposer>Choisir un fichier</span>
+              </button>
+              <button type="button" class="bouton bouton-contour" data-creer-profil hidden>
+                <span class="icone" data-icone="plus" aria-hidden="true"></span>Créer à partir des documents
+              </button>
+              <button type="button" class="bouton bouton-texte bouton-danger" data-retirer-profil hidden>
+                <span class="icone" data-icone="trash" aria-hidden="true"></span>Retirer le profil
+              </button>
+            </div>
+            <div class="profil-erreurs erreur-texte" id="profil-erreurs" tabindex="-1" data-profil-erreurs></div>
+          </div>
+          </section>
 
           <div class="barre-actions">
             <p class="annonce" aria-live="polite" data-annonce></p>
             <p class="aide aide-convertir" id="aide-convertir" data-aide-convertir></p>
-            <button type="button" class="bouton bouton-plein bouton-grand" data-convertir aria-describedby="aide-convertir" disabled>
+            <button type="button" class="bouton bouton-contour bouton-grand" data-convertir aria-describedby="aide-convertir">
               <span data-libelle-convertir>Convertir</span>
               <span class="icone icone-fin" data-icone="arrow-right" aria-hidden="true"></span>
             </button>
@@ -258,7 +279,7 @@
               <h3>Réglages par type de document</h3>
               <p>
                 Chaque type de document a ses réglages : thèse, rapport, article de revue. MiseEnWeb choisit
-                les réglages d'après le nom du fichier, les styles du document et l'ISSN de la revue.
+                les réglages d'après le nom du fichier, les styles du document et l'ISSN de la publication.
               </p>
             </li>
             <li class="carte carte-etape">
@@ -425,13 +446,13 @@
       <iframe sandbox="allow-same-origin" title="Rapport de conversion" data-cadre-rapport></iframe>
     </dialog>
 
-    <!-- Confirmation avant d'abandonner des pages non téléchargées -->
+    <!-- Confirmation avant une action qui efface quelque chose. Le script y écrit ses textes -->
     <dialog class="confirmation" data-confirmation aria-labelledby="titre-confirmation" aria-describedby="texte-confirmation">
-      <h2 id="titre-confirmation">Pages non téléchargées</h2>
-      <p id="texte-confirmation">Les pages converties n'ont pas été téléchargées. Quitter les résultats les efface.</p>
+      <h2 id="titre-confirmation"></h2>
+      <p id="texte-confirmation"></p>
       <div class="confirmation-actions">
-        <button type="button" class="bouton bouton-contour" data-conserver autofocus>Conserver les pages</button>
-        <button type="button" class="bouton bouton-danger" data-abandonner>Abandonner les pages</button>
+        <button type="button" class="bouton bouton-contour" data-conserver autofocus></button>
+        <button type="button" class="bouton bouton-danger" data-abandonner></button>
       </div>
     </dialog>
 

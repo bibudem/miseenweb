@@ -35,7 +35,7 @@ import unicodedata
 # Rôle choisi dans l'assistant -> style Word donné au paragraphe avant la conversion.
 # Avec « decaler_niveaux: auto », Title devient h1, Heading 1 devient h2, Heading 2 devient h3.
 STYLES_DES_ROLES = {"titre-article": "Title", "section": "Heading 1", "sous-titre": "Heading 2"}
-LONGUEUR_MAX_TITRE = 120      # caractères : au-delà, un paragraphe en gras n'est pas un titre
+LONGUEUR_MAX_TITRE = 120      # caractères : au-delà, un paragraphe en gras n'est pas un titre de section
 
 CARTE_STYLES = """\
     p[style-name='Title'] => h1.titre-document:fresh
@@ -54,7 +54,7 @@ CARTE_STYLES = """\
 def nom_de_profil(revue: str) -> str:
     """Nom de fichier tiré du nom de la revue : minuscules sans accent, mots joints par un trait d'union."""
     sans_accent = unicodedata.normalize("NFKD", revue).encode("ascii", "ignore").decode()
-    return re.sub(r"[^a-z0-9]+", "-", sans_accent.lower()).strip("-") or "revue"
+    return re.sub(r"[^a-z0-9]+", "-", sans_accent.lower()).strip("-") or "publication"
 
 
 def _texte(valeur: str) -> str:
@@ -84,7 +84,9 @@ def _regles_des_titres(titres: list[dict]) -> list[str]:
         if titre.get("taille") is not None:
             taille = _nombre(titre["taille"])
             lignes += [f"      taille_min: {taille}", f"      taille_max: {taille}"]
-        lignes += [f"      longueur_max: {LONGUEUR_MAX_TITRE}", f"      style_cible: {_texte(STYLES_DES_ROLES[role])}"]
+        if role != "titre-article":      # le titre d'un article n'a pas de longueur maximale
+            lignes.append(f"      longueur_max: {LONGUEUR_MAX_TITRE}")
+        lignes.append(f"      style_cible: {_texte(STYLES_DES_ROLES[role])}")
     return lignes
 
 
@@ -97,7 +99,7 @@ def generer_profil(reponses: dict) -> str:
     images = reponses.get("images") or []
 
     lignes = [
-        f"# Profil de la revue {revue}, créé par l'assistant de MiseEnWeb.",
+        f"# Profil de la publication {revue}, créé par l'assistant de MiseEnWeb.",
         "# Le README de MiseEnWeb décrit tous les réglages.",
         "",
         f"nom: {nom_de_profil(revue)}",
@@ -105,7 +107,7 @@ def generer_profil(reponses: dict) -> str:
     ]
     if issn:
         lignes.append(f"issn: {_texte(issn)}")
-    lignes += [f"description: {_texte(f'Articles de la revue {revue}')}", ""]
+    lignes += [f"description: {_texte(f'Documents de la publication {revue}')}", ""]
 
     if mot:
         lignes += [
@@ -115,13 +117,13 @@ def generer_profil(reponses: dict) -> str:
             "",
         ]
     elif issn:
-        lignes += ["# Reconnaissance : par l'ISSN écrit dans le pied de page des articles.", ""]
+        lignes += ["# Reconnaissance : par l'ISSN écrit dans le pied de page des documents.", ""]
 
     lignes += ["# Correspondance entre les styles de Word et les balises de la page.", "mammoth:", "  carte_styles: |"]
     lignes += CARTE_STYLES.rstrip("\n").split("\n")
     lignes += ["  inclure_carte_defaut: true", "  images: incorporees", "  bordures_images: true"]
     if images:
-        lignes.append("  images_connues:            # images de la revue, reconnues par leur empreinte")
+        lignes.append("  images_connues:            # images de la publication, reconnues par leur empreinte")
         for image in images:
             texte = str(image.get("texte", "")).strip()
             lignes.append(f"    - empreinte: {_texte(image['empreinte'])}")

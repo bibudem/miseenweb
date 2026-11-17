@@ -27,6 +27,7 @@ from .post_traitement import MOTIF_NUMERO_SEUL, MOTIF_NUMERO_TABLEAU
 EXEMPLES_MAX = 3            # extraits donnés par relevé
 LONGUEUR_EXTRAIT = 80       # caractères
 MOTS_MAX_TITRE = 15         # au-delà, un paragraphe en gras est du texte mis en évidence, pas un titre
+TAILLE_GRAND_TITRE = 13.0   # points : à partir de cette taille, la limite de mots ne s'applique pas
 LONGUEUR_MIN_NOM_COMMUN = 4
 
 
@@ -56,7 +57,9 @@ def _styles_et_titres_en_gras(doc) -> tuple[Counter, dict[float | None, list[tup
         styles[info.style_nom] += 1
         if _est_style_de_titre(info.style_nom) or not info.tout_gras:
             continue
-        if len(info.texte.split()) > MOTS_MAX_TITRE or info.texte[-1] in ".;,":
+        # Le titre d'un article dépasse souvent 15 mots : sa grande taille suffit à le distinguer du texte
+        grand = info.taille_pt is not None and info.taille_pt >= TAILLE_GRAND_TITRE
+        if (len(info.texte.split()) > MOTS_MAX_TITRE and not grand) or info.texte[-1] in ".;,":
             continue
         if MOTIF_NUMERO_TABLEAU.match(info.texte):       # « Tableau 2 » en gras : une étiquette, pas un titre
             continue

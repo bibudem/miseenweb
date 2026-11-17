@@ -108,3 +108,20 @@ def test_fichier_illisible_ecarte_et_nomme(tmp_path):
     assert releve["nb_articles"] == 1
     assert [i["fichier"] for i in releve["illisibles"]] == ["pas_un_word.docx"]
     assert releve["nom_commun"] == ""                        # un seul article lu : rien à comparer
+
+
+def test_titre_long_de_grande_taille_releve(tmp_path):
+    """Le titre d'un article dépasse souvent 15 mots : sa grande taille suffit à le retenir."""
+    from docx import Document
+    from docx.shared import Pt
+
+    chemins = []
+    for rang in (1, 2):
+        document = Document()
+        for taille in (16, 12):
+            segment = document.add_paragraph().add_run("Titre fictif " + "très " * 20 + f"long {rang}")
+            segment.bold, segment.font.size = True, Pt(taille)
+        chemins.append(tmp_path / f"long_{rang}.docx")
+        document.save(chemins[-1])
+    tailles = [g["taille"] for g in analyse.analyser_exemples(chemins)["titres_en_gras"]]
+    assert tailles == [16.0]            # à 12 points, un paragraphe en gras aussi long reste du texte
