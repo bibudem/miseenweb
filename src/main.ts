@@ -220,7 +220,8 @@ worker.addEventListener('error', () => {
 // Refait les menus quand la liste des profils change : au démarrage, puis au dépôt ou au retrait d'un profil
 function appliquerCatalogue(donnees: Catalogue): void {
   catalogue = donnees
-  const choix = menuRevue.value
+  // Au démarrage, le menu est vide : sa valeur, une chaîne vide, est aussi celle de « Document général »
+  const choix = menuRevue.options.length ? menuRevue.value : AUTO
   menuRevue.replaceChildren(
     new Option('Détection automatique (recommandé)', AUTO),
     ...catalogue.revues.map((r) => new Option(`${r.depose ? 'Profil' : 'Revue'} : ${r.nom}`, r.nom)),
