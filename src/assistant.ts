@@ -303,7 +303,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
         element(
           'p',
           'assistant-avis',
-          `Les documents portent l’ISSN ${releveIssn.valeur}, celui de « ${connue(releveIssn.valeur)!.nom} ». MiseEnWeb a déjà un profil pour cet ISSN, et deux profils ne peuvent pas porter le même. Pour ces documents, le nouveau profil se choisit dans le menu de chaque document.`,
+          `Le pied de page des documents porte l’ISSN ${releveIssn.valeur}, celui de « ${connue(releveIssn.valeur)!.nom} ». MiseEnWeb a déjà un profil pour cet ISSN, et deux profils ne peuvent pas porter le même. Pour ces documents, le nouveau profil se choisit dans le menu de chaque document.`,
         ),
         issn.erreur,
       )
@@ -387,22 +387,32 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
         )
         infos.append(element('p', 'assistant-ligne-sujet', sujet), decompte)
 
-        // Les extraits se déplient sur demande : ils servent à vérifier de quels paragraphes il s'agit
-        const depliant = element('details', 'assistant-ligne-exemples')
-        const bascule = element('summary')
-        const chevron = element('span', 'icone')
-        chevron.setAttribute('aria-hidden', 'true')
-        chevron.innerHTML = icone('caret-down')
-        bascule.append(chevron, groupe.exemples.length > 1 ? `Voir ${groupe.exemples.length} exemples` : 'Voir un exemple')
-        const exemples = element('ul', 'assistant-exemples')
-        exemples.append(
-          ...groupe.exemples.map((texte) => {
-            const extrait = element('li', '', `« ${texte} »`)
-            extrait.dir = 'auto'      // un extrait en arabe se lit de droite à gauche
-            return extrait
-          }),
-        )
-        depliant.append(bascule, exemples)
+        // Le premier extrait est toujours visible : il dit de quels paragraphes il s'agit.
+        // Les autres se déplient sur demande.
+        const extrait = (texte: string, balise: 'p' | 'li') => {
+          const el = element(balise, '', `« ${texte} »`)
+          el.dir = 'auto'      // un extrait en arabe se lit de droite à gauche
+          return el
+        }
+        const [premier, ...autres] = groupe.exemples
+        const zoneExemples = element('div', 'assistant-ligne-exemples')
+        if (premier) {
+          const visible = extrait(premier, 'p')
+          visible.className = 'assistant-ligne-extrait'
+          zoneExemples.append(visible)
+        }
+        if (autres.length) {
+          const depliant = element('details')
+          const bascule = element('summary')
+          const chevron = element('span', 'icone')
+          chevron.setAttribute('aria-hidden', 'true')
+          chevron.innerHTML = icone('caret-down')
+          bascule.append(chevron, autres.length > 1 ? `${autres.length} autres exemples` : '1 autre exemple')
+          const liste = element('ul', 'assistant-exemples')
+          liste.append(...autres.map((texte) => extrait(texte, 'li')))
+          depliant.append(bascule, liste)
+          zoneExemples.append(depliant)
+        }
 
         const champMenu = element('div', 'champ-liste champ-compact')
         const menu = element('select')
@@ -416,7 +426,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
         fleche.setAttribute('aria-hidden', 'true')
         fleche.innerHTML = icone('caret-down')
         champMenu.append(menu, fleche)
-        ligne.append(infos, champMenu, depliant)
+        ligne.append(infos, champMenu, zoneExemples)
         liste.append(ligne)
       })
       contenu.push(liste)

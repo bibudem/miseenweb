@@ -945,10 +945,16 @@
     font-weight: var(--graisse-forte);
   }
 
-  /* Extraits repliés : ils occupent toute la largeur de la ligne une fois dépliés */
+  /* Extraits : le premier toujours visible, les autres dépliés sur demande, sur toute la largeur de la ligne */
   .assistant-ligne-exemples {
+    display: grid;
     grid-column: 1 / -1;
+    gap: 2px;
     font-size: var(--texte-petit);
+  }
+
+  .assistant-ligne-extrait {
+    overflow-wrap: anywhere;
   }
 
   .assistant-ligne-exemples summary {
