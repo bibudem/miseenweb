@@ -264,7 +264,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
         element(
           'p',
           'assistant-avis',
-          `Les documents portent l’ISSN ${releveIssn.valeur}, celui de « ${connue(releveIssn.valeur)!.nom} ». MiseEnWeb a déjà un profil pour cet ISSN, et deux profils ne peuvent pas porter le même. Le nouveau profil sera reconnu par le nom des fichiers, ou choisi dans le menu « Règles ».`,
+          `Les documents portent l’ISSN ${releveIssn.valeur}, celui de « ${connue(releveIssn.valeur)!.nom} ». MiseEnWeb a déjà un profil pour cet ISSN, et deux profils ne peuvent pas porter le même. Pour ces documents, le nouveau profil se choisit dans le menu de chaque document.`,
         ),
         issn.erreur,
       )
