@@ -125,6 +125,10 @@ async function traiter(demande: Demande): Promise<unknown> {
       return JSON.parse(pont.deposer_profil(demande.texte))
     case 'retirerProfil':
       return JSON.parse(pont.retirer_profil())
+    case 'releverExemples':
+      return JSON.parse(pont.relever_exemples(JSON.stringify(demande.noms)))
+    case 'genererProfil':
+      return JSON.parse(pont.generer_profil(JSON.stringify(demande.reponses)))
   }
 }
 

@@ -22,6 +22,44 @@ export interface DepotProfil {
   catalogue: Catalogue
 }
 
+/** Relevé de ce que des articles d'exemple ont en commun. « articles » : nombre d'articles où l'élément paraît */
+export interface ReleveExemples {
+  nb_articles: number
+  articles: string[]
+  illisibles: { fichier: string; erreur: string }[]
+  styles: { nom: string; articles: number; paragraphes: number; titre: boolean }[]
+  /** Paragraphes courts en gras sans style de titre, groupés par taille de police (null : taille par défaut) */
+  titres_en_gras: { taille: number | null; articles: number; paragraphes: number; styles: string[]; exemples: string[] }[]
+  /** « apercu » : l'image en adresse « data: », ou une chaîne vide si le navigateur ne l'affiche pas */
+  images_communes: { empreinte: string; type: string; articles: number; endroits: string[]; apercu: string }[]
+  issn: { valeur: string; articles: number }[]
+  couleurs: { couleur: string; articles: number; exemples: string[] }[]
+  tableaux: { articles: number; total: number; deux_lignes: number; une_ligne: number; sans_titre: number }
+  nom_commun: string
+}
+
+export type RoleTitre = 'titre-article' | 'section' | 'sous-titre'
+
+/** Réponses de l'assistant de création d'un profil, telles que les reçoit le générateur */
+export interface ReponsesAssistant {
+  revue: string
+  issn: string
+  mot_nom_fichier: string
+  titres: { taille: number | null; styles: string[]; role: RoleTitre }[]
+  /** « texte » vide : image décorative */
+  images: { empreinte: string; texte: string }[]
+  apparence: 'document' | 'article'
+  tableaux: 'bordures' | 'apa' | 'chicago'
+  bandeau: boolean
+  pied_page: boolean
+}
+
+/** Profil écrit par le générateur : « messages » est vide quand le profil est valide */
+export interface ProfilGenere {
+  texte: string
+  messages: string[]
+}
+
 export interface Catalogue {
   revues: Revue[]
   profils: ProfilCatalogue[]
@@ -71,6 +109,8 @@ type SansId =
   | { action: 'rapport' }
   | { action: 'deposerProfil'; texte: string }
   | { action: 'retirerProfil' }
+  | { action: 'releverExemples'; noms: string[] }
+  | { action: 'genererProfil'; reponses: ReponsesAssistant }
 
 export type Demande = SansId & { id: number }
 export type DemandeSansId = SansId

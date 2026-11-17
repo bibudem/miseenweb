@@ -225,3 +225,27 @@ def analyser_exemples(chemins: list[Path]) -> dict:
         "tableaux": tableaux,
         "nom_commun": _nom_commun(lus),
     }
+
+
+def images_des_exemples(chemins: list[Path], empreintes: set[str]) -> dict[str, tuple[str, bytes]]:
+    """Retrouve le fichier des images demandées : empreinte -> (type de fichier, octets).
+
+    Sert à montrer chaque image commune à la personne qui lui donne un texte de remplacement.
+    """
+    trouvees: dict[str, tuple[str, bytes]] = {}
+    for chemin in map(Path, chemins):
+        try:
+            doc = Document(str(chemin))
+        except Exception:  # noqa: BLE001 - un fichier illisible est déjà nommé par analyser_exemples
+            continue
+        parties = [doc.part] + [s.header.part for s in doc.sections] + [s.footer.part for s in doc.sections]
+        for partie in parties:
+            for lien in partie.rels.values():
+                if lien.reltype != RT.IMAGE or lien.is_external:
+                    continue
+                cle = empreinte(lien.target_part.blob)
+                if cle in empreintes and cle not in trouvees:
+                    trouvees[cle] = (lien.target_part.content_type, lien.target_part.blob)
+        if len(trouvees) == len(empreintes):
+            break
+    return trouvees

@@ -29,7 +29,9 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
+from docx2html.analyse import analyser_exemples, images_des_exemples
 from docx2html.diagnostic import inventorier
+from docx2html.generateur import generer_profil as _generer_profil
 from docx2html.pied_page import issn_du_document
 from docx2html.pipeline import convertir_fichier
 from docx2html.profils import Profil, charger_profils, choisir_profil, profils_du_fichier
@@ -105,13 +107,8 @@ def retirer_profil() -> str:
     return catalogue()
 
 
-def deposer_profil(texte: str) -> str:
-    """Valide le profil déposé par l'utilisateur et, s'il est valide, l'ajoute aux profils du site.
-
-    Un seul profil déposé à la fois : un nouveau dépôt valide remplace le précédent. Un dépôt
-    refusé ne change rien. Renvoie {"messages": […], "libelles": […], "catalogue": {…}} :
-    « messages » est vide quand le profil est accepté.
-    """
+def _valider_depot(texte: str) -> tuple[dict | None, list[str]]:
+    """Valide un profil qui ne vient pas du site. Renvoie (réglages, messages) : sans erreur, aucun message."""
     reserves = {nom.split("/")[0] for nom in _PROFILS_DU_SITE}
     donnees, messages = valider_texte(texte, _APP / "gabarits", reserves)
     if donnees is not None:
@@ -120,6 +117,51 @@ def deposer_profil(texte: str) -> str:
         if issn in revues:
             donnees, messages = None, [f"issn : « {issn} » est déjà l'ISSN de la revue « {revues[issn]} », "
                                        "dont le profil fait partie du site."]
+    return donnees, messages
+
+
+# Types d'image qu'un navigateur affiche. Les autres (EMF, WMF, TIFF) sont relevés sans aperçu.
+_IMAGES_AFFICHABLES = {"image/png", "image/jpeg", "image/gif", "image/svg+xml", "image/webp", "image/bmp"}
+
+
+def relever_exemples(noms_json: str) -> str:
+    """Relevé de ce que les documents déposés ont en commun, pour l'assistant de création d'un profil.
+
+    « noms_json » est la liste des noms de fichier, en JSON. Chaque image commune reçoit un
+    « apercu » : l'image elle-même, à afficher dans la page, ou une chaîne vide si le navigateur
+    ne sait pas afficher ce type de fichier.
+    """
+    chemins = [ENTREE / nom for nom in json.loads(noms_json)]
+    releve = analyser_exemples(chemins)
+    fichiers = images_des_exemples(chemins, {image["empreinte"] for image in releve["images_communes"]})
+    for image in releve["images_communes"]:
+        sorte, octets = fichiers.get(image["empreinte"], ("", b""))
+        image["apercu"] = (f"data:{sorte};base64,{base64.b64encode(octets).decode()}"
+                           if sorte in _IMAGES_AFFICHABLES else "")
+    return json.dumps(releve)
+
+
+def generer_profil(reponses_json: str) -> str:
+    """Écrit le profil qui correspond aux réponses de l'assistant, puis le valide comme un profil déposé.
+
+    Renvoie {"texte": …, "messages": […]}. Le profil n'est pas ajouté : la page le dépose
+    ensuite par deposer_profil, ou le donne à télécharger.
+    """
+    try:
+        texte = _generer_profil(json.loads(reponses_json))
+    except (ValueError, KeyError, TypeError) as erreur:
+        return json.dumps({"texte": "", "messages": [f"Réponses incomplètes : {erreur}"]})
+    return json.dumps({"texte": texte, "messages": _valider_depot(texte)[1]})
+
+
+def deposer_profil(texte: str) -> str:
+    """Valide le profil déposé par l'utilisateur et, s'il est valide, l'ajoute aux profils du site.
+
+    Un seul profil déposé à la fois : un nouveau dépôt valide remplace le précédent. Un dépôt
+    refusé ne change rien. Renvoie {"messages": […], "libelles": […], "catalogue": {…}} :
+    « messages » est vide quand le profil est accepté.
+    """
+    donnees, messages = _valider_depot(texte)
     libelles = []
     if donnees is not None:
         retirer_profil()
