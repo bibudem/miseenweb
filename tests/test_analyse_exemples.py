@@ -125,3 +125,26 @@ def test_titre_long_de_grande_taille_releve(tmp_path):
         document.save(chemins[-1])
     tailles = [g["taille"] for g in analyse.analyser_exemples(chemins)["titres_en_gras"]]
     assert tailles == [16.0]            # à 12 points, un paragraphe en gras aussi long reste du texte
+
+
+def test_styles_propres_a_la_publication(tmp_path):
+    """Un style créé par la publication est relevé avec ses extraits. Ses paragraphes ne comptent pas comme texte en gras."""
+    from docx import Document
+    from docx.enum.style import WD_STYLE_TYPE
+    from docx.shared import Pt
+
+    chemins = []
+    for rang in (1, 2):
+        document = Document()
+        document.styles.add_style("Intertitre", WD_STYLE_TYPE.PARAGRAPH)
+        segment = document.add_paragraph(style="Intertitre").add_run(f"Intertitre fictif {rang}")
+        segment.bold, segment.font.size = True, Pt(12)
+        document.add_paragraph("Texte courant fictif.")
+        document.add_heading("Titre intégré fictif", level=1)
+        chemins.append(tmp_path / f"style_{rang}.docx")
+        document.save(chemins[-1])
+    releve = analyse.analyser_exemples(chemins)
+    assert releve["styles_propres"] == [
+        {"nom": "Intertitre", "articles": 2, "paragraphes": 2, "exemples": ["Intertitre fictif 1", "Intertitre fictif 2"]}
+    ]
+    assert releve["titres_en_gras"] == []          # « Normal » et « Heading 1 », intégrés à Word, ne sont pas des styles propres

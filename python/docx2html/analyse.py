@@ -42,19 +42,27 @@ def _est_style_de_titre(nom: str) -> bool:
 
 # ---- Relevé d'un article -------------------------------------------------------------------
 
-def _styles_et_titres_en_gras(doc) -> tuple[Counter, dict[float | None, list[tuple[str, str]]]]:
-    """Compte les styles de paragraphe et relève les paragraphes courts en gras sans style de titre.
+def _styles_et_titres_en_gras(doc) -> tuple[Counter, dict[float | None, list[tuple[str, str]]], dict[str, list[str]]]:
+    """Compte les styles de paragraphe, relève les paragraphes courts en gras sans style de titre,
+    et les paragraphes qui portent un style créé par la publication.
 
-    Renvoie (styles, titres) : « titres » associe une taille de police, en points, à la liste
-    des (style, texte) de cette taille.
+    Renvoie (styles, titres, propres) : « titres » associe une taille de police, en points, à la
+    liste des (style, texte) de cette taille. « propres » associe le nom d'un style créé par la
+    publication aux textes de ses paragraphes. Un paragraphe de style propre ne figure pas dans
+    « titres » : son style dit déjà à quoi il sert.
     """
     styles: Counter = Counter()
     titres: dict[float | None, list[tuple[str, str]]] = defaultdict(list)
+    propres: dict[str, list[str]] = defaultdict(list)
     for rang, paragraphe in enumerate(doc.paragraphs):
         info = analyser_paragraphe(rang, paragraphe)
         if not info.texte:
             continue
         styles[info.style_nom] += 1
+        # Word distingue ses styles intégrés des styles créés dans le document
+        if paragraphe.style is not None and not paragraphe.style.builtin:
+            propres[info.style_nom].append(info.texte)
+            continue
         if _est_style_de_titre(info.style_nom) or not info.tout_gras:
             continue
         # Le titre d'un article dépasse souvent 15 mots : sa grande taille suffit à le distinguer du texte
@@ -64,7 +72,7 @@ def _styles_et_titres_en_gras(doc) -> tuple[Counter, dict[float | None, list[tup
         if MOTIF_NUMERO_TABLEAU.match(info.texte):       # « Tableau 2 » en gras : une étiquette, pas un titre
             continue
         titres[info.taille_pt].append((info.style_nom, info.texte))
-    return styles, titres
+    return styles, titres, propres
 
 
 def _images(doc) -> dict[str, dict]:
@@ -113,10 +121,11 @@ def _titres_des_tableaux(doc) -> Counter:
 
 def _relever(chemin: Path) -> dict:
     doc = Document(str(chemin))
-    styles, titres = _styles_et_titres_en_gras(doc)
+    styles, titres, propres = _styles_et_titres_en_gras(doc)
     return {
         "styles": styles,
         "titres": titres,
+        "propres": propres,
         "images": _images(doc),
         "issn": issn_du_document(chemin),
         "couleurs": couleurs_de_fond(chemin),        # texte du paragraphe -> couleur
@@ -179,6 +188,19 @@ def analyser_exemples(chemins: list[Path]) -> dict:
                        "styles": [s for s, _ in g["styles"].most_common()], "exemples": g["exemples"]}
                       for taille, g in sorted(par_taille.items(), key=lambda paire: -(paire[0] or 0))]
 
+    # Styles créés par la publication
+    par_style: dict = defaultdict(lambda: {"articles": 0, "paragraphes": 0, "exemples": []})
+    for releve in releves:
+        for nom, textes in releve["propres"].items():
+            groupe = par_style[nom]
+            groupe["articles"] += 1
+            groupe["paragraphes"] += len(textes)
+            for texte in textes:
+                if len(groupe["exemples"]) < EXEMPLES_MAX and _extrait(texte) not in groupe["exemples"]:
+                    groupe["exemples"].append(_extrait(texte))
+    styles_propres = [{"nom": nom, **g}
+                      for nom, g in sorted(par_style.items(), key=lambda p: (-p[1]["articles"], -p[1]["paragraphes"], p[0]))]
+
     # Images présentes dans plus d'un article
     images: dict[str, dict] = {}
     for releve in releves:
@@ -222,6 +244,7 @@ def analyser_exemples(chemins: list[Path]) -> dict:
         "illisibles": illisibles,
         "styles": styles,
         "titres_en_gras": titres_en_gras,
+        "styles_propres": styles_propres,
         "images_communes": images_communes,
         "issn": [{"valeur": valeur, "articles": nombre} for valeur, nombre in issn.most_common()],
         "couleurs": couleurs,

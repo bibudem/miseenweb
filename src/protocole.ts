@@ -30,6 +30,8 @@ export interface ReleveExemples {
   styles: { nom: string; articles: number; paragraphes: number; titre: boolean }[]
   /** Paragraphes courts en gras sans style de titre, groupés par taille de police (null : taille par défaut) */
   titres_en_gras: { taille: number | null; articles: number; paragraphes: number; styles: string[]; exemples: string[] }[]
+  /** Styles créés par la publication, avec des extraits de leurs paragraphes */
+  styles_propres: { nom: string; articles: number; paragraphes: number; exemples: string[] }[]
   /** « apercu » : l'image en adresse « data: », ou une chaîne vide si le navigateur ne l'affiche pas */
   images_communes: { empreinte: string; type: string; articles: number; endroits: string[]; apercu: string }[]
   issn: { valeur: string; articles: number }[]
@@ -45,7 +47,8 @@ export interface ReponsesAssistant {
   revue: string
   issn: string
   mot_nom_fichier: string
-  titres: { taille: number | null; styles: string[]; role: RoleTitre }[]
+  /** Un regroupement retenu comme titre : un style créé par la publication, ou du texte en gras d'une taille donnée */
+  titres: ({ style: string; role: RoleTitre } | { taille: number | null; styles: string[]; role: RoleTitre })[]
   /** « texte » vide : image décorative */
   images: { empreinte: string; texte: string }[]
   apparence: 'document' | 'article'

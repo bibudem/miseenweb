@@ -9,8 +9,9 @@ Réponses attendues :
         "revue": "Ma revue",
         "issn": "1234-5678",            # ou ""
         "mot_nom_fichier": "",          # mot attendu dans le nom des fichiers, ou ""
-        "titres": [                     # un élément par groupe de paragraphes en gras retenu
-            {"taille": 16, "styles": ["Normal"], "role": "titre-article"},
+        "titres": [                     # un élément par regroupement de paragraphes retenu
+            {"style": "Intertitre", "role": "section"},                         # style créé par la publication
+            {"taille": 16, "styles": ["Normal"], "role": "titre-article"},      # texte en gras de cette taille
             {"taille": 12, "styles": ["Normal"], "role": "section"},
         ],
         "images": [                     # images communes aux articles
@@ -23,7 +24,7 @@ Réponses attendues :
         "pied_page": True,
     }
 
-« taille », « styles » et « empreinte » viennent tels quels du relevé de analyse.py.
+« style », « taille », « styles » et « empreinte » viennent tels quels du relevé de analyse.py.
 """
 
 from __future__ import annotations
@@ -71,14 +72,20 @@ def _nombre(valeur: float) -> str:
 
 
 def _regles_des_titres(titres: list[dict]) -> list[str]:
-    """Une règle par groupe de paragraphes en gras. Les groupes sans taille connue passent en dernier :
-    leur règle n'a pas de borne de taille et s'appliquerait sinon avant les autres."""
+    """Une règle par regroupement de paragraphes : un style créé par la publication, ou du texte en gras
+    d'une taille donnée. Les styles passent en premier : un style dit à lui seul à quoi sert le paragraphe.
+    Les groupes en gras sans taille connue passent en dernier : leur règle n'a pas de borne de taille et
+    s'appliquerait sinon avant les autres."""
     lignes: list[str] = []
-    ordonnes = sorted(titres, key=lambda t: (t.get("taille") is None, -(t.get("taille") or 0)))
+    ordonnes = sorted(titres, key=lambda t: ("style" not in t, t.get("taille") is None, -(t.get("taille") or 0)))
     for rang, titre in enumerate(ordonnes, start=1):
         role = titre["role"]
         if role not in STYLES_DES_ROLES:
             raise ValueError(f"Rôle de titre inconnu : « {role} ». Rôles permis : {', '.join(STYLES_DES_ROLES)}.")
+        if "style" in titre:                 # tout paragraphe de ce style, quelle que soit sa mise en forme
+            lignes += [f"    - nom: {role}-{rang}", f"      styles_source: [{_texte(titre['style'])}]",
+                       f"      style_cible: {_texte(STYLES_DES_ROLES[role])}"]
+            continue
         styles = ", ".join(_texte(s) for s in titre.get("styles") or ["Normal"])
         lignes += [f"    - nom: {role}-{rang}", f"      styles_source: [{styles}]", "      gras: true"]
         if titre.get("taille") is not None:
@@ -139,7 +146,7 @@ def generer_profil(reponses: dict) -> str:
         "  sortes_de_puces: true",
     ]
     if titres:
-        lignes.append("  regles:                    # titres écrits en gras, sans style de titre")
+        lignes.append("  regles:                    # titres sans style de titre de Word : style de la publication, ou texte en gras")
         lignes += _regles_des_titres(titres)
     lignes.append("")
 

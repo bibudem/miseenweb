@@ -141,3 +141,29 @@ def test_profil_genere_avec_l_issn_d_une_revue_du_site_refuse(module_pont):
 def test_reponses_incompletes_signalees(module_pont):
     reponse = json.loads(module_pont.generer_profil(json.dumps({**REPONSES, "titres": [{"taille": 12}]})))
     assert reponse["texte"] == "" and reponse["messages"][0].startswith("Réponses incomplètes")
+
+
+# ---- Style créé par la publication ----
+
+def test_style_propre_devient_un_titre(nouveau_document, pont, module_pont):
+    from docx.enum.style import WD_STYLE_TYPE
+
+    reponses = {**REPONSES, "images": [], "titres": [
+        {"taille": 16, "styles": ["Normal"], "role": "titre-article"},
+        {"style": "Intertitre", "role": "section"},
+    ]}
+    texte = generateur.generer_profil(reponses)
+    assert texte.index("styles_source: [\"Intertitre\"]") < texte.index("taille_min: 16")     # le style passe en premier
+    assert json.loads(module_pont.deposer_profil(texte))["messages"] == []
+
+    nouveau_document.styles.add_style("Intertitre", WD_STYLE_TYPE.PARAGRAPH)
+    _en_gras(nouveau_document, "Titre de l'article fictif", 16)
+    nouveau_document.add_paragraph("Section fictive sans gras", style="Intertitre")
+    nouveau_document.add_paragraph("Texte courant du document fictif.")
+    nouveau_document.sections[0].footer.paragraphs[0].text = "ISSN 1234-5678"
+    resultat = pont(nouveau_document, nom="nom_quelconque.docx")
+
+    from bs4 import BeautifulSoup
+    page = BeautifulSoup((module_pont.SORTIE / resultat["sortie"]).read_text(encoding="utf-8"), "html.parser")
+    assert page.h1.get_text() == "Titre de l'article fictif"
+    assert [h.get_text() for h in page.find_all("h2")] == ["Section fictive sans gras"]

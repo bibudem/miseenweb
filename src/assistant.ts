@@ -25,6 +25,11 @@ const SORTES_IMAGE: ['information' | 'decorative', string][] = [
 /** Endroits d'un document où une image paraît, tels que le relevé les nomme */
 const ENDROITS: Record<string, string> = { corps: 'corps du texte', 'en-tete': 'en-tête', pied: 'pied de page' }
 
+/** Paragraphes réunis à l'écran 2 : par un style créé par la publication, ou par leur taille quand ils sont en gras */
+type Regroupement =
+  | { sorte: 'style'; nom: string; articles: number; paragraphes: number; exemples: string[] }
+  | { sorte: 'gras'; taille: number | null; styles: string[]; articles: number; paragraphes: number; exemples: string[] }
+
 const nombre = (n: number, singulier: string, pluriel: string) => `${n} ${n > 1 ? pluriel : singulier}`
 
 interface Liens {
@@ -156,7 +161,9 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
 
   let releve: ReleveExemples
   let reponses: ReponsesAssistant
-  /** Rôle choisi pour chaque groupe de « releve.titres_en_gras », dans le même ordre */
+  /** Regroupements de l'écran des paragraphes : les styles de la publication d'abord, puis les textes en gras */
+  let regroupements: Regroupement[]
+  /** Rôle choisi pour chaque regroupement, dans le même ordre */
   let roles: (RoleTitre | '')[]
   /** Réponse pour chaque image de « releve.images_communes », dans le même ordre. « sorte » vide : pas encore de réponse */
   let images: { sorte: '' | 'information' | 'decorative'; texte: string }[]
@@ -291,7 +298,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
   }
 
   function ecranTitres(): void {
-    const groupes = releve.titres_en_gras
+    const groupes = regroupements
     const n = releve.nb_articles
     const contenu: HTMLElement[] = []
     // Plusieurs titres d'article sont permis (un titre en deux langues, par exemple) : l'avis dit ce qui en résulte
@@ -311,7 +318,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     }
     if (!groupes.length) {
       contenu.push(
-        element('p', '', 'Aucun paragraphe en gras sans style de titre dans ces documents. Les titres portent déjà un style de titre de Word.'),
+        element('p', '', 'Aucun style propre à la publication ni paragraphe en gras sans style de titre dans ces documents. Les titres portent déjà un style de titre de Word.'),
       )
     } else {
       contenu.push(
@@ -323,8 +330,11 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
         ),
       )
       groupes.forEach((groupe, rang) => {
-        const taille = groupe.taille == null ? 'taille par défaut' : `${String(groupe.taille).replace('.', ',')} points`
-        const { bloc, corps } = carteQuestion(`Texte en gras, ${taille}`, `${rang + 1} de ${groupes.length}`)
+        const sujet =
+          groupe.sorte === 'style'
+            ? `Style « ${groupe.nom} »`
+            : `Texte en gras, ${groupe.taille == null ? 'taille par défaut' : `${String(groupe.taille).replace('.', ',')} points`}`
+        const { bloc, corps } = carteQuestion(sujet, `${rang + 1} de ${groupes.length}`)
         const exemples = element('ul', 'assistant-exemples')
         exemples.append(
           ...groupe.exemples.map((texte) => {
@@ -358,9 +368,10 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       'paragraph',
       contenu,
       () => {
-        reponses.titres = groupes.flatMap((groupe, rang) => {
+        reponses.titres = groupes.flatMap((groupe, rang): ReponsesAssistant['titres'] => {
           const role = roles[rang]
-          return role ? [{ taille: groupe.taille, styles: groupe.styles, role }] : []
+          if (!role) return []
+          return groupe.sorte === 'style' ? [{ style: groupe.nom, role }] : [{ taille: groupe.taille, styles: groupe.styles, role }]
         })
         ecranImages()
       },
@@ -705,7 +716,15 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     }
     // Choix de départ : le groupe de plus grande taille est le titre de l'article
     images = releve.images_communes.map(() => ({ sorte: '', texte: '' }))
-    roles = releve.titres_en_gras.map((groupe, rang) => (rang === 0 && groupe.taille != null ? 'titre-article' : ''))
+    regroupements = [
+      ...releve.styles_propres.map((style) => ({ sorte: 'style' as const, ...style })),
+      ...releve.titres_en_gras.map((groupe) => ({ sorte: 'gras' as const, ...groupe })),
+    ]
+    // Un style ne reçoit aucun choix d'avance : son nom ne suffit pas à dire sa fonction
+    const premierGras = regroupements.findIndex((groupe) => groupe.sorte === 'gras')
+    roles = regroupements.map((groupe, rang) =>
+      rang === premierGras && groupe.sorte === 'gras' && groupe.taille != null ? 'titre-article' : '',
+    )
     carte.setAttribute('data-assistant-ouvert', '')
     zone.hidden = false
     ecranRevue()
