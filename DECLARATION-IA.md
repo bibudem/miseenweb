@@ -4,15 +4,15 @@
 
 **Outils d'intelligence artificielle :** Claude Opus 5.5 (claude-opus-5-5), utilisé le 11 novembre 2026, et Claude Fable 5.2 (claude-fable-5-2), utilisé du 13 au 17 novembre 2026, par Claude Code d'Anthropic. Ces outils peuvent produire du code ou des analyses erronés, et leurs résultats ont été testés et validés par une personne.
 
-**Conceptualisation :** L'IAG a proposé d'exécuter le convertisseur de MiseEnWeb dans le navigateur, avec Pyodide, et de publier la page sur GitHub Pages. Le besoin, offrir l'outil aux utilisateurs sans installation, ainsi que les choix finaux ont été déterminés par l'auteur du projet.
+**Conceptualisation :** L'IAG a proposé d'exécuter le convertisseur de MiseEnWeb dans le navigateur, avec Pyodide, et de publier la page sur GitHub Pages. Le besoin, offrir l'outil aux utilisateurs sans installation, ainsi que les choix finaux ont été déterminés par l'auteur du projet. L'auteur a conçu la suite du projet : rendre les publications autonomes par des profils qu'elles créent elles-mêmes, offrir un assistant qui part de leurs documents, puis permettre la création d'un profil sans document, et faire de MiseEnWeb un outil général, pour toute publication. L'IAG a proposé des façons de réaliser ces idées, entre lesquelles l'auteur a choisi.
 
 **Méthodologie :** L'IAG a vérifié la faisabilité de l'approche avant de la proposer, en convertissant les documents d'exemple dans Pyodide et en comparant le résultat à celui du programme de bureau. Elle a proposé des méthodes de vérification : tests automatisés dans le navigateur, audit d'accessibilité et contrôle d'intégrité, qui compare le texte du document Word à celui de la page produite. Pour les articles de la revue Science infirmière et pratiques en santé, l'IAG a analysé la structure des documents (styles, tableaux, images, couleurs) sans en lire le texte.
 
 **Exécution :** L'IAG a rédigé le code TypeScript, HTML et CSS de la page, le pont Python entre la page et le convertisseur, le service worker et les scripts de préparation. Elle a exécuté les tests et l'audit d'accessibilité, puis corrigé les défauts relevés. À la suite des tests de la revue, elle a modifié le convertisseur : tableaux selon l'APA, tableaux larges, couleur des bandeaux, ordre du résumé et des mots-clés, sens d'écriture, puces, retraits et contrôle d'intégrité. Les 16 et 17 novembre, elle a rédigé les tests automatiques du convertisseur, la présentation des tableaux et de la page choisie par le profil, la validation d'un profil, l'analyse de documents d'exemple, le générateur de profil et l'assistant de création de profil. Elle a revu l'interface d'après les pages du système de design Primer, lues à la demande de l'auteur. L'auteur a utilisé la page dans le navigateur, relevé ce qui ne convenait pas et corrigé des propositions de l'IAG.
 
-**Visualisation :** L'IAG a adapté le style graphique du site des Bibliothèques (répertoire GitHub `bibweb`) à la page, en s'aidant de la base de connaissances UI/UX Pro Max. Elle a produit l'image de partage, les icônes de l'application et les captures d'écran, à partir du logo existant et selon les indications de l'auteur.
+**Visualisation :** L'IAG a adapté le style graphique du site des Bibliothèques (répertoire GitHub `bibweb`) à la page, en s'aidant de la base de connaissances UI/UX Pro Max. Elle a produit l'image de partage, les icônes de l'application et les captures d'écran, à partir du logo existant et selon les indications de l'auteur. L'auteur a dirigé la conception de l'interface des 16 et 17 novembre : il a demandé qu'elle suive les principes de Primer, défini la hiérarchie des écrans de l'assistant et de l'accueil, la section « Paramètres de conversion », la présentation distincte des contenus tirés des documents et le rôle des couleurs. L'IAG a réalisé ces demandes et proposé des dispositions.
 
-**Rédaction - Révision et édition :** L'IAG a rédigé les textes de la page, les conseils de correction affichés aux utilisateurs, le README et une ébauche de la présente déclaration, révisés par l'auteur.
+**Rédaction - Révision et édition :** L'IAG a rédigé les textes de la page, les conseils de correction affichés aux utilisateurs, le README et une ébauche de la présente déclaration, révisés par l'auteur. L'auteur a choisi la terminologie et rédigé lui-même plusieurs textes de l'interface : intitulés des sections et des boutons, consignes de l'assistant, aide des paramètres de conversion. Il a fixé les règles de rédaction que l'IAG applique.
 
 **Administration du projet :** L'IAG a repéré les licences des composants inclus dans la page, sans que cela constitue un avis juridique.
 
@@ -32,15 +32,19 @@
   par défaut; couleur et position du logo et du nom de l'outil;
 - tester la conversion des articles de la revue, en trois tours, et relever les défauts;
 - décider des règles : application stricte de l'APA aux tableaux, alignement des en-têtes selon leur colonne, vocabulaire et ton des messages;
-- décider du plan des profils en libre-service : une publication crée son profil elle-même, et
+- concevoir le plan des profils en libre-service : une publication crée son profil elle-même, et
   l'entrée au catalogue commun reste soumise à une approbation;
+- concevoir l'assistant de création de profil : son point de départ, les documents de la publication,
+  puis la création d'un profil sans document;
 - choisir, à chaque étape, entre les approches proposées : présentation des tableaux par options,
   un seul gabarit, reconnaissance par l'ISSN seul, un profil ajouté à la fois, assistant dans la page;
 - fournir les guides de style servant de sources aux présentations de tableaux;
 - décider que l'outil vise toute publication, et remplacer « revue » par « publication » dans les textes;
 - demander que l'interface suive les principes de Primer, et que l'IAG en lise les pages avant de proposer;
-- diriger la conception de l'assistant écran par écran : titres, intitulés, consignes, ordre des
-  éléments, mise en évidence des nombres relevés, tableau des regroupements, création sans document;
+- diriger la conception de l'interface, écran par écran : titres, intitulés, consignes, ordre des
+  éléments, mise en évidence des nombres relevés, tableau des regroupements, section « Paramètres
+  de conversion », liste des documents sur une ligne;
+- rédiger des textes de l'interface et fixer la terminologie et les règles de rédaction;
 - corriger des propositions de l'IAG : intitulés et libellés des boutons, textes trop longs, pastilles
   sans contexte, couleur jaune lue comme une alerte, vert des étapes faites, icônes, boutons
   présentés comme des hyperliens, liste des documents trop haute;
@@ -58,7 +62,8 @@
 - rédiger les tests automatiques, la validation d'un profil, l'analyse des documents, le générateur
   de profil et l'assistant de création de profil;
 - lire les pages de Primer et rapporter ce qu'elles énoncent et n'énoncent pas;
-- proposer des approches avec leurs avantages et leurs inconvénients, et signaler ses propres erreurs;
+- proposer des façons de réaliser les idées de l'auteur, avec leurs avantages et leurs
+  inconvénients, et signaler ses propres erreurs;
 - vérifier par programme la conversion des articles de la revue avec un profil créé par l'assistant,
   sans en afficher le texte;
 - rédiger le README et la présente ébauche de déclaration.
