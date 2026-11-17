@@ -339,15 +339,19 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     const contenu: HTMLElement[] = []
     // Plusieurs titres d'article sont permis (un titre en deux langues, par exemple) : l'avis dit ce qui en résulte
     const avis = element('p', 'assistant-avis')
-    avis.setAttribute('role', 'status')
+    avis.tabIndex = -1
+    // Vrai une fois que « Continuer » a porté l'avis à l'attention de la personne. Un nouveau choix le remet à faux.
+    let avisPresente = false
+    const titresArticle = () => roles.filter((role) => role === 'titre-article').length
     function actualiserAvis(): void {
-      const titres = roles.filter((role) => role === 'titre-article').length
+      const titres = titresArticle()
+      avisPresente = false
       avis.replaceChildren(
         ...(titres > 1
           ? avecNombres(
               'p',
               '',
-              `${titres} regroupements sont indiqués comme titre de l’article. Une page web a un seul titre principal : dans chaque document, le premier de ces paragraphes devient le titre de la page, et les suivants deviennent des titres de section.`,
+              `La fonction « Titre de l’article » est indiquée pour ${titres} regroupements. Une page web a un seul titre principal : dans chaque document, le premier de ces paragraphes devient le titre de la page, et les suivants deviennent des titres de section.`,
             ).childNodes
           : []),
       )
@@ -379,18 +383,29 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
             : `Texte en gras, ${groupe.taille == null ? 'taille par défaut' : `${String(groupe.taille).replace('.', ',')} points`}`
         const ligne = element('li', 'assistant-ligne')
         const infos = element('div', 'assistant-ligne-infos')
-        const details = avecNombres(
+        const decompte = avecNombres(
           'p',
           'aide',
-          `Présent ${groupe.paragraphes} fois, dans ${nombre(groupe.articles, 'document', 'documents')} sur ${n}.`,
+          `${groupe.paragraphes} fois, ${nombre(groupe.articles, 'document', 'documents')} sur ${n}`,
         )
-        const exemples = element('p', 'assistant-ligne-exemples')
-        groupe.exemples.forEach((texte, place) => {
-          if (place) exemples.append(', ')
-          // « bdi » isole chaque extrait : un extrait en arabe se lit de droite à gauche sans déplacer ses voisins
-          exemples.append(element('bdi', '', `« ${texte} »`))
-        })
-        infos.append(element('p', 'assistant-ligne-sujet', sujet), details, exemples)
+        infos.append(element('p', 'assistant-ligne-sujet', sujet), decompte)
+
+        // Les extraits se déplient sur demande : ils servent à vérifier de quels paragraphes il s'agit
+        const depliant = element('details', 'assistant-ligne-exemples')
+        const bascule = element('summary')
+        const chevron = element('span', 'icone')
+        chevron.setAttribute('aria-hidden', 'true')
+        chevron.innerHTML = icone('caret-down')
+        bascule.append(chevron, groupe.exemples.length > 1 ? `Voir ${groupe.exemples.length} exemples` : 'Voir un exemple')
+        const exemples = element('ul', 'assistant-exemples')
+        exemples.append(
+          ...groupe.exemples.map((texte) => {
+            const extrait = element('li', '', `« ${texte} »`)
+            extrait.dir = 'auto'      // un extrait en arabe se lit de droite à gauche
+            return extrait
+          }),
+        )
+        depliant.append(bascule, exemples)
 
         const champMenu = element('div', 'champ-liste champ-compact')
         const menu = element('select')
@@ -404,7 +419,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
         fleche.setAttribute('aria-hidden', 'true')
         fleche.innerHTML = icone('caret-down')
         champMenu.append(menu, fleche)
-        ligne.append(infos, champMenu)
+        ligne.append(infos, champMenu, depliant)
         liste.append(ligne)
       })
       contenu.push(liste)
@@ -418,6 +433,13 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       'paragraph',
       contenu,
       () => {
+        // Plusieurs titres d'article : le premier clic amène l'avis sous les yeux, le second continue
+        if (titresArticle() > 1 && !avisPresente) {
+          avisPresente = true
+          avis.scrollIntoView({ block: 'center' })
+          avis.focus({ preventScroll: true })
+          return
+        }
         reponses.titres = groupes.flatMap((groupe, rang): ReponsesAssistant['titres'] => {
           const role = roles[rang]
           if (!role) return []
@@ -592,7 +614,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       avecIssn ? 'Nom des fichiers (facultatif)' : 'Nom des fichiers',
       avecIssn
         ? 'Avec ce mot, seuls les fichiers dont le nom le contient suivent ce profil. Laisser vide pour appliquer le profil à tous les documents de la publication.'
-        : 'Un mot présent dans le nom de tous les fichiers de la publication, par exemple « ma-publication ».',
+        : 'Un mot présent dans le nom de tous les fichiers de la publication, par exemple « ma-publication ». Majuscules et minuscules sont équivalentes.',
       propose,
     )
     if (propose && propose === releve.nom_commun)

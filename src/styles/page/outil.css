@@ -902,12 +902,16 @@
     }
   }
 
-  /* Regroupements de paragraphes : une ligne chacun, ce qui est relevé à gauche, le menu de la fonction à droite */
+  /* Regroupements de paragraphes : un tableau encadré, comme les cartes des autres écrans.
+     Une ligne par regroupement : ce qui est relevé à gauche, le menu de la fonction à droite. */
   .assistant-lignes {
     display: grid;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--couleur-bordure);
+    overflow: hidden;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--rayon-petit);
+    background: var(--couleur-surface);
     list-style: none;
   }
 
@@ -915,16 +919,20 @@
   .assistant-lignes-entete {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 13rem);
-    gap: 6px var(--espace-2);
+    gap: 4px var(--espace-2);
     align-items: center;
-    padding-block: 10px;
-    border-bottom: 1px solid var(--couleur-bordure);
+    padding: 10px var(--espace-3);
   }
 
+  .assistant-ligne + .assistant-ligne {
+    border-top: 1px solid var(--couleur-bordure);
+  }
+
+  /* En-tête teinté, comme celui des cartes */
   .assistant-lignes-entete {
-    padding-block: 6px;
-    color: var(--couleur-texte-secondaire);
-    font-size: var(--texte-petit);
+    border-bottom: 1px solid var(--couleur-bordure);
+    background: var(--couleur-teinte);
+    font-weight: var(--graisse-forte);
   }
 
   .assistant-ligne-infos {
@@ -937,9 +945,39 @@
     font-weight: var(--graisse-forte);
   }
 
+  /* Extraits repliés : ils occupent toute la largeur de la ligne une fois dépliés */
   .assistant-ligne-exemples {
-    overflow-wrap: anywhere;
+    grid-column: 1 / -1;
     font-size: var(--texte-petit);
+  }
+
+  .assistant-ligne-exemples summary {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    min-height: 2rem;
+    color: var(--couleur-accent);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .assistant-ligne-exemples summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .assistant-ligne-exemples summary .icone {
+    width: 1rem;
+    height: 1rem;
+    rotate: -90deg;
+    transition: rotate var(--duree-courte-3) var(--courbe-standard);
+  }
+
+  .assistant-ligne-exemples[open] summary .icone {
+    rotate: 0deg;
+  }
+
+  .assistant-ligne-exemples .assistant-exemples {
+    margin-block: 4px 6px;
   }
 
   /* Écran étroit : le menu passe sous ce qui est relevé */
