@@ -6,7 +6,20 @@ import type { DemandeSansId, ProfilGenere, ReleveExemples, ReponsesAssistant, Ro
 
 /** Nombre de documents à partir duquel une comparaison a un sens */
 export const DOCUMENTS_MIN = 2
-const NB_ETAPES = 6
+/** Relevé d'une liste vide : l'assistant s'ouvre alors sans rien avoir à comparer */
+const RELEVE_VIDE: ReleveExemples = {
+  nb_articles: 0,
+  articles: [],
+  illisibles: [],
+  styles: [],
+  titres_en_gras: [],
+  styles_propres: [],
+  images_communes: [],
+  issn: [],
+  couleurs: [],
+  tableaux: { articles: 0, total: 0, deux_lignes: 0, une_ligne: 0, sans_titre: 0 },
+  nom_commun: '',
+}
 const MOTIF_ISSN = /^\d{4}-\d{3}[\dX]$/
 
 /** Rôles offerts pour un groupe de paragraphes en gras. La chaîne vide : le groupe n'est pas un titre */
@@ -160,6 +173,11 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
   const offert = import.meta.env.DEV || new URLSearchParams(location.search).has('assistant')
 
   let releve: ReleveExemples
+  /** Vrai quand la liste est vide : les écrans des paragraphes et des images, qui montrent ce que les
+      documents contiennent, sont alors sautés */
+  let sansDocuments = false
+  // Les écrans gardent leur numéro d'origine dans le code. Celui qui est affiché dépend du parcours.
+  const etapes = () => (sansDocuments ? [1, 4, 5, 6] : [1, 2, 3, 4, 5, 6])
   let reponses: ReponsesAssistant
   /** Regroupements de l'écran des paragraphes : les styles de la publication d'abord, puis les textes en gras */
   let regroupements: Regroupement[]
@@ -208,15 +226,17 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     titreCarte.replaceChildren('Création de profil')
     if (etape > 1 && reponses.revue) titreCarte.prepend(element('span', 'assistant-contexte', reponses.revue), ' ')
     const jauge = element('span', 'assistant-jauge')
-    jauge.style.setProperty('--avancement', `${(etape / NB_ETAPES) * 100}%`)
-    compteEtapes.replaceChildren(jauge, element('span', '', `${etape} de ${NB_ETAPES}`))
+    const total = etapes().length
+    const rang = etapes().indexOf(etape) + 1
+    jauge.style.setProperty('--avancement', `${(rang / total) * 100}%`)
+    compteEtapes.replaceChildren(jauge, element('span', '', `${rang} de ${total}`))
     compteEtapes.hidden = false
     // Le titre de l'écran dit ce qui est demandé. Le lecteur d'écran y lit aussi le compte des étapes
     const titre = element('h3', 'assistant-titre')
     const dessin = element('span', 'fichier-icone')
     dessin.setAttribute('aria-hidden', 'true')
     dessin.innerHTML = `<span class="icone">${icone(pictogramme)}</span>`
-    titre.append(dessin, element('span', '', nom), element('span', 'visuellement-masque', `, étape ${etape} de ${NB_ETAPES}`))
+    titre.append(dessin, element('span', '', nom), element('span', 'visuellement-masque', `, étape ${rang} de ${total}`))
     titre.id = 'titre-assistant'
     titre.tabIndex = -1
     const formulaire = element('form', 'assistant-formulaire')
@@ -249,11 +269,26 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
 
   function ecranRevue(): void {
     const n = releve.nb_articles
-    const introduction = avecNombres(
-      'p',
-      '',
-      `MiseEnWeb a comparé ${n} documents. Les réponses de cet assistant produisent un profil : les règles de conversion des documents de la publication.`,
-    )
+    const introduction = sansDocuments
+      ? element('div', 'assistant-consigne')
+      : avecNombres(
+          'p',
+          '',
+          `MiseEnWeb a comparé ${n} documents. Les réponses de cet assistant produisent un profil : les règles de conversion des documents de la publication.`,
+        )
+    if (sansDocuments)
+      introduction.append(
+        element(
+          'p',
+          'assistant-constat',
+          'Les réponses de cet assistant produisent un profil : les règles de conversion des documents de la publication.',
+        ),
+        element(
+          'p',
+          'assistant-avis',
+          'La liste des documents est vide. Le profil règle la reconnaissance des documents et la présentation des pages. Avec au moins deux documents dans la liste, l’assistant relève aussi les titres sans style de titre et les images communes.',
+        ),
+      )
     const nom = champ('assistant-revue', 'Nom de la publication', '', reponses.revue)
     nom.entree.required = true
     const releveIssn = releve.issn[0]
@@ -293,6 +328,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       )
       if (!nomValide) nom.entree.focus()
       else if (!issnValide) issn.entree.focus()
+      else if (sansDocuments) ecranPresentation()
       else ecranTitres()
     })
   }
@@ -533,7 +569,8 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     ]
     const elements = carteQuestion('Éléments de la publication')
     const cases = element('div', 'assistant-options')
-    if (releve.couleurs.length)
+    // Sans document, rien ne dit si la publication a un bandeau : la case est offerte
+    if (releve.couleurs.length || sansDocuments)
       cases.append(
         caseACocher('Conserver le bandeau placé avant le titre, avec sa couleur de fond', reponses.bandeau, (c) => (reponses.bandeau = c)),
       )
@@ -542,7 +579,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     )
     elements.corps.append(cases)
     contenu.push(elements.bloc)
-    ecran(4, 'Présentation de la page', 'layout', contenu, ecranReconnaissance, ecranImages)
+    ecran(4, 'Présentation de la page', 'layout', contenu, ecranReconnaissance, sansDocuments ? ecranRevue : ecranImages)
   }
 
   function ecranReconnaissance(): void {
@@ -597,7 +634,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     const informatives = reponses.images.filter((image) => image.texte).length
     const decoratives = reponses.images.length - informatives
     const elements = [reponses.bandeau ? 'bandeau conservé' : '', reponses.pied_page ? 'pied de page reproduit' : ''].filter(Boolean)
-    return [
+    const lignes: [string, string][] = [
       ['Reconnaissance', reconnaissance.join(', ')],
       [
         'Titres',
@@ -615,6 +652,8 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       ['Tableaux', { bordures: 'bordure autour de chaque cellule', apa: 'APA, 7e édition', chicago: 'Chicago, 18e édition' }[reponses.tableaux]],
       ['Éléments de la publication', elements.join(', ') || 'aucun'],
     ]
+    // Sans document, aucune question n'a porté sur les titres ni sur les images
+    return sansDocuments ? lignes.filter(([terme]) => terme !== 'Titres' && terme !== 'Images') : lignes
   }
 
   async function ecranResume(): Promise<void> {
@@ -696,17 +735,23 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
   }
 
   async function ouvrir(): Promise<void> {
-    if (documents().length < DOCUMENTS_MIN) {
-      refuser(`L’assistant compare au moins ${DOCUMENTS_MIN} documents. Ajouter des documents à la liste, puis créer le profil.`)
+    sansDocuments = documents().length === 0
+    if (!sansDocuments && documents().length < DOCUMENTS_MIN) {
+      refuser(
+        `L’assistant compare au moins ${DOCUMENTS_MIN} documents. Ajouter un document à la liste, ou vider la liste pour créer un profil sans document.`,
+      )
       return
     }
-    boutonCreer.disabled = true
-    try {
-      releve = await demander<ReleveExemples>({ action: 'releverExemples', noms: documents() })
-    } finally {
-      boutonCreer.disabled = false
+    if (sansDocuments) releve = RELEVE_VIDE
+    else {
+      boutonCreer.disabled = true
+      try {
+        releve = await demander<ReleveExemples>({ action: 'releverExemples', noms: documents() })
+      } finally {
+        boutonCreer.disabled = false
+      }
     }
-    if (releve.nb_articles < DOCUMENTS_MIN) {
+    if (!sansDocuments && releve.nb_articles < DOCUMENTS_MIN) {
       refuser(`L’assistant compare au moins ${DOCUMENTS_MIN} documents lisibles. Ajouter d’autres documents à la liste, puis créer le profil.`)
       return
     }
@@ -717,7 +762,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       mot_nom_fichier: '',
       titres: [],
       images: [],
-      apparence: 'article',
+      apparence: sansDocuments ? 'document' : 'article',
       // La place du numéro et du titre suggère la norme suivie : deux lignes pour l'APA, une pour Chicago
       tableaux:
         releve.tableaux.deux_lignes > releve.tableaux.une_ligne
@@ -726,7 +771,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
             ? 'chicago'
             : 'bordures',
       bandeau: releve.couleurs.length > 0,
-      pied_page: true,
+      pied_page: !sansDocuments,      // sans document, rien n'est coché d'avance
     }
     // Choix de départ : le groupe de plus grande taille est le titre de l'article
     images = releve.images_communes.map(() => ({ sorte: '', texte: '' }))

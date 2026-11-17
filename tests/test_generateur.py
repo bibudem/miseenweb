@@ -167,3 +167,14 @@ def test_style_propre_devient_un_titre(nouveau_document, pont, module_pont):
     page = BeautifulSoup((module_pont.SORTIE / resultat["sortie"]).read_text(encoding="utf-8"), "html.parser")
     assert page.h1.get_text() == "Titre de l'article fictif"
     assert [h.get_text() for h in page.find_all("h2")] == ["Section fictive sans gras"]
+
+
+# ---- Profil créé sans document : seulement la reconnaissance et la présentation ----
+
+def test_profil_sans_titres_ni_images_valide(module_pont):
+    reponses = {**REPONSES, "titres": [], "images": [], "apparence": "document", "tableaux": "bordures",
+                "bandeau": False, "pied_page": False}
+    reponse = json.loads(module_pont.generer_profil(json.dumps(reponses)))
+    assert reponse["messages"] == []
+    assert "regles:" not in reponse["texte"] and "images_connues" not in reponse["texte"]
+    assert json.loads(module_pont.deposer_profil(reponse["texte"]))["messages"] == []
