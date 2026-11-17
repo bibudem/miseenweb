@@ -120,3 +120,11 @@ variantes:
     erreurs = messages(texte)
     assert erreurs == ["variantes > manuscrit > normalisation > regles > élément 1 > gras : "
                        "valeur « vrai » refusée. Écrire true ou false."]
+
+
+def test_apparence_validee_et_ancien_gabarit_refuse():
+    assert messages(VALIDE + "  apparence: article\n") == []
+    erreurs = messages(VALIDE + "  apparence: revue\n")
+    assert len(erreurs) == 1 and "article, document" in erreurs[0]
+    erreurs = messages(VALIDE.replace("../gabarits/page.html", "../gabarits/science-infirmiere.html"))
+    assert len(erreurs) == 1 and "../gabarits/page.html" in erreurs[0]

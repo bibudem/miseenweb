@@ -1,0 +1,20 @@
+    /* Apparence « article » : article de revue. Titres centrés, texte justifié, bandeau et pied de page. */
+    blockquote { margin: 1.5rem 0; margin-inline-start: 2.5rem; text-align: justify; hyphens: auto; }
+    /* Titre d'un tableau ou d'une figure : en italique, sauf son numéro, qui est en gras */
+    figcaption, p.legende { margin: 1rem 0; font-style: italic; }
+    /* Numéro et titre d'un tableau : à gauche, sans justification qui étirerait les mots */
+    main > p[id^="titre-tableau"], main > p.legende { text-align: start; hyphens: manual; }
+    figcaption strong, p.legende strong { font-style: normal; }
+    ul[class^="puces-"] + ul[class^="puces-"], ul + ul[class^="puces-"], ul[class^="puces-"] + ul { margin-top: -1rem; }
+    h1, h2 { text-align: center; }
+    main > p { text-align: justify; hyphens: auto; }
+    /* Référence bibliographique : retrait négatif, sans justification (APA, 7e édition) */
+    main > p.reference { padding-inline-start: 2.5em; text-indent: -2.5em; text-align: start; hyphens: manual; }
+    /* Bandeau placé avant le titre. Sa couleur vient du document Word quand le profil le demande. */
+    p.bandeau { background: #1f3864; color: #fff; padding: .3rem .6rem; text-align: left;
+      font-family: Arial, Helvetica, sans-serif; }
+    footer.pied-page { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--bordure);
+      color: var(--gris); font: .85rem/1.4 Arial, Helvetica, sans-serif; }
+    footer.pied-page p { display: flex; align-items: center; gap: .5rem; margin: .25rem 0; }
+    footer.pied-page span:last-child:not(:first-child) { margin-left: auto; white-space: nowrap; }
+    footer.pied-page img { height: 1.6rem; vertical-align: middle; }

@@ -52,3 +52,37 @@ def test_presentation_inconnue_refusee_avec_les_valeurs_permises():
     message = str(erreur.value)
     assert "« vancouver »" in message
     assert "apa" in message and "bordures" in message
+
+
+# ---- Apparence de la page : option « apparence » du profil ----
+
+def test_document_general_apparence_document(nouveau_document, convertir):
+    nouveau_document.add_paragraph("Texte.")
+    page, _ = convertir(nouveau_document)
+    regles = regles_css(page)
+    assert "border-left: 4px solid var(--accent)" in regles["blockquote"]     # citation avec trait
+    assert "h1, h2" not in regles                                             # titres à gauche
+    assert "p.bandeau" not in regles
+
+
+def test_article_de_revue_apparence_article(nouveau_document, convertir):
+    nouveau_document.add_paragraph("Texte.")
+    page, _ = convertir(nouveau_document, nom=ARTICLE)
+    regles = regles_css(page)
+    assert "text-align: center" in regles["h1, h2"]                           # titres centrés
+    assert "text-align: justify" in regles["main > p"]                        # texte justifié
+    assert "border-left" not in regles["blockquote"]
+    assert "p.bandeau" in regles and "footer.pied-page" in regles
+
+
+def test_apparence_inconnue_refusee_avec_les_valeurs_permises():
+    from pathlib import Path
+
+    import pytest
+    from docx2html import post_traitement
+    from docx2html.profils import ErreurProfil
+
+    gabarits = Path(post_traitement.__file__).resolve().parent.parent / "gabarits"
+    with pytest.raises(ErreurProfil) as erreur:
+        post_traitement._styles_au_choix({"apparence": "revue"}, gabarits, "apparence", "document")
+    assert "« revue »" in str(erreur.value) and "article, document" in str(erreur.value)

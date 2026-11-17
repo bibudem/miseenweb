@@ -46,7 +46,8 @@ commun:
     verifier_hierarchie: true
     avertir_h1_multiples: true
     table_des_matieres: false
-    gabarit: ../gabarits/science-infirmiere.html
+    gabarit: ../gabarits/page.html
+    apparence: article              # titres centrés, texte justifié, bandeau et pied de page
     langue: fr
 
 variantes:

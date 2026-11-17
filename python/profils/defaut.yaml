@@ -43,6 +43,7 @@ post_traitement:
   notes_tableaux: true      # sort du tableau la note de sa dernière ligne
   accessibilite_tableaux: true   # titre rattaché, en-têtes de ligne, cellules reliées aux en-têtes
   alignement_colonnes: true # centre une colonne de données si la plupart de ses cellules le sont
+  apparence: document       # « document » (titres et texte à gauche) ou « article » (titres centrés, texte justifié)
   tableaux: bordures        # présentation : « bordures » (autour de chaque cellule), « apa » ou « chicago » (trois lignes horizontales)
   tableaux_larges: 9        # colonnes à partir desquelles un tableau défile dans sa zone
   sens_ecriture: true       # marque les passages en arabe

@@ -15,6 +15,8 @@ Opérations disponibles, activées par le profil (`post_traitement`) :
   notes_tableaux      : sort du tableau la note placée dans sa dernière ligne
   accessibilite_tableaux : rattache son titre à chaque tableau, marque les en-têtes de ligne
                         et relie chaque cellule à ses en-têtes (scope, id, headers)
+  apparence           : apparence de la page, « document » (défaut) ou « article ». Chaque valeur
+                        correspond à un fichier de gabarits/apparence/
   tableaux            : présentation des tableaux, « bordures » (défaut), « apa » ou « chicago ».
                         Chaque valeur correspond à un fichier de gabarits/tableaux/.
                         « apa » : l'alignement suit l'APA sans égard au Word, en-têtes et données
@@ -814,20 +816,25 @@ def _supprimer_vides(soupe: BeautifulSoup) -> int:
     return n
 
 
-def _styles_tableaux(config: dict, dossier_gabarits: Path) -> str:
-    """Renvoie les règles CSS de la présentation des tableaux choisie par le profil (option « tableaux »).
+def _styles_au_choix(config: dict, dossier_gabarits: Path, option: str, defaut: str) -> str:
+    """Renvoie les règles CSS choisies par une option du profil : « apparence » ou « tableaux ».
 
-    Chaque présentation est un fichier de gabarits/tableaux/. Une valeur sans fichier est refusée,
-    avec la liste des valeurs permises.
+    Chaque valeur permise est un fichier du dossier gabarits/<option>/. Une valeur sans fichier
+    est refusée, avec la liste des valeurs permises.
     """
-    dossier = dossier_gabarits / "tableaux"
-    nom = str(config.get("tableaux", "bordures"))
+    dossier = dossier_gabarits / option
+    nom = str(config.get(option, defaut))
     permises = sorted(f.stem for f in dossier.glob("*.css"))
     if nom not in permises:
         raise ErreurProfil(
-            f"présentation des tableaux inconnue : « {nom} ». Valeurs permises : {', '.join(permises)}."
+            f"option « {option} » : valeur « {nom} » inconnue. Valeurs permises : {', '.join(permises)}."
         )
     return (dossier / f"{nom}.css").read_text(encoding="utf-8").rstrip()
+
+
+def _styles_tableaux(config: dict, dossier_gabarits: Path) -> str:
+    """Règles CSS de la présentation des tableaux (option « tableaux », « bordures » par défaut)."""
+    return _styles_au_choix(config, dossier_gabarits, "tableaux", "bordures")
 
 
 def appliquer(
@@ -938,7 +945,9 @@ def appliquer(
         chemin_commun = chemin_gabarit.parent / "commun.css"
         styles_communs = chemin_commun.read_text(encoding="utf-8").rstrip() if chemin_commun.exists() else ""
         page = (
-            page.replace("{{ styles_tableaux }}", _styles_tableaux(config, chemin_gabarit.parent))
+            page.replace("{{ styles_apparence }}",
+                         _styles_au_choix(config, chemin_gabarit.parent, "apparence", "document"))
+            .replace("{{ styles_tableaux }}", _styles_tableaux(config, chemin_gabarit.parent))
             .replace("{{ styles_communs }}", styles_communs)
             .replace("{{ titre }}", resultat.titre)
             .replace("{{ tdm }}", tdm_html)

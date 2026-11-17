@@ -51,7 +51,7 @@ SECTIONS = {
     "post_traitement": {
         "supprimer_vides": BOOLEEN, "corriger_faux_titres": BOOLEEN, "entetes_tableaux": BOOLEEN,
         "notes_tableaux": BOOLEEN, "accessibilite_tableaux": BOOLEEN, "alignement_colonnes": BOOLEEN,
-        "tableaux": "presentation", "tableaux_larges": ENTIER, "liens_automatiques": BOOLEEN,
+        "apparence": "apparence", "tableaux": "presentation", "tableaux_larges": ENTIER, "liens_automatiques": BOOLEEN,
         "sens_ecriture": BOOLEEN, "identifiants_titres": BOOLEEN, "decaler_niveaux": "decalage",
         "verifier_hierarchie": BOOLEEN, "avertir_h1_multiples": BOOLEEN, "table_des_matieres": BOOLEEN,
         "niveau_max_tdm": ENTIER, "titre_tdm": TEXTE, "tdm_dans_fragment": BOOLEEN,
@@ -99,6 +99,8 @@ def _valeur(valeur: Any, sorte: Any, ou: str, gabarits: Path, messages: list[str
     elif sorte == "decalage":
         if valeur != "auto" and (isinstance(valeur, bool) or not isinstance(valeur, int)):
             messages.append(f"{ou} : valeur « {valeur} » refusée. Écrire auto ou un nombre entier.")
+    elif sorte == "apparence":
+        _parmi(valeur, sorted(f.stem for f in (gabarits / "apparence").glob("*.css")), ou, messages)
     elif sorte == "presentation":
         _parmi(valeur, sorted(f.stem for f in (gabarits / "tableaux").glob("*.css")), ou, messages)
     elif sorte == "gabarit":

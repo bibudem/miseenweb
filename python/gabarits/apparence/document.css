@@ -1,0 +1,6 @@
+    /* Apparence « document » : thèse, rapport, guide. Titres et texte alignés à gauche. Valeur par défaut. */
+    blockquote { margin: 1.5rem 0; padding: .25rem 1.25rem; border-left: 4px solid var(--accent); color: #333; }
+    figcaption, p.legende { font-size: .9rem; color: var(--gris); font-style: italic; }
+    /* Référence bibliographique : retrait négatif, sans justification (APA, 7e édition) */
+    p.reference { padding-inline-start: 2.5em; text-indent: -2.5em; text-align: start; hyphens: manual; }
+    p.note-tableau { font-size: .9rem; margin: .25rem 0; }

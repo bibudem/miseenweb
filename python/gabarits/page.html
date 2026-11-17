@@ -26,16 +26,9 @@
     h3 { font-size: 1.2rem; margin-top: 2rem; }
     h1.titre-document { color: var(--accent); }
     p.sous-titre { color: var(--gris); font-size: 1.15rem; margin-top: -.5rem; }
-    blockquote { margin: 1.5rem 0; padding: .25rem 1.25rem; border-left: 4px solid var(--accent); color: #333; }
-    figcaption, p.legende { font-size: .9rem; color: var(--gris); font-style: italic; }
-    /* Référence bibliographique : retrait négatif, sans justification (APA, 7e édition) */
-    p.reference { padding-inline-start: 2.5em; text-indent: -2.5em; text-align: start; hyphens: manual; }
     img { max-width: 100%; height: auto; }
     table { border-collapse: collapse; margin: 1.5rem 0; width: 100%; }
     td, th { padding: .4rem .6rem; vertical-align: top; }
-    p.note-tableau { font-size: .9rem; margin: .25rem 0; }
-{{ styles_tableaux }}
-{{ styles_communs }}
     div.resume { background: #f4f6f8; padding: 1rem 1.25rem; border-radius: 4px; }
     nav.table-des-matieres { background: #f4f6f8; padding: 1rem 1.5rem; border-radius: 4px; margin-bottom: 2rem;
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: .95rem; }
@@ -43,12 +36,16 @@
     nav.table-des-matieres ol { padding-left: 1.25rem; margin: 0; }
     nav.table-des-matieres a { color: var(--accent); text-decoration: none; }
     nav.table-des-matieres a:hover { text-decoration: underline; }
+{{ styles_apparence }}
+{{ styles_tableaux }}
+{{ styles_communs }}
   </style>
 </head>
 <body>
 <main>
 {{ tdm }}
 {{ contenu }}
+{{ pied }}
 </main>
 </body>
 </html>
