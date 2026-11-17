@@ -1,4 +1,4 @@
-"""Générateur de profil : écrit le fichier de profil d'une revue d'après les réponses de l'assistant.
+"""Générateur de profil : écrit le fichier de profil d'une publication d'après les réponses de l'assistant.
 
 Le générateur ne décide rien : il transcrit. Le texte produit est un profil comme les autres.
 Il passe par la même validation qu'un profil déposé (validation.py) avant d'être utilisé.
@@ -107,7 +107,7 @@ def generer_profil(reponses: dict) -> str:
 
     lignes = [
         f"# Profil de la publication {revue}, créé par l'assistant de MiseEnWeb.",
-        "# Le README de MiseEnWeb décrit tous les réglages.",
+        "# Réglages décrits dans le README : https://github.com/bibudem/miseenweb",
         "",
         f"nom: {nom_de_profil(revue)}",
         f"revue: {_texte(revue)}",

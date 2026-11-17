@@ -1,4 +1,4 @@
-"""MiseEnWeb : convertit des articles Word en pages web, selon les réglages de chaque revue.
+"""MiseEnWeb : convertit des documents Word en pages web, selon les réglages de chaque publication.
 
 Chaîne de traitement pour un fichier :
     diagnostic  ->  choix du profil  ->  normalisation (optionnelle)

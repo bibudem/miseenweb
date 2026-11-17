@@ -1,5 +1,6 @@
 # Profil par défaut : appliqué quand aucun autre profil ne correspond.
-# Il sert aussi d'exemple commenté d'un profil simple. Le README décrit tous les réglages.
+# Il sert aussi d'exemple commenté d'un profil simple. Le README décrit tous les réglages, section
+# « Réglages d'un profil ».
 
 nom: defaut
 description: Document Word générique utilisant les styles de titre intégrés de Word.

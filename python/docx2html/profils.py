@@ -2,7 +2,7 @@
 
 Les profils sont des fichiers YAML placés dans le dossier `profils/`. Un fichier
 décrit un profil, ou une revue : dans ce cas, chaque variante devient un profil
-nommé « revue/variante ». La structure est décrite dans README.md.
+nommé « revue/variante ». Les réglages sont décrits dans README.md, section « Réglages d'un profil ».
 """
 
 from __future__ import annotations

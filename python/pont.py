@@ -1,8 +1,10 @@
 """Pont entre la page web et le convertisseur docx2html.
 
 - Choix du profil : détection automatique par défaut (règles des profils, et ISSN du pied
-  de page qui limite le choix à la revue reconnue), revue imposée dans le menu « Revue »,
-  ou type de document choisi à la main pour un fichier.
+  de page qui limite le choix à la publication reconnue), publication imposée dans le menu
+  « Règles », ou type de document choisi à la main pour un fichier.
+- Profils : ajout et retrait du profil de l'utilisateur, relevé des documents et écriture d'un
+  profil pour l'assistant de création de profil.
 - Remarques : les avertissements du convertisseur sont traduits en langage courant, avec la
   correction à faire dans Word, et complétés par des vérifications d'accessibilité de la page
   produite (images sans texte de remplacement, liens vagues, tableaux sans en-tête).

@@ -1,4 +1,4 @@
-"""Analyse d'articles d'exemple : ce qui revient d'un article à l'autre dans une revue.
+"""Analyse de documents d'exemple : ce qui revient d'un document à l'autre dans une publication.
 
 Le relevé sert de point de départ à la création d'un profil. Il ne décide rien : il compte.
 Chaque relevé indique dans combien d'articles un élément paraît, pour distinguer une habitude

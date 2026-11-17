@@ -43,6 +43,86 @@ texte de remplacement des images, présentation de la page et des tableaux. C'es
 - L'assistant compare les documents de la liste et pose ses questions en six écrans. Sans document,
   il en pose quatre : il règle alors la reconnaissance et la présentation seulement.
 
+### Réglages d'un profil
+
+Un profil simple a un en-tête et quatre sections. `python/profils/defaut.yaml` en est l'exemple commenté.
+
+**En-tête**
+
+| Réglage | Rôle |
+|---|---|
+| `nom` | Identifiant du profil : minuscules sans accent, chiffres et traits d'union. Obligatoire. |
+| `description` | Phrase qui décrit le profil. |
+| `revue` | Nom de la publication. Il paraît dans le menu « Règles ». |
+| `issn` | ISSN de la publication, entre guillemets. Un document qui le porte en pied de page suit ce profil. |
+
+**`detection` : reconnaissance des documents**
+
+| Réglage | Rôle |
+|---|---|
+| `motif_nom_fichier` | Expression régulière cherchée dans le nom du fichier, sans égard aux majuscules. |
+| `styles_presents` | Styles de paragraphe attendus dans le document. |
+| `mode_styles` | `un` (au moins un des styles, par défaut) ou `tous`. |
+| `priorite` | Nombre. Entre deux profils qui correspondent, le plus élevé l'emporte. |
+| `defaut` | `true` pour le profil appliqué quand aucun autre ne correspond. Réservé à un profil du site. |
+
+Un profil sans `detection` doit avoir un `issn` : l'ISSN seul suffit alors à le reconnaître.
+
+**`mammoth` : passage du Word au HTML**
+
+| Réglage | Rôle |
+|---|---|
+| `carte_styles` | Correspondance entre les styles de Word et les balises HTML, dans la [syntaxe de Mammoth](https://github.com/mwilliamson/python-mammoth#writing-style-maps). |
+| `inclure_carte_defaut` | Conserve les correspondances d'origine de Mammoth (titres, listes, gras). |
+| `images` | `incorporees` dans la page, ou `extraites` dans un dossier. |
+| `ignorer_images_vides` | Écarte les images sans contenu. |
+| `bordures_images` | Reproduit la bordure que Word donne à une image. |
+| `images_connues` | Liste d'images de la publication. Chacune a son `empreinte` et son `alt`, le texte de remplacement. Un `alt` vide marque une image décorative. |
+
+**`normalisation` : corrections faites sur une copie du Word**
+
+| Réglage | Rôle |
+|---|---|
+| `active` | Active la section. |
+| `numeros_sous_titres` | Écrit en texte le numéro des sous-titres numérotés. |
+| `mise_en_forme_cellules` | Conserve le retrait et le centrage dans les tableaux. |
+| `sortes_de_puces` | Conserve les puces particulières : coche, losange, tiret. |
+| `regles` | Liste de règles. Un paragraphe qui remplit toutes les conditions d'une règle reçoit son style cible. La première règle qui s'applique l'emporte. |
+
+Conditions d'une règle : `styles_source`, `gras`, `taille_min`, `taille_max` (points), `longueur_max`
+(caractères), `mots_min`, `retrait_min` (points), `motif` (expression régulière), `premier_seulement`.
+Résultat : `style_cible`, par exemple `Title`, `Heading 1` ou `Quote`. Chaque règle a un `nom`.
+
+**`post_traitement` : structure et présentation de la page**
+
+| Réglage | Rôle |
+|---|---|
+| `apparence` | `document` (titres et texte à gauche) ou `article` (titres centrés, texte justifié). |
+| `tableaux` | `bordures`, `apa` ou `chicago`. |
+| `tableaux_larges` | Nombre de colonnes à partir duquel un tableau défile dans sa zone. 0 : jamais. |
+| `entetes_tableaux`, `notes_tableaux`, `accessibilite_tableaux`, `alignement_colonnes` | En-têtes, note sortie du tableau, titre et en-têtes reliés aux cellules, colonne centrée. |
+| `bandeau_avant_titre`, `couleur_bandeau` | Conserve le bandeau placé avant le titre, avec sa couleur de fond. |
+| `pied_page` | Reproduit le pied de page du document au bas de la page. |
+| `resume_avant_mots_cles` | Replace le résumé avant ses mots-clés. |
+| `decaler_niveaux` | `auto` : sous un titre de document, « Titre 1 » devient un titre de niveau 2. Ou un nombre. |
+| `identifiants_titres`, `verifier_hierarchie`, `avertir_h1_multiples`, `corriger_faux_titres` | Ancre de chaque titre, contrôle des niveaux, titres vides retirés. |
+| `table_des_matieres`, `niveau_max_tdm`, `titre_tdm`, `tdm_dans_fragment` | Table des matières de la page : niveau le plus profond, titre, présence dans un extrait sans gabarit. |
+| `classe_titre_document` | Classe du titre principal, `titre-document` par défaut. |
+| `liens_automatiques` | Rend cliquables les adresses web et les courriels. |
+| `sens_ecriture` | Marque les passages en arabe. |
+| `supprimer_vides` | Retire les paragraphes vides. |
+| `gabarit` | `../gabarits/page.html`. Sans gabarit : un extrait de HTML, à insérer dans un site. |
+| `langue` | Langue de la page, `fr` par défaut. |
+
+Les valeurs permises pour `apparence` et `tableaux` sont les fichiers de `python/gabarits/apparence/`
+et de `python/gabarits/tableaux/`. Ajouter un fichier `.css` ajoute une valeur.
+
+**Profil à variantes**
+
+Une publication qui a plusieurs sortes de documents écrit ses réglages partagés sous `commun`, puis
+une entrée par sorte sous `variantes`. Chaque variante devient un profil nommé `nom/variante`.
+`python/profils/science-infirmiere.yaml` en est l'exemple.
+
 ## Tester
 
 Requiert Python 3. Les tests ont été exécutés avec Python 3.13.
