@@ -23,8 +23,37 @@ Au premier lancement, Pyodide et les bibliothèques Python (16 Mo) sont téléch
 ## Structure
 
 - `index.html` et `src/` : la page, son style et le worker qui exécute Python.
+  - `src/assistant.ts` : l'assistant de création de profil.
+  - `src/profil.ts` : l'ajout d'un profil à partir d'un fichier, et sa conservation dans le navigateur.
 - `python/pont.py` : le lien entre la page et le convertisseur.
 - `python/docx2html/`, `profils/`, `gabarits/` : le convertisseur, ses profils et ses gabarits.
+  - `analyse.py` : relevé de ce que des documents ont en commun (styles, titres en gras, images).
+  - `generateur.py` : écriture d'un profil d'après les réponses de l'assistant.
+  - `validation.py` : vérification d'un profil, avec un message par erreur.
+- `tests/` : les tests automatiques du convertisseur.
+
+## Profils
+
+Un profil contient les règles de conversion d'une publication : reconnaissance des documents, titres,
+texte de remplacement des images, présentation de la page et des tableaux. C'est un fichier YAML.
+
+- Les profils du site sont dans `python/profils/`. `defaut.yaml` sert d'exemple commenté.
+- Dans la page, un profil s'ajoute à partir d'un fichier ou se crée avec l'assistant de création de
+  profil. Il est validé, puis conservé dans le navigateur. Un seul profil ajouté à la fois.
+- L'assistant compare les documents de la liste et pose ses questions en six écrans. Sans document,
+  il en pose quatre : il règle alors la reconnaissance et la présentation seulement.
+
+## Tester
+
+Requiert Python 3. Les tests ont été exécutés avec Python 3.13.
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pytest
+```
+
+Les tests créent leurs documents Word. Aucun document réel n'est conservé dans le répertoire GitHub.
 
 ## Publier
 

@@ -2,13 +2,13 @@
 
 ## Déclaration DDIA
 
-**Outils d'intelligence artificielle :** Claude Opus 5.5 (claude-opus-5-5), utilisé le 11 novembre 2026, et Claude Fable 5.2 (claude-fable-5-2), utilisé du 13 au 15 novembre 2026, par Claude Code d'Anthropic. Ces outils peuvent produire du code ou des analyses erronés, et leurs résultats ont été testés et validés par une personne.
+**Outils d'intelligence artificielle :** Claude Opus 5.5 (claude-opus-5-5), utilisé le 11 novembre 2026, et Claude Fable 5.2 (claude-fable-5-2), utilisé du 13 au 17 novembre 2026, par Claude Code d'Anthropic. Ces outils peuvent produire du code ou des analyses erronés, et leurs résultats ont été testés et validés par une personne.
 
 **Conceptualisation :** L'IAG a proposé d'exécuter le convertisseur de MiseEnWeb dans le navigateur, avec Pyodide, et de publier la page sur GitHub Pages. Le besoin, offrir l'outil aux utilisateurs sans installation, ainsi que les choix finaux ont été déterminés par l'auteur du projet.
 
 **Méthodologie :** L'IAG a vérifié la faisabilité de l'approche avant de la proposer, en convertissant les documents d'exemple dans Pyodide et en comparant le résultat à celui du programme de bureau. Elle a proposé des méthodes de vérification : tests automatisés dans le navigateur, audit d'accessibilité et contrôle d'intégrité, qui compare le texte du document Word à celui de la page produite. Pour les articles de la revue Science infirmière et pratiques en santé, l'IAG a analysé la structure des documents (styles, tableaux, images, couleurs) sans en lire le texte.
 
-**Exécution :** L'IAG a rédigé le code TypeScript, HTML et CSS de la page, le pont Python entre la page et le convertisseur, le service worker et les scripts de préparation. Elle a exécuté les tests et l'audit d'accessibilité, puis corrigé les défauts relevés. À la suite des tests de la revue, elle a modifié le convertisseur : tableaux selon l'APA, tableaux larges, couleur des bandeaux, ordre du résumé et des mots-clés, sens d'écriture, puces, retraits et contrôle d'intégrité. L'auteur a utilisé la page dans le navigateur, relevé ce qui ne convenait pas et corrigé des propositions de l'IAG.
+**Exécution :** L'IAG a rédigé le code TypeScript, HTML et CSS de la page, le pont Python entre la page et le convertisseur, le service worker et les scripts de préparation. Elle a exécuté les tests et l'audit d'accessibilité, puis corrigé les défauts relevés. À la suite des tests de la revue, elle a modifié le convertisseur : tableaux selon l'APA, tableaux larges, couleur des bandeaux, ordre du résumé et des mots-clés, sens d'écriture, puces, retraits et contrôle d'intégrité. Les 16 et 17 novembre, elle a rédigé les tests automatiques du convertisseur, la présentation des tableaux et de la page choisie par le profil, la validation d'un profil, l'analyse de documents d'exemple, le générateur de profil et l'assistant de création de profil. Elle a revu l'interface d'après les pages du système de design Primer, lues à la demande de l'auteur. L'auteur a utilisé la page dans le navigateur, relevé ce qui ne convenait pas et corrigé des propositions de l'IAG.
 
 **Visualisation :** L'IAG a adapté le style graphique du site des Bibliothèques (répertoire GitHub `bibweb`) à la page, en s'aidant de la base de connaissances UI/UX Pro Max. Elle a produit l'image de partage, les icônes de l'application et les captures d'écran, à partir du logo existant et selon les indications de l'auteur.
 
@@ -32,7 +32,21 @@
   par défaut; couleur et position du logo et du nom de l'outil;
 - tester la conversion des articles de la revue, en trois tours, et relever les défauts;
 - décider des règles : application stricte de l'APA aux tableaux, alignement des en-têtes selon leur colonne, vocabulaire et ton des messages;
-- valider chaque étape par l'examen du résultat.
+- décider du plan des profils en libre-service : une publication crée son profil elle-même, et
+  l'entrée au catalogue commun reste soumise à une approbation;
+- choisir, à chaque étape, entre les approches proposées : présentation des tableaux par options,
+  un seul gabarit, reconnaissance par l'ISSN seul, un profil ajouté à la fois, assistant dans la page;
+- fournir les guides de style servant de sources aux présentations de tableaux;
+- décider que l'outil vise toute publication, et remplacer « revue » par « publication » dans les textes;
+- demander que l'interface suive les principes de Primer, et que l'IAG en lise les pages avant de proposer;
+- diriger la conception de l'assistant écran par écran : titres, intitulés, consignes, ordre des
+  éléments, mise en évidence des nombres relevés, tableau des regroupements, création sans document;
+- corriger des propositions de l'IAG : intitulés et libellés des boutons, textes trop longs, pastilles
+  sans contexte, couleur jaune lue comme une alerte, vert des étapes faites, icônes, boutons
+  présentés comme des hyperliens, liste des documents trop haute;
+- relever des défauts à l'essai : menu des règles mal réglé au démarrage, titres longs absents du
+  relevé, ISSN refusé au dernier écran seulement, choix de départ du titre de l'article;
+- valider chaque étape par l'examen du résultat, et écrire chaque commit.
 
 **Le travail de l'IAG (Claude) :**
 
@@ -41,6 +55,12 @@
 - modifier le convertisseur à la suite des tests de la revue;
 - produire l'image de partage, les icônes et les captures d'écran;
 - exécuter les tests dans le navigateur et l'audit d'accessibilité, et corriger les défauts relevés;
+- rédiger les tests automatiques, la validation d'un profil, l'analyse des documents, le générateur
+  de profil et l'assistant de création de profil;
+- lire les pages de Primer et rapporter ce qu'elles énoncent et n'énoncent pas;
+- proposer des approches avec leurs avantages et leurs inconvénients, et signaler ses propres erreurs;
+- vérifier par programme la conversion des articles de la revue avec un profil créé par l'assistant,
+  sans en afficher le texte;
 - rédiger le README et la présente ébauche de déclaration.
 
 ## Outils et programmes utilisés
@@ -50,7 +70,7 @@
 | Outil | Usage |
 |---|---|
 | Claude Opus 5.5, par Claude Code (Anthropic) | Accompagnement, rédaction du code, production des images, tests, explications |
-| Claude Fable 5.2, par Claude Code (Anthropic) | Accompagnement, modification du convertisseur et de l'interface, explications |
+| Claude Fable 5.2, par Claude Code (Anthropic) | Accompagnement, modification du convertisseur et de l'interface, tests automatiques, assistant de création de profil, explications |
 | UI/UX Pro Max (2.13.0), extension de Claude Code | Recommandations de design et d'expérience utilisateur |
 
 **Langage et bibliothèques intégrés à la page**
@@ -78,6 +98,7 @@
 | Node.js et npm | 22.22.3 et 10.9.8 | Exécution des scripts, installation des paquets |
 | Vite | 8.3.5 | Construction du site |
 | TypeScript | 7.0.2 | Vérification du code |
+| pytest | 9.2.0 | Tests automatiques du convertisseur |
 | Playwright | 1.64.1 | Tests automatisés dans le navigateur, captures d'écran |
 | axe-core | 4.14.0 | Audit d'accessibilité (WCAG 2.2 AA) |
 | Google Chrome | 157 | Tests et vérification du rendu |
@@ -92,7 +113,8 @@
   et système d'animation, repris dans la page.
 - W3C. *Web Content Accessibility Guidelines (WCAG) 2.2*. <https://www.w3.org/TR/WCAG22/>
 - American Psychological Association. « Table setup » (APA, 7e édition) : présentation des tableaux.
-- GitHub. Primer : principes d'interface (action principale unique, fenêtre de confirmation, libellés).
+- University of Chicago Press. *The Chicago Manual of Style*, 18e édition, paragraphes 3.48 à 3.89 : présentation des tableaux.
+- GitHub. Primer, <https://primer.style/> : formulaires, groupe de boutons radio, boutons, tableau de données, liste d'actions, typographie, usage des couleurs, contenu. Principes repris : action principale unique, fenêtre de confirmation, libellés courts, boutons actifs, messages reliés à leur champ.
 - Office québécois de la langue française. Grand dictionnaire terminologique, et Gouvernement du Canada, glossaire de l'accessibilité : vocabulaire.
 - Déclaration rédigée avec le générateur DDIA des bibliothèques de l'Université de Montréal, fondé sur
   le modèle de Kari D. Weaver (Université de Waterloo). <https://bibudem.github.io/ddia/>
