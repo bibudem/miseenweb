@@ -902,6 +902,57 @@
     }
   }
 
+  /* Regroupements de paragraphes : une ligne chacun, ce qui est relevé à gauche, le menu de la fonction à droite */
+  .assistant-lignes {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--couleur-bordure);
+    list-style: none;
+  }
+
+  .assistant-ligne,
+  .assistant-lignes-entete {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 13rem);
+    gap: 6px var(--espace-2);
+    align-items: center;
+    padding-block: 10px;
+    border-bottom: 1px solid var(--couleur-bordure);
+  }
+
+  .assistant-lignes-entete {
+    padding-block: 6px;
+    color: var(--couleur-texte-secondaire);
+    font-size: var(--texte-petit);
+  }
+
+  .assistant-ligne-infos {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .assistant-ligne-sujet {
+    font-weight: var(--graisse-forte);
+  }
+
+  .assistant-ligne-exemples {
+    overflow-wrap: anywhere;
+    font-size: var(--texte-petit);
+  }
+
+  /* Écran étroit : le menu passe sous ce qui est relevé */
+  @media (width < 34rem) {
+    .assistant-ligne {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .assistant-lignes-entete {
+      display: none;
+    }
+  }
+
   /* Avis : un constat propre à ces documents, ou une conséquence à connaître. Ce n'est pas une erreur */
   .assistant-avis {
     padding: 10px 14px;

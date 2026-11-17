@@ -329,35 +329,49 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
           groupes.length > 1 ? 'Pour chacun, identifier sa fonction dans le texte.' : 'Identifier sa fonction dans le texte.',
         ),
       )
+      // Une ligne par regroupement, comme la liste des documents de l'accueil : ce qui est relevé à gauche,
+      // le menu de la fonction à droite. Onze regroupements tiennent ainsi sur un écran.
+      const liste = element('ul', 'assistant-lignes')
+      const entete = element('li', 'assistant-lignes-entete')
+      entete.setAttribute('aria-hidden', 'true')      // chaque menu porte déjà son nom pour le lecteur d'écran
+      entete.append(element('span', '', 'Paragraphes'), element('span', '', 'Fonction'))
+      liste.append(entete)
       groupes.forEach((groupe, rang) => {
         const sujet =
           groupe.sorte === 'style'
             ? `Style « ${groupe.nom} »`
             : `Texte en gras, ${groupe.taille == null ? 'taille par défaut' : `${String(groupe.taille).replace('.', ',')} points`}`
-        const { bloc, corps } = carteQuestion(sujet, `${rang + 1} de ${groupes.length}`)
-        const exemples = element('ul', 'assistant-exemples')
-        exemples.append(
-          ...groupe.exemples.map((texte) => {
-            const extrait = element('li', '', `« ${texte} »`)
-            extrait.dir = 'auto'      // un extrait en arabe se lit de droite à gauche
-            return extrait
-          }),
+        const ligne = element('li', 'assistant-ligne')
+        const infos = element('div', 'assistant-ligne-infos')
+        const details = avecNombres(
+          'p',
+          'aide',
+          `Présent ${groupe.paragraphes} fois, dans ${nombre(groupe.articles, 'document', 'documents')} sur ${n}.`,
         )
-        corps.append(
-          // Une phrase situe les extraits : elle dit ce qui est compté, et où
-          avecNombres(
-            'p',
-            'aide',
-            `Présent ${groupe.paragraphes} fois, dans ${nombre(groupe.articles, 'document', 'documents')} sur ${n}. ${groupe.exemples.length > 1 ? 'Exemples' : 'Exemple'} :`,
-          ),
-          exemples,
-          options(`assistant-role-${rang}`, ROLES, roles[rang], (valeur) => {
-            roles[rang] = valeur
-            actualiserAvis()
-          }).bloc,
-        )
-        contenu.push(bloc)
+        const exemples = element('p', 'assistant-ligne-exemples')
+        groupe.exemples.forEach((texte, place) => {
+          if (place) exemples.append(', ')
+          // « bdi » isole chaque extrait : un extrait en arabe se lit de droite à gauche sans déplacer ses voisins
+          exemples.append(element('bdi', '', `« ${texte} »`))
+        })
+        infos.append(element('p', 'assistant-ligne-sujet', sujet), details, exemples)
+
+        const champMenu = element('div', 'champ-liste champ-compact')
+        const menu = element('select')
+        menu.setAttribute('aria-label', `Fonction : ${sujet}`)
+        for (const [valeur, libelle] of ROLES) menu.append(new Option(libelle, valeur, false, roles[rang] === valeur))
+        menu.addEventListener('change', () => {
+          roles[rang] = menu.value as RoleTitre | ''
+          actualiserAvis()
+        })
+        const fleche = element('span', 'icone')
+        fleche.setAttribute('aria-hidden', 'true')
+        fleche.innerHTML = icone('caret-down')
+        champMenu.append(menu, fleche)
+        ligne.append(infos, champMenu)
+        liste.append(ligne)
       })
+      contenu.push(liste)
       contenu.push(avis)
       actualiserAvis()
     }
