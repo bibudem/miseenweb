@@ -537,10 +537,10 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
   function ecranPresentation(): void {
     const apparence = choixUnique(
       'assistant-apparence',
-      'Apparence de la page',
+      'Alignement',
       [
-        ['article', 'Article : titres centrés, texte justifié'],
-        ['document', 'Document : titres et texte alignés à gauche'],
+        ['article', 'Titres centrés, texte justifié'],
+        ['document', 'Titres et texte alignés à gauche'],
       ],
       reponses.apparence,
       (valeur) => (reponses.apparence = valeur),
@@ -567,7 +567,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       apparence.bloc,
       tableaux.bloc,
     ]
-    const elements = carteQuestion('Éléments de la publication')
+    const elements = carteQuestion('Mise en page')
     const cases = element('div', 'assistant-options')
     // Sans document, rien ne dit si la publication a un bandeau : la case est offerte
     if (releve.couleurs.length || sansDocuments)
@@ -589,7 +589,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
     const propose = !avecIssn && !reponses.mot_nom_fichier && releve.nom_commun ? releve.nom_commun : reponses.mot_nom_fichier
     const mot = champ(
       'assistant-mot',
-      avecIssn ? 'Mot du nom de fichier (facultatif)' : 'Mot du nom de fichier',
+      avecIssn ? 'Nom des fichiers (facultatif)' : 'Nom des fichiers',
       avecIssn
         ? 'Avec ce mot, seuls les fichiers dont le nom le contient suivent ce profil. Laisser vide pour appliquer le profil à tous les documents de la publication.'
         : 'Un mot présent dans le nom de tous les fichiers de la publication, par exemple « ma-publication ».',
@@ -648,9 +648,9 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
           ? `${informatives} avec un texte de remplacement, ${nombre(decoratives, 'décorative', 'décoratives')}`
           : 'aucune image commune',
       ],
-      ['Apparence', reponses.apparence === 'article' ? 'titres centrés, texte justifié' : 'titres et texte alignés à gauche'],
+      ['Alignement', reponses.apparence === 'article' ? 'titres centrés, texte justifié' : 'titres et texte alignés à gauche'],
       ['Tableaux', { bordures: 'bordure autour de chaque cellule', apa: 'APA, 7e édition', chicago: 'Chicago, 18e édition' }[reponses.tableaux]],
-      ['Éléments de la publication', elements.join(', ') || 'aucun'],
+      ['Mise en page', elements.join(', ') || 'ni bandeau ni pied de page'],
     ]
     // Sans document, aucune question n'a porté sur les titres ni sur les images
     return sansDocuments ? lignes.filter(([terme]) => terme !== 'Titres' && terme !== 'Images') : lignes

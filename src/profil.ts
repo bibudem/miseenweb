@@ -75,7 +75,7 @@ export function installerProfil({ demander, surCatalogue, annoncer, confirmer }:
     ligneActif.hidden = boutonRetirer.hidden = libelles.length === 0
     libelleDeposer.textContent = libelles.length ? 'Remplacer le profil' : 'Choisir un fichier'
     ligneActif.textContent = libelles.length
-      ? `Profil ajouté : ${libelles.map((l) => `« ${l} »`).join(', ')}. Il est conservé dans ce navigateur.`
+      ? `Profil ajouté : ${libelles.map((l) => `« ${l} »`).join(', ')}, conservé dans le navigateur.`
       : ''
   }
 
@@ -130,6 +130,21 @@ export function installerProfil({ demander, surCatalogue, annoncer, confirmer }:
   boutonDeposer.addEventListener('click', () => entree.click())
 
   async function deposerFichier(fichier: File): Promise<void> {
+    // Un seul profil est conservé : avant d'en remplacer un, la personne confirme
+    if (libellesActifs.length) {
+      confirmer(
+        {
+          titre: 'Remplacer le profil',
+          texte: `Le profil ${libellesActifs.map((l) => `« ${l} »`).join(', ')} est remplacé par « ${fichier.name} ». Sans fichier de profil téléchargé, il doit être créé de nouveau.`,
+          conserver: 'Conserver le profil',
+          effacer: 'Remplacer le profil',
+        },
+        () => void lireEtDeposer(fichier),
+      )
+    } else await lireEtDeposer(fichier)
+  }
+
+  async function lireEtDeposer(fichier: File): Promise<void> {
     try {
       await deposer({ fichier: fichier.name, texte: await fichier.text() })
     } catch (erreur) {

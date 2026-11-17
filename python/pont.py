@@ -71,6 +71,8 @@ def libelle(profil: Profil) -> str:
     if "/" in profil.nom and profil.revue:
         variante = profil.nom.split("/", 1)[1]
         return f"{profil.revue} : {VARIANTES.get(variante, variante.replace('-', ' '))}"
+    if profil.nom in _profils_deposes and profil.revue:      # profil ajouté : le nom de sa publication suffit
+        return profil.revue
     return profil.description.split(".")[0] or profil.nom
 
 

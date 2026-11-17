@@ -414,10 +414,10 @@
     font-weight: var(--graisse-forte);
   }
 
+  /* Profil ajouté : un état propre à ce navigateur. Il prend la présentation des avis (voir .assistant-avis) */
   .profil-actif {
     max-width: 60ch;
     margin: 0;
-    font-size: var(--texte-petit);
   }
 
   .profil-actions {
@@ -954,7 +954,8 @@
   }
 
   /* Avis : un constat propre à ces documents, ou une conséquence à connaître. Ce n'est pas une erreur */
-  .assistant-avis {
+  .assistant-avis,
+  .profil-actif {
     padding: 10px 14px;
     border-inline-start: 4px solid var(--alerte-info-icone);
     border-radius: 0 var(--rayon-tres-petit) var(--rayon-tres-petit) 0;
