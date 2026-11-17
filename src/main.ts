@@ -270,6 +270,7 @@ function demarre(donnees: Catalogue): void {
 async function ajouter(fichiers: File[]): Promise<void> {
   const retenus: File[] = []
   const remarques: string[] = []
+  const dejaPresents: string[] = []
   for (const fichier of fichiers) {
     const nom = fichier.name
     const minuscule = nom.toLowerCase()
@@ -282,10 +283,13 @@ async function ajouter(fichiers: File[]): Promise<void> {
     else if (minuscule.endsWith('.doc'))
       remarques.push(`« ${nom} » est dans le format .doc. Ouvrir le fichier dans Word, puis enregistrer le fichier dans le format .docx.`)
     else if (!minuscule.endsWith('.docx')) remarques.push(`« ${nom} » n’est pas un document Word. Le fichier est ignoré.`)
-    else if (documents.has(nom) || retenus.some((f) => f.name === nom))
-      remarques.push(`« ${nom} » est déjà dans la liste. Deux documents de même nom produisent la même page.`)
+    else if (documents.has(nom) || retenus.some((f) => f.name === nom)) dejaPresents.push(nom)
     else retenus.push(fichier)
   }
+  // Une seule phrase pour les documents déjà présents, quel que soit leur nombre
+  if (dejaPresents.length === 1)
+    remarques.push(`« ${dejaPresents[0]} » est déjà dans la liste. Deux documents de même nom produisent la même page.`)
+  else if (dejaPresents.length > 1) remarques.push(`${dejaPresents.length} documents sont déjà dans la liste.`)
   if (retenus.length) remarques.unshift(`${pluriel(retenus.length, 'document ajouté', 'documents ajoutés')}.`)
   annoncer(remarques.join(' '))
   if (!retenus.length) return
