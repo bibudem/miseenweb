@@ -799,10 +799,15 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
       ...releve.titres_en_gras.map((groupe) => ({ sorte: 'gras' as const, ...groupe })),
     ]
     // Un style ne reçoit aucun choix d'avance : son nom ne suffit pas à dire sa fonction
-    const premierGras = regroupements.findIndex((groupe) => groupe.sorte === 'gras')
-    roles = regroupements.map((groupe, rang) =>
-      rang === premierGras && groupe.sorte === 'gras' && groupe.taille != null ? 'titre-article' : '',
-    )
+    // Choix de départ du titre de l'article : le texte en gras présent dans le plus de documents et,
+    // à égalité, le plus grand. Une grande taille vue dans un seul document n'est pas une habitude.
+    let titreProbable = -1
+    regroupements.forEach((groupe, rang) => {
+      if (groupe.sorte !== 'gras' || groupe.taille == null) return
+      const actuel = regroupements[titreProbable]
+      if (!actuel || groupe.articles > actuel.articles) titreProbable = rang      // la liste est déjà triée par taille
+    })
+    roles = regroupements.map((_, rang) => (rang === titreProbable ? 'titre-article' : ''))
     carte.setAttribute('data-assistant-ouvert', '')
     zone.hidden = false
     ecranRevue()
