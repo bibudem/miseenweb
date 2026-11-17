@@ -168,9 +168,6 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
   const titreCarte = $<HTMLElement>('#titre-outil')
   const titreCarteInitial = titreCarte.textContent ?? ''
   const compteEtapes = $<HTMLElement>('[data-assistant-etape]')
-  // L'assistant est en construction : sur le site publié, son bouton paraît seulement à l'adresse
-  // « ?assistant ». Sur le serveur local, il paraît toujours.
-  const offert = import.meta.env.DEV || new URLSearchParams(location.search).has('assistant')
 
   let releve: ReleveExemples
   /** Vrai quand la liste est vide : les écrans des paragraphes et des images, qui montrent ce que les
@@ -815,7 +812,7 @@ export function installerAssistant({ demander, documents, annoncer, icone, depos
 
   return {
     actualiser: (pret) => {
-      boutonCreer.hidden = !offert || !pret
+      boutonCreer.hidden = !pret
       // Le refus affiché ne vaut plus dès que la liste compte assez de documents
       if (documents().length >= DOCUMENTS_MIN && messageProfil.textContent?.startsWith('L’assistant compare')) messageProfil.replaceChildren()
     },
