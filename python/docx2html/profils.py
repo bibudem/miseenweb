@@ -97,6 +97,12 @@ class Profil:
         # Un profil sans aucune règle ne doit pas capter tous les documents.
         return bool(motif or attendus)
 
+    @property
+    def sans_regle(self) -> bool:
+        """Vrai si le profil n'a ni motif de nom de fichier ni styles attendus."""
+        detection = self.donnees.get("detection", {}) or {}
+        return not (detection.get("defaut") or detection.get("motif_nom_fichier") or detection.get("styles_presents"))
+
 
 def _fusionner(commun: dict, variante: dict) -> dict:
     """Combine les réglages communs et ceux d'une variante; la variante l'emporte."""
@@ -152,10 +158,12 @@ def choisir_profil(
     nom_fichier: str,
     styles_presents: set[str],
     nom_force: str | None = None,
+    issn: str | None = None,
 ) -> tuple[Profil, str]:
     """Choisit le profil à appliquer et explique pourquoi.
 
-    Ordre : profil forcé > profil détecté (priorité la plus haute) > profil par défaut.
+    Ordre : profil forcé > profil détecté par ses règles (priorité la plus haute) > seul profil
+    sans règle de la revue désignée par « issn » > profil par défaut.
     Retourne (profil, justification).
     """
     if nom_force:
@@ -175,6 +183,12 @@ def choisir_profil(
         if autres:
             raison += f" (autres profils compatibles : {', '.join(autres)})"
         return choisi, raison
+
+    # L'ISSN seul suffit pour une revue qui n'a qu'une sorte de document. S'il y en a
+    # plusieurs sans règle, rien ne permet de choisir : le profil par défaut s'applique.
+    de_la_revue = [p for p in profils.values() if issn and p.issn == issn and p.sans_regle]
+    if len(de_la_revue) == 1:
+        return de_la_revue[0], "détecté par son ISSN"
 
     defauts = [p for p in profils.values() if p.est_defaut]
     if not defauts:

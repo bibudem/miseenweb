@@ -84,3 +84,37 @@ def test_revue_imposee_et_issn_inconnu_le_choix_du_menu_s_applique(nouveau_docum
     assert analyse["profil"] == "science-infirmiere/mise-en-page"
     # En détection automatique, un ISSN inconnu limite toujours le choix aux règles générales
     assert json.loads(module_pont.analyser(nom, module_pont.AUTO))["profil"] == "defaut"
+
+
+# ---- Reconnaissance par l'ISSN seul ----
+
+PROFIL_ISSN_SEUL = """
+nom: ma-revue
+revue: Ma revue
+issn: "1234-5678"
+description: Articles de ma revue.
+post_traitement:
+  gabarit: ../gabarits/page.html
+"""
+
+
+def _avec_issn(document, issn):
+    document.add_heading("Titre du document fictif", level=1)
+    document.sections[0].footer.paragraphs[0].text = f"ISSN {issn}"
+    return document
+
+
+def test_issn_seul_suffit_pour_un_profil_sans_regle(nouveau_document, pont, module_pont):
+    assert json.loads(module_pont.deposer_profil(PROFIL_ISSN_SEUL))["messages"] == []
+    resultat = pont(_avec_issn(nouveau_document, "1234-5678"), nom="nom_quelconque.docx")
+    assert resultat["profil"] == "ma-revue"
+
+
+def test_profil_sans_regle_ne_capte_pas_un_document_sans_son_issn(nouveau_document, pont, module_pont):
+    module_pont.deposer_profil(PROFIL_ISSN_SEUL)
+    assert pont(_avec_issn(nouveau_document, "8765-4321"), nom="a.docx")["profil"] == "defaut"
+
+
+def test_revue_a_variantes_demande_toujours_le_nom_du_fichier(nouveau_document, pont):
+    resultat = pont(_avec_issn(nouveau_document, "2561-7516"), nom="nom_quelconque.docx")
+    assert resultat["profil"] == "defaut"

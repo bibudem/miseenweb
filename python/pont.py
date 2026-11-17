@@ -185,8 +185,9 @@ def _choisir(nom: str, revue: str, profil_force: str = "") -> tuple[Profil | Non
         return None, "", infos
     if profil_force:
         return PROFILS[profil_force], "type de document choisi à la main", infos
-    profil, raison = choisir_profil(_profils_pour(infos["issn"], revue), nom, infos["styles"])
+    profil, raison = choisir_profil(_profils_pour(infos["issn"], revue), nom, infos["styles"], issn=infos["issn"])
     raison = {
+        "détecté par son ISSN": "seul type de document de la revue",
         "détecté par ses règles": "reconnu d'après le nom du fichier et les styles du document",
         "aucune règle ne correspond, profil par défaut": "aucun type particulier reconnu",
     }.get(raison.split(" (")[0], raison)
