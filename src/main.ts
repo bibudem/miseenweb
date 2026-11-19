@@ -667,7 +667,7 @@ function afficherResultats(): void {
       const infosDuDocument = sorte('document', 'info')
       if (duDocument.length || infosDuDocument.length) infos.append(bilanSource('document', duDocument, infosDuDocument))
       if (r.sortie)
-        infos.append(bilanSource('conversion', sorte('conversion', 'avertissement'), sorte('conversion', 'info'), `Type de document ${r.raison}.`))
+        infos.append(bilanSource('conversion', sorte('conversion', 'avertissement'), sorte('conversion', 'info'), `Type de document « ${r.libelle} » : ${r.raison}.`))
       ligne.append(infos)
 
       if (r.sortie) {

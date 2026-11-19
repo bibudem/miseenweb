@@ -231,7 +231,7 @@ def _choisir(nom: str, revue: str, profil_force: str = "") -> tuple[Profil | Non
     if infos["erreur"]:
         return None, "", infos
     if profil_force:
-        return PROFILS[profil_force], "type de document choisi à la main", infos
+        return PROFILS[profil_force], "choisi à la main", infos
     profil, raison = choisir_profil(_profils_pour(infos["issn"], revue), nom, infos["styles"], issn=infos["issn"])
     raison = {
         "détecté par son ISSN": "seul type de document de la publication",
