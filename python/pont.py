@@ -334,7 +334,7 @@ def _styles_inconnus(messages: list[dict]) -> Remarque | None:
     return Remarque("info", f"{len(noms)} styles Word non reconnus : "
                             + ", ".join(f"« {nom} »" for nom in noms) + ".",
                     "Le texte de ces styles devient du texte courant. La structure de la page reste complète "
-                    "si ces styles ne servent pas à des titres.")
+                    "si ces styles ne servent pas à des titres.", origine="conversion")
 
 
 def _traduire_mammoth(message: dict) -> Remarque | None:
@@ -345,23 +345,23 @@ def _traduire_mammoth(message: dict) -> Remarque | None:
             return None
         return Remarque("info", f"Élément Word ignoré : {trouve[1]}.",
                         "Le convertisseur ne connaît pas cet élément. Vérifier que la page produite est "
-                        "complète.")
+                        "complète.", origine="conversion")
     if trouve := MOTIF_STYLE_INCONNU.match(texte):
         return Remarque("info", f"Style Word non reconnu : « {trouve[2]} ».",
                         "Le texte de ce style devient du texte courant. La structure de la page reste complète "
-                        "si ce style ne sert pas à des titres.")
+                        "si ce style ne sert pas à des titres.", origine="conversion")
     if "image/x-emf" in texte:
         return Remarque("avertissement", "Image EMF non convertie.",
                         "Les navigateurs n'affichent pas le format EMF. Dans Word, remplacer l'image par une "
                         "version PNG.")
-    return Remarque("info", "Remarque technique du convertisseur.", texte)
+    return Remarque("info", "Remarque technique du convertisseur.", texte, origine="conversion")
 
 
 def _traduire_normalisation(m: dict, titre_de_section: bool = False) -> Remarque:
     if m["regle"] == "numero-sous-titre":       # le style n'a pas changé : seul le numéro est écrit
         return Remarque("info", f"Numéro de sous-titre écrit dans le texte : « {m['texte']} »",
                         "Le convertisseur remplace la numérotation automatique de Word par un numéro écrit "
-                        "dans le texte.")
+                        "dans le texte.", origine="conversion")
     style = m["style_apres"]
     if style == "Title":
         quoi = "Titre de section reconnu" if titre_de_section else "Titre du document reconnu"
@@ -373,7 +373,7 @@ def _traduire_normalisation(m: dict, titre_de_section: bool = False) -> Remarque
         quoi = f"Style « {style} » appliqué"
     return Remarque("info", f"{quoi} : « {m['texte']} »",
                     "Le convertisseur reconnaît ce paragraphe d'après sa mise en forme. Vérifier cette "
-                    "interprétation.")
+                    "interprétation.", origine="conversion")
 
 
 LIENS_VAGUES = {"ici", "cliquez ici", "cliquer ici", "lien", "ce lien", "en savoir plus", "plus", "voir",
@@ -643,9 +643,10 @@ def rapport_html() -> str:
             lignes.append(f'<p class="meta">Page produite : {e(r["sortie"])}. Structure : {e(_resume_titres(r["titres"]))}.</p>')
         if r["erreur"]:
             lignes.append(f'<p class="erreur-texte">{e(r["erreur"])}</p>')
-        de_conversion = [x for x in avertissements if x.get("origine") == "conversion"]
-        du_document = [x for x in avertissements if x.get("origine") != "conversion"]
-        for titre, liste in (("Document d'origine", du_document), ("Conversion", de_conversion + infos)):
+        # Chaque remarque va sous sa source; les avertissements avant les informations
+        de_conversion = [x for x in avertissements + infos if x.get("origine") == "conversion"]
+        du_document = [x for x in avertissements + infos if x.get("origine") != "conversion"]
+        for titre, liste in (("Document d'origine", du_document), ("Conversion", de_conversion)):
             if liste:
                 lignes.append(f"<h3>{titre}</h3><ul>")
                 # Dans la page, chaque remarque mène à son endroit; sur papier, la répéter n'apprend rien

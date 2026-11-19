@@ -660,12 +660,14 @@ function afficherResultats(): void {
       infos.append(details)
       if (r.erreur) infos.append(element('p', 'erreur-texte', r.erreur))
 
-      const avertissements = r.remarques.filter((x) => x.gravite === 'avertissement')
-      const informations = r.remarques.filter((x) => x.gravite === 'info')
-      const deConversion = avertissements.filter((x) => x.origine === 'conversion')
-      const duDocument = avertissements.filter((x) => x.origine !== 'conversion')
-      if (duDocument.length) infos.append(bilanSource('document', duDocument, []))
-      if (r.sortie) infos.append(bilanSource('conversion', deConversion, informations, `Type de document ${r.raison}.`))
+      // Chaque remarque va sous sa source : à corriger (avertissement) ou à lire (information)
+      const sorte = (origine: Source, gravite: Remarque['gravite']) =>
+        r.remarques.filter((x) => (x.origine === 'conversion') === (origine === 'conversion') && x.gravite === gravite)
+      const duDocument = sorte('document', 'avertissement')
+      const infosDuDocument = sorte('document', 'info')
+      if (duDocument.length || infosDuDocument.length) infos.append(bilanSource('document', duDocument, infosDuDocument))
+      if (r.sortie)
+        infos.append(bilanSource('conversion', sorte('conversion', 'avertissement'), sorte('conversion', 'info'), `Type de document ${r.raison}.`))
       ligne.append(infos)
 
       if (r.sortie) {

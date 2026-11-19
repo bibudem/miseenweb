@@ -72,6 +72,8 @@ def test_doi_absent_est_une_information(nouveau_document, pont, module_pont):
     module_pont.deposer_profil(PROFIL)
     resultat = pont(manuscrit(nouveau_document, sauf="doi"), nom="article_ma_publication.docx")
     assert resultat["statut"] == "ok"           # une information ne donne pas le statut « avertissements »
+    doi = next(r for r in resultat["remarques"] if r["titre"] == REMARQUES["doi"])
+    assert doi["origine"] == "document"         # classée sous « Document d'origine », pas sous « Conversion »
 
 
 def test_sans_le_reglage(nouveau_document, pont, module_pont):
