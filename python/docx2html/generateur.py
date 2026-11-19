@@ -168,6 +168,7 @@ def generer_profil(reponses: dict) -> str:
         "  decaler_niveaux: auto",
         "  verifier_hierarchie: true",
         "  avertir_h1_multiples: true",
+        "  gabarit_minimal: true",
         "  table_des_matieres: false",
         f"  bandeau_avant_titre: {_booleen(reponses.get('bandeau'))}",
         f"  couleur_bandeau: {_booleen(reponses.get('bandeau'))}",

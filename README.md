@@ -106,6 +106,7 @@ Résultat : `style_cible`, par exemple `Title`, `Heading 1` ou `Quote`. Chaque r
 | `resume_avant_mots_cles` | Replace le résumé avant ses mots-clés. |
 | `decaler_niveaux` | `auto` : sous un titre de document, « Titre 1 » devient un titre de niveau 2. Ou un nombre. |
 | `identifiants_titres`, `verifier_hierarchie`, `avertir_h1_multiples`, `corriger_faux_titres` | Ancre de chaque titre, contrôle des niveaux, titres vides retirés. |
+| `gabarit_minimal` | Signale au rapport les éléments absents du manuscrit : logo dans l'en-tête, résumé, mots-clés, références, puis ISSN, licence et DOI dans le pied de page. Faux par défaut. |
 | `table_des_matieres`, `niveau_max_tdm`, `titre_tdm`, `tdm_dans_fragment` | Table des matières de la page : niveau le plus profond, titre, présence dans un extrait sans gabarit. |
 | `classe_titre_document` | Classe du titre principal, `titre-document` par défaut. |
 | `liens_automatiques` | Rend cliquables les adresses web et les courriels. |
