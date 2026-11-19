@@ -588,18 +588,21 @@ function pictogramme(nom: string, classe: string): HTMLSpanElement {
 function bilanSource(source: Source, aCorriger: Remarque[], informations: Remarque[], contexte = ''): HTMLDetailsElement {
   const groupesACorriger = regrouper(aCorriger)
   const groupesInformations = regrouper(informations)
+  // Le résumé compte les remarques affichées : un groupe (« 10 sous-titres… ») compte pour une
   let resume: string
-  if (groupesACorriger.length === 1) {
+  if (groupesACorriger.length === 1 && !groupesInformations.length) {
     resume = titreDuGroupe(...groupesACorriger[0]).replace(/\.$/, '')
-  } else if (groupesACorriger.length > 1) {
-    resume =
-      source === 'document'
-        ? pluriel(aCorriger.length, 'point à corriger', 'points à corriger')
-        : pluriel(aCorriger.length, 'point à vérifier', 'points à vérifier')
-  } else if (groupesInformations.length) {
-    resume = pluriel(groupesInformations.length, 'information', 'informations')
   } else {
-    resume = 'aucune remarque'
+    const parties: string[] = []
+    if (groupesACorriger.length) {
+      parties.push(
+        source === 'document'
+          ? pluriel(groupesACorriger.length, 'point à corriger', 'points à corriger')
+          : pluriel(groupesACorriger.length, 'point à vérifier', 'points à vérifier'),
+      )
+    }
+    if (groupesInformations.length) parties.push(pluriel(groupesInformations.length, 'information', 'informations'))
+    resume = parties.join(', ') || 'aucune remarque'
   }
 
   const volet = element('details', `bilan-source${aCorriger.length ? ' bilan-a-corriger' : ''}`)
