@@ -460,19 +460,19 @@ def _verifier_accessibilite(soupe: BeautifulSoup) -> list[Remarque]:
 
 # Élément du gabarit minimal absent -> (gravité, titre, correction à faire dans le document)
 REMARQUES_GABARIT = {
-    "logo": ("avertissement", "Logo absent de l'en-tête",
+    "logo": ("avertissement", "Logo absent de l'en-tête.",
              "Ajouter le logo de la publication dans l'en-tête du document."),
-    "resume": ("avertissement", "Résumé absent",
+    "resume": ("avertissement", "Résumé absent.",
                "Ajouter le résumé, précédé de l'étiquette « Résumé » ou « Abstract »."),
-    "mots_cles": ("avertissement", "Mots-clés absents",
+    "mots_cles": ("avertissement", "Mots-clés absents.",
                   "Ajouter les mots-clés après le résumé, précédés de « Mots-clés » ou « Keywords »."),
-    "references": ("avertissement", "Références absentes",
+    "references": ("avertissement", "Références absentes.",
                    "Ajouter la liste des références, sous le titre « Références »."),
-    "issn": ("avertissement", "ISSN absent du pied de page",
+    "issn": ("avertissement", "ISSN absent du pied de page.",
              "Ajouter l'ISSN de la publication dans le pied de page."),
-    "licence": ("avertissement", "Licence absente du pied de page",
+    "licence": ("avertissement", "Licence absente du pied de page.",
                 "Ajouter la licence de l'article dans le pied de page."),
-    "doi": ("info", "DOI absent du pied de page", "Si un DOI est attribué, l'ajouter dans le pied de page."),
+    "doi": ("info", "DOI absent du pied de page.", "Si un DOI est attribué, l'ajouter dans le pied de page."),
 }
 
 
